@@ -45,6 +45,12 @@ typedef struct Sprite_t
     uint16_t     u16ImageOffsetY;
 } Sprite;
 
+int DrawEntity(
+    Entity       **pstEntity,
+    Camera       **pstCamera,
+    Sprite       **pstSprite,
+    SDL_Renderer **pstRenderer);
+
 void FreeCamera(Camera **pstCamera);
 void FreeEntity(Entity **pstEntity);
 void FreeSprite(Sprite **pstSprite);
@@ -61,12 +67,6 @@ int InitSprite(
     const uint16_t u16Height,
     const uint16_t u16ImageOffsetX,
     const uint16_t u16ImageOffsetY,
-    Sprite       **pstSprite,
-    SDL_Renderer **pstRenderer);
-
-int RenderEntity(
-    Entity       **pstEntity,
-    Camera       **pstCamera,
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer);
 

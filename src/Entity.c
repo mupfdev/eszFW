@@ -70,13 +70,13 @@ int InitEntity(
         return -1;
     }
 
+    SetPosition(dPosX, dPosY, &(*pstEntity));
+
     (*pstEntity)->stBB.dBottom   = 0;
     (*pstEntity)->stBB.dLeft     = 0;
     (*pstEntity)->stBB.dRight    = 0;
     (*pstEntity)->stBB.dTop      = 0;
     (*pstEntity)->u16Flags       = 0;
-    (*pstEntity)->dPosX          = dPosX;
-    (*pstEntity)->dPosY          = dPosY;
     (*pstEntity)->u8Width        = 32;
     (*pstEntity)->u8Height       = 32;
     (*pstEntity)->u8FrameOffsetX = 0;
@@ -130,7 +130,7 @@ int InitSprite(
     return 0;
 }
 
-int RenderEntity(
+int DrawEntity(
     Entity       **pstEntity,
     Camera       **pstCamera,
     Sprite       **pstSprite,

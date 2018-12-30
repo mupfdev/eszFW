@@ -98,17 +98,17 @@ int InitGame()
 
         UpdateEntity(dDeltaTime, &pstPlayer);
 
-        if (-1 == RenderMap(
-                "res/images/tileset.png", false, 0, "Background",
+        if (-1 == DrawMap(
+                "res/images/tileset.png", false, 0, "BG",
                 pstCamera->dPosX, pstCamera->dPosY, &pstMap, &pstVideo->pstRenderer))
         {
             QUIT(-1);
         }
 
-        RenderEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
+        DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
 
-        if (-1 == RenderMap(
-                "res/images/tileset.png", false, 1, "Foreground",
+        if (-1 == DrawMap(
+                "res/images/tileset.png", false, 1, "FG",
                 pstCamera->dPosX, pstCamera->dPosY, &pstMap, &pstVideo->pstRenderer))
         {
             QUIT(-1);

@@ -76,7 +76,7 @@ If you're on NixOS enter:
 nix-shell --command make
 ```
 
-## License and Credits
+## Licence and Credits
 
 This project is licenced under the "THE BEER-WARE LICENCE".  See the
 file [LICENCE.md](LICENCE.md) for details.

@@ -15,12 +15,22 @@
 typedef struct Map_t
 {
     tmx_map     *pstTmxMap;
-    SDL_Texture *pstLayer[MAP_LAYERS];
+    SDL_Texture *pstTexture[MAP_TEXTURES];
     uint32_t     u32Height;
     uint32_t     u32Width;
     double       dPosX;
     double       dPosY;
 } Map;
+
+int DrawMap(
+    const char    *pacTilesetImageFileName,
+    const bool     bRenderBgColour,
+    const uint16_t u16Index,
+    const char    *pacLayerName,
+    const double   dCameraPosX,
+    const double   dCameraPosY,
+    Map          **pstMap,
+    SDL_Renderer **pstRenderer);
 
 void FreeMap(Map **pstMap);
 int InitMap(const char *pacFileName, Map **pstMap);
@@ -30,15 +40,5 @@ bool IsMapTileOfType(
     const Map **pstMap,
     double      dPosX,
     double      dPosY);
-
-int RenderMap(
-    const char    *pacTilesetImageFileName,
-    const bool     bRenderBgColour,
-    const uint16_t u16Index,
-    const char    *pacLayerName,
-    const double   dCameraPosX,
-    const double   dCameraPosY,
-    Map          **pstMap,
-    SDL_Renderer **pstRenderer);
 
 #endif // _MAP_H_
