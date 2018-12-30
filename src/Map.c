@@ -10,8 +10,20 @@
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <tmx.h>
 #include "Map.h"
+
+static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
+{
+    if (0 == strcmp(pProperty->name, "Gravitation"))
+    {
+        if (PT_FLOAT == pProperty->type)
+        {
+            *((double*)dGravitation) = pProperty->value.decimal;
+        }
+    }
+}
 
 int DrawMap(
     const char    *pacTilesetImageFileName,
@@ -170,7 +182,7 @@ int InitMap(const char *pacFileName, Map **pstMap)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
-            "InitVideo(): error allocating memory.\n");
+            "InitMap(): error allocating memory.\n");
         return -1;
     }
 
@@ -182,10 +194,11 @@ int InitMap(const char *pacFileName, Map **pstMap)
         return -1;
     }
 
-    (*pstMap)->u32Height  = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
-    (*pstMap)->u32Width   = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
-    (*pstMap)->dPosX = 0;
-    (*pstMap)->dPosY = 0;
+    (*pstMap)->u32Height    = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
+    (*pstMap)->u32Width     = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
+    (*pstMap)->dPosX        = 0;
+    (*pstMap)->dPosY        = 0;
+    (*pstMap)->dGravitation = 0;
 
     for (uint16_t u16Index = 0; u16Index < MAP_TEXTURES; u16Index++)
     {
@@ -193,6 +206,7 @@ int InitMap(const char *pacFileName, Map **pstMap)
     }
 
     SDL_Log("Load TMX map file: %s.\n", pacFileName);
+    SetGravitation(0, true, pstMap);
 
     return 0;
 }
@@ -203,6 +217,7 @@ bool IsMapTileOfType(
     double      dPosX,
     double      dPosY)
 {
+    tmx_layer *pstLayers;
     dPosX /= (*pstMap)->pstTmxMap->tile_width;
     dPosY /= (*pstMap)->pstTmxMap->tile_height;
 
@@ -215,7 +230,7 @@ bool IsMapTileOfType(
         return false;
     }
 
-    tmx_layer *pstLayers = (*pstMap)->pstTmxMap->ly_head;
+    pstLayers = (*pstMap)->pstTmxMap->ly_head;
     while(pstLayers)
     {
         uint16_t u16Gid =
@@ -237,4 +252,27 @@ bool IsMapTileOfType(
     }
 
     return false;
+}
+
+void SetGravitation(
+    const double  dGravitation,
+    const bool    bUseTmxConstant,
+    Map         **pstMap)
+{
+    if (bUseTmxConstant)
+    {
+        double       *dTmxConstant = NULL;
+        tmx_property *pProperty;
+
+        dTmxConstant = &(*pstMap)->dGravitation;
+        pProperty    = (*pstMap)->pstTmxMap->properties;
+        tmx_property_foreach(pProperty, _GetGravitation, (void *)dTmxConstant);
+        (*pstMap)->dGravitation = *dTmxConstant;
+    }
+    else
+    {
+        (*pstMap)->dGravitation = dGravitation;
+    }
+
+    SDL_Log("Set gravitational constant to %f tile/s^2.\n", (*pstMap)->dGravitation);
 }

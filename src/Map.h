@@ -20,6 +20,7 @@ typedef struct Map_t
     uint32_t     u32Width;
     double       dPosX;
     double       dPosY;
+    double       dGravitation;
 } Map;
 
 int DrawMap(
@@ -40,5 +41,10 @@ bool IsMapTileOfType(
     const Map **pstMap,
     double      dPosX,
     double      dPosY);
+
+void SetGravitation(
+    const double  dGravitation,
+    const bool    bUseTmxConstant,
+    Map         **pstMap);
 
 #endif // _MAP_H_
