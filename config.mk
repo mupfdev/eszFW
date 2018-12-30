@@ -24,7 +24,7 @@ CFLAGS=\
 	-Isrc/inih\
 	-Isrc/tmx/src\
 	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
-	-O3\
+	-O2\
 	-pedantic-errors\
 	-std=c99\
 	-Wall\
