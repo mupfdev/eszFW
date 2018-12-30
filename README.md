@@ -100,7 +100,7 @@ Environment](http://pixelgameart.org/web/portfolio/magic-cliffs-environment/)
 by Luis Zuno (@ansimuz).  Licenced under a [CC-BY-3.0
 Licence](http://creativecommons.org/licenses/by/3.0/).
 
-Every oter work is dedicated to [public
+Every other work is dedicated to [public
 domain](https://creativecommons.org/publicdomain/zero/1.0/):
 
 [A platformer in the
