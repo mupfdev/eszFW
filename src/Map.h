@@ -36,11 +36,17 @@ int DrawMap(
 void FreeMap(Map **pstMap);
 int InitMap(const char *pacFileName, Map **pstMap);
 
-bool IsMapTileOfType(
+bool IsMapCoordOfType(
     const char *pacType,
-    const Map **pstMap,
     double      dPosX,
-    double      dPosY);
+    double      dPosY,
+    Map       **pstMap);
+
+bool IsOnPlatform(
+    const double  dPosX,
+    const double  dPosY,
+    const double  dOffsetY,
+    Map         **pstMap);
 
 void SetGravitation(
     const double  dGravitation,

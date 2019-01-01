@@ -40,7 +40,7 @@ int InitGame()
     if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT(-1); }
     if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont)) { QUIT(-1); }
 
-    SetPosition(16, 592, &pstPlayer);
+    SetPosition(16, 16, &pstPlayer);
     SetFrameOffset(0, 2, &pstPlayer);
     SetFontColour(255, 255, 255, &pstFont);
 
@@ -64,6 +64,7 @@ int InitGame()
             goto quit;
         }
 
+        CLEAR(pstPlayer->u16Flags, IN_MID_AIR);
         CLEAR(pstPlayer->u16Flags, IS_MOVING);
 
         if (pu8KeyState[SDL_SCANCODE_LEFT])
@@ -96,7 +97,12 @@ int InitGame()
             pstMap->u32Height,
             &pstCamera);
 
-        UpdateEntity(dDeltaTime, &pstPlayer);
+        // Set up collision detection.
+        if (false == IsOnPlatform(pstPlayer->dPosX, pstPlayer->dPosY, 18.0, &pstMap))
+        {
+            SET(pstPlayer->u16Flags, IN_MID_AIR);
+        }
+        UpdateEntity(dDeltaTime, pstMap->dGravitation, &pstPlayer);
 
         if (-1 == DrawMap(
                 "res/images/tileset.png", false, 0, "BG",
@@ -105,6 +111,7 @@ int InitGame()
             QUIT(-1);
         }
 
+        ConnectMapEndsForEntity(pstMap->u32Width, pstMap->u32Height, &pstPlayer);
         DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
 
         if (-1 == DrawMap(

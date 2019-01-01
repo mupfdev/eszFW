@@ -10,8 +10,90 @@
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include "AABB.h"
+#include "Config.h"
 #include "Entity.h"
 #include "Macros.h"
+
+void ConnectHorizontalMapEndsForEntity(
+    const uint32_t  u32MapWidth,
+    Entity        **pstEntity)
+{
+    if ((*pstEntity)->dPosX < 0)
+    {
+        (*pstEntity)->dPosX = u32MapWidth;
+    }
+    else if ((*pstEntity)->dPosX > u32MapWidth)
+    {
+        (*pstEntity)->dPosX = 0;
+    }
+}
+
+void ConnectMapEndsForEntity(
+    const uint32_t  u32MapWidth,
+    const uint32_t  u32MapHeight,
+    Entity        **pstEntity)
+{
+    ConnectHorizontalMapEndsForEntity(u32MapWidth, pstEntity);
+    ConnectVerticalMapEndsForEntity(u32MapHeight, pstEntity);
+}
+
+void ConnectVerticalMapEndsForEntity(
+    const uint32_t  u32MapHeight,
+    Entity        **pstEntity)
+{
+    if ((*pstEntity)->dPosY < 0)
+    {
+        (*pstEntity)->dPosY = u32MapHeight;
+    }
+    else if ((*pstEntity)->dPosY > u32MapHeight)
+    {
+        (*pstEntity)->dPosY = 0;
+    }
+}
+
+int DrawEntity(
+    Entity       **pstEntity,
+    Camera       **pstCamera,
+    Sprite       **pstSprite,
+    SDL_Renderer **pstRenderer)
+{
+    double           dPosX  = (*pstEntity)->dPosX - (*pstCamera)->dPosX;
+    double           dPosY  = (*pstEntity)->dPosY - (*pstCamera)->dPosY;
+    SDL_RendererFlip s8Flip = SDL_FLIP_NONE;
+    SDL_Rect         stDst;
+    SDL_Rect         stSrc;
+
+    if (IS_SET((*pstEntity)->u16Flags, IS_FLIPPED))
+    {
+        s8Flip = SDL_FLIP_HORIZONTAL;
+    }
+
+    stSrc.x  = (*pstSprite)->u16ImageOffsetX;
+    stSrc.x += (*pstEntity)->u8FrameOffsetX * (*pstEntity)->u8Width;
+    stSrc.x += (*pstEntity)->u8AnimFrame * (*pstEntity)->u8Width;
+    stSrc.y  = (*pstSprite)->u16ImageOffsetY;
+    stSrc.y += (*pstEntity)->u8FrameOffsetY * (*pstEntity)->u8Height;
+    stSrc.w  = (*pstEntity)->u8Width;
+    stSrc.h  = (*pstEntity)->u8Height;
+    stDst.x  = dPosX - ((*pstEntity)->u8Width  / 2);
+    stDst.y  = dPosY - ((*pstEntity)->u8Height / 2);
+    stDst.w  = (*pstEntity)->u8Width;
+    stDst.h  = (*pstEntity)->u8Height;
+
+    if (0 != SDL_RenderCopyEx(
+            (*pstRenderer),
+            (*pstSprite)->pstTexture,
+            &stSrc,
+            &stDst,
+            0,
+            NULL,
+            s8Flip))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return -1;
+    }
+    return 0;
+}
 
 void FreeCamera(Camera **pstCamera)
 {
@@ -72,6 +154,7 @@ int InitEntity(
 
     SetPosition(dPosX, dPosY, &(*pstEntity));
 
+    (*pstEntity)->dVelocityY     = 0.f;
     (*pstEntity)->stBB.dBottom   = 0;
     (*pstEntity)->stBB.dLeft     = 0;
     (*pstEntity)->stBB.dRight    = 0;
@@ -130,50 +213,6 @@ int InitSprite(
     return 0;
 }
 
-int DrawEntity(
-    Entity       **pstEntity,
-    Camera       **pstCamera,
-    Sprite       **pstSprite,
-    SDL_Renderer **pstRenderer)
-{
-    double           dPosX  = (*pstEntity)->dPosX - (*pstCamera)->dPosX;
-    double           dPosY  = (*pstEntity)->dPosY - (*pstCamera)->dPosY;
-    SDL_RendererFlip s8Flip = SDL_FLIP_NONE;
-    SDL_Rect         stDst;
-    SDL_Rect         stSrc;
-
-    if (IS_SET((*pstEntity)->u16Flags, IS_FLIPPED))
-    {
-        s8Flip = SDL_FLIP_HORIZONTAL;
-    }
-
-    stSrc.x  = (*pstSprite)->u16ImageOffsetX;
-    stSrc.x += (*pstEntity)->u8FrameOffsetX * (*pstEntity)->u8Width;
-    stSrc.x += (*pstEntity)->u8AnimFrame * (*pstEntity)->u8Width;
-    stSrc.y  = (*pstSprite)->u16ImageOffsetY;
-    stSrc.y += (*pstEntity)->u8FrameOffsetY * (*pstEntity)->u8Height;
-    stSrc.w  = (*pstEntity)->u8Width;
-    stSrc.h  = (*pstEntity)->u8Height;
-    stDst.x  = dPosX - ((*pstEntity)->u8Width  / 2);
-    stDst.y  = dPosY - ((*pstEntity)->u8Height / 2);
-    stDst.w  = (*pstEntity)->u8Width;
-    stDst.h  = (*pstEntity)->u8Height;
-
-    if (0 != SDL_RenderCopyEx(
-            (*pstRenderer),
-            (*pstSprite)->pstTexture,
-            &stSrc,
-            &stDst,
-            0,
-            NULL,
-            s8Flip))
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        return -1;
-    }
-    return 0;
-}
-
 void SetCameraTargetEntity(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
@@ -222,29 +261,30 @@ void SetCameraBoundariesToMapSize(
         (*pstCamera)->s32MaxPosX = u32MapWidth  - s32WindowWidth  / dZoomLevel;
         (*pstCamera)->s32MaxPosY = u32MapHeight - s32WindowHeight / dZoomLevel;
 
-        if ((*pstCamera)->dPosX < 0)
-        {
-            (*pstCamera)->dPosX = 0;
-        }
-
-        if ((*pstCamera)->dPosY < 0)
-        {
-            (*pstCamera)->dPosY = 0;
-        }
-
-        if ((*pstCamera)->dPosX > (*pstCamera)->s32MaxPosX)
-        {
-            (*pstCamera)->dPosX = (*pstCamera)->s32MaxPosX;
-        }
-
-        if ((*pstCamera)->dPosY > (*pstCamera)->s32MaxPosY)
-        {
-            (*pstCamera)->dPosY = (*pstCamera)->s32MaxPosY;
-        }
         SDL_Log(
             "Set camera boundaries to map size (x: %d y: %d).\n",
             (*pstCamera)->s32MaxPosX,
             (*pstCamera)->s32MaxPosY);
+    }
+
+    if ((*pstCamera)->dPosX < 0)
+    {
+        (*pstCamera)->dPosX = 0;
+    }
+
+    if ((*pstCamera)->dPosY < 0)
+    {
+        (*pstCamera)->dPosY = 0;
+    }
+
+    if ((*pstCamera)->dPosX > (*pstCamera)->s32MaxPosX)
+    {
+        (*pstCamera)->dPosX = (*pstCamera)->s32MaxPosX;
+    }
+
+    if ((*pstCamera)->dPosY > (*pstCamera)->s32MaxPosY)
+    {
+        (*pstCamera)->dPosY = (*pstCamera)->s32MaxPosY;
     }
 }
 
@@ -266,13 +306,30 @@ void SetPosition(
     (*pstEntity)->dPosY = dPosY;
 }
 
-void UpdateEntity(const double dDeltaTime, Entity **pstEntity)
+void UpdateEntity(
+    const double dDeltaTime,
+    const double dGravitation,
+    Entity **pstEntity)
 {
+    // Apply gravitation.
+    if (IS_SET((*pstEntity)->u16Flags, IN_MID_AIR))
+    {
+        double dG                 = dGravitation * METER_IN_PIXEL;
+        double dDistanceY         = dG * dDeltaTime * dDeltaTime;
+        (*pstEntity)->dVelocityY += dDistanceY;
+        (*pstEntity)->dPosY      += (*pstEntity)->dVelocityY;
+    }
+    else
+    {
+        (*pstEntity)->dVelocityY = 0.f;
+        (*pstEntity)->dPosY      = (*pstEntity)->dPosY;
+    }
+
     // Update bounding box.
-    (*pstEntity)->stBB.dBottom = (*pstEntity)->dPosY + (*pstEntity)->u8Height;
-    (*pstEntity)->stBB.dLeft   = (*pstEntity)->dPosX;
-    (*pstEntity)->stBB.dRight  = (*pstEntity)->dPosX + (*pstEntity)->u8Width;
-    (*pstEntity)->stBB.dTop    = (*pstEntity)->dPosY;
+    (*pstEntity)->stBB.dBottom  = (*pstEntity)->dPosY + (*pstEntity)->u8Height;
+    (*pstEntity)->stBB.dLeft    = (*pstEntity)->dPosX;
+    (*pstEntity)->stBB.dRight   = (*pstEntity)->dPosX + (*pstEntity)->u8Width;
+    (*pstEntity)->stBB.dTop     = (*pstEntity)->dPosY;
 
     // Update animation frame.
     if (IS_SET((*pstEntity)->u16Flags, IS_MOVING))

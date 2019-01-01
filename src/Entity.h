@@ -6,8 +6,9 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-#define IS_FLIPPED 0
-#define IS_MOVING  1
+#define IN_MID_AIR 0
+#define IS_FLIPPED 1
+#define IS_MOVING  2
 
 #include <stdint.h>
 #include "AABB.h"
@@ -26,6 +27,7 @@ typedef struct Entity_t
     uint16_t u16Flags;
     double   dPosX;
     double   dPosY;
+    double   dVelocityY;
     uint8_t  u8Width;
     uint8_t  u8Height;
     uint8_t  u8FrameOffsetX;
@@ -44,6 +46,19 @@ typedef struct Sprite_t
     uint16_t     u16ImageOffsetX;
     uint16_t     u16ImageOffsetY;
 } Sprite;
+
+void ConnectHorizontalMapEndsForEntity(
+    const uint32_t  u32MapWidth,
+    Entity        **pstEntity);
+
+void ConnectMapEndsForEntity(
+    const uint32_t  u32MapWidth,
+    const uint32_t  u32MapHeight,
+    Entity        **pstEntity);
+
+void ConnectVerticalMapEndsForEntity(
+    const uint32_t  u32MapHeight,
+    Entity        **pstEntity);
 
 int DrawEntity(
     Entity       **pstEntity,
@@ -100,6 +115,9 @@ void SetPosition(
     const double  dPosY,
     Entity      **pstEntity);
 
-void UpdateEntity(const double dDeltaTime, Entity **pstEntity);
+void UpdateEntity(
+    const double dDeltaTime,
+    const double dGravitation,
+    Entity **pstEntity);
 
 #endif // _ENTITY_H_

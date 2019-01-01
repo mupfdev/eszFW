@@ -16,7 +16,7 @@
 
 static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
 {
-    if (0 == strcmp(pProperty->name, "Gravitation"))
+    if (0 == strncmp(pProperty->name, "Gravitation", 11))
     {
         if (PT_FLOAT == pProperty->type)
         {
@@ -211,21 +211,21 @@ int InitMap(const char *pacFileName, Map **pstMap)
     return 0;
 }
 
-bool IsMapTileOfType(
+bool IsMapCoordOfType(
     const char *pacType,
-    const Map **pstMap,
     double      dPosX,
-    double      dPosY)
+    double      dPosY,
+    Map       **pstMap)
 {
     tmx_layer *pstLayers;
-    dPosX /= (*pstMap)->pstTmxMap->tile_width;
-    dPosY /= (*pstMap)->pstTmxMap->tile_height;
+    dPosX /= (double)(*pstMap)->pstTmxMap->tile_width;
+    dPosY /= (double)(*pstMap)->pstTmxMap->tile_height;
 
     // Set boundaries to prevent segfault.
-    if ( (dPosX < 0) ||
-         (dPosY < 0) ||
-         (dPosX > (*pstMap)->pstTmxMap->width) ||
-         (dPosY > (*pstMap)->pstTmxMap->height) )
+    if ( (dPosX < 0.0) ||
+         (dPosY < 0.0) ||
+         (dPosX > (double)(*pstMap)->pstTmxMap->width) ||
+         (dPosY > (double)(*pstMap)->pstTmxMap->height) )
     {
         return false;
     }
@@ -233,22 +233,41 @@ bool IsMapTileOfType(
     pstLayers = (*pstMap)->pstTmxMap->ly_head;
     while(pstLayers)
     {
-        uint16_t u16Gid =
-            pstLayers->content.gids[
-                ((int32_t)dPosY * (*pstMap)->pstTmxMap->width) + (int32_t)dPosX
-                ] & TMX_FLIP_BITS_REMOVAL;
+        uint16_t u16TsTileCount = (*pstMap)->pstTmxMap->tilecount - 1;
+        uint16_t u16Gid         = pstLayers->content.gids[
+            ((int32_t)dPosY * (*pstMap)->pstTmxMap->width) + (int32_t)dPosX
+            ] & TMX_FLIP_BITS_REMOVAL;
+
+        if (u16Gid > u16TsTileCount)
+        {
+            return false;
+        }
 
         if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid])
         {
             if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid]->type)
             {
-                if (0 == strcmp(pacType, (*pstMap)->pstTmxMap->tiles[u16Gid]->type))
+                if (0 == strncmp(pacType, (*pstMap)->pstTmxMap->tiles[u16Gid]->type, 15))
                 {
                     return true;
                 }
             }
         }
         pstLayers = pstLayers->next;
+    }
+
+    return false;
+}
+
+bool IsOnPlatform(
+    const double  dPosX,
+    const double  dPosY,
+    const double  dOffsetY,
+    Map         **pstMap)
+{
+    if (IsMapCoordOfType("Platform", dPosX, dPosY + dOffsetY, &(*pstMap)))
+    {
+        return true;
     }
 
     return false;
@@ -274,5 +293,8 @@ void SetGravitation(
         (*pstMap)->dGravitation = dGravitation;
     }
 
-    SDL_Log("Set gravitational constant to %f tile/s^2.\n", (*pstMap)->dGravitation);
+    SDL_Log(
+        "Set gravitational constant to %f (g*%dpx/s^2).\n",
+        (*pstMap)->dGravitation,
+        METER_IN_PIXEL);
 }
