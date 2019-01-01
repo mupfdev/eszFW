@@ -90,7 +90,9 @@ int InitVideo(
         &(*pstVideo)->s32WindowWidth,
         &(*pstVideo)->s32WindowHeight);
 
-    (*pstVideo)->dZoomLevel  = (*pstVideo)->s32WindowHeight / 240;
+    (*pstVideo)->dZoomLevel        = (*pstVideo)->s32WindowHeight / s32WindowHeight;
+    (*pstVideo)->dInitialZoomLevel = (*pstVideo)->dZoomLevel;
+
     (*pstVideo)->pstRenderer = SDL_CreateRenderer(
         (*pstVideo)->pstWindow,
         -1,

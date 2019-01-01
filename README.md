@@ -79,6 +79,9 @@ nix-shell --command make
 ## Controls
 
 ```
+0        reset zoom
+1        zoom out
+2        zoom in
 D        hide debug information
 LSHIFT+D show debug information
 Q:       quit

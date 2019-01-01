@@ -17,6 +17,7 @@ typedef struct Video_t
     int32_t       s32WindowHeight;
     int32_t       s32WindowWidth;
     double        dZoomLevel;
+    double        dInitialZoomLevel;
 } Video;
 
 void FreeVideo(Video **pstVideo);

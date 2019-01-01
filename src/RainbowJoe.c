@@ -81,6 +81,19 @@ int InitGame()
             if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = false; }
         }
 
+        if (pu8KeyState[SDL_SCANCODE_0])
+        {
+            SetZoomLevel(pstVideo->dInitialZoomLevel, &pstVideo);
+        }
+        if (pu8KeyState[SDL_SCANCODE_1])
+        {
+            SetZoomLevel(pstVideo->dZoomLevel - 0.01, &pstVideo);
+        }
+        if (pu8KeyState[SDL_SCANCODE_2])
+        {
+            SetZoomLevel(pstVideo->dZoomLevel + 0.01, &pstVideo);
+        }
+
         if (pu8KeyState[SDL_SCANCODE_LEFT])
         {
             SET(pstPlayer->u16Flags, IS_WALKING);
