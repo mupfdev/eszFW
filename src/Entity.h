@@ -6,19 +6,27 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-#define IN_MID_AIR 0
-#define IS_FLIPPED 1
-#define IS_MOVING  2
+#define IS_DEAD       0
+#define IS_IN_MID_AIR 1
+#define IS_JUMPING    2
+#define IS_LOCKED     3
+#define IS_MOVING     4
+#define IS_WALKING    5
 
+#define RIGHT         0
+#define LEFT          1
+
+#include <stdbool.h>
 #include <stdint.h>
 #include "AABB.h"
 
 typedef struct Camera_t
 {
-    double  dPosX;
-    double  dPosY;
-    int32_t s32MaxPosX;
-    int32_t s32MaxPosY;
+    uint16_t u16Flags;
+    double   dPosX;
+    double   dPosY;
+    int32_t  s32MaxPosX;
+    int32_t  s32MaxPosY;
 } Camera;
 
 typedef struct Entity_t
@@ -27,6 +35,10 @@ typedef struct Entity_t
     uint16_t u16Flags;
     double   dPosX;
     double   dPosY;
+    bool     bOrientation;
+    double   dAcceleration;
+    double   dVelocityX;
+    double   dMaxVelocityX;
     double   dVelocityY;
     uint8_t  u8Width;
     uint8_t  u8Height;
@@ -48,16 +60,16 @@ typedef struct Sprite_t
 } Sprite;
 
 void ConnectHorizontalMapEndsForEntity(
-    const uint32_t  u32MapWidth,
+    const uint16_t  u16MapWidth,
     Entity        **pstEntity);
 
 void ConnectMapEndsForEntity(
-    const uint32_t  u32MapWidth,
-    const uint32_t  u32MapHeight,
+    const uint16_t  u16MapWidth,
+    const uint16_t  u16MapHeight,
     Entity        **pstEntity);
 
 void ConnectVerticalMapEndsForEntity(
-    const uint32_t  u32MapHeight,
+    const uint16_t  u16MapHeight,
     Entity        **pstEntity);
 
 int DrawEntity(
@@ -89,8 +101,8 @@ void SetCameraBoundariesToMapSize(
     const int32_t   s32WindowWidth,
     const int32_t   s32WindowHeight,
     const double    dZoomLevel,
-    const uint32_t  u32MapWidth,
-    const uint32_t  u32MapHeight,
+    const uint16_t  u16MapWidth,
+    const uint16_t  u16MapHeight,
     Camera        **pstCamera);
 
 void SetCameraTargetEntity(
@@ -110,9 +122,16 @@ void SetFrameOffset(
     const uint8_t  u8OffsetY,
     Entity       **pstEntity);
 
+void SetOrientation(const bool bOrientation, Entity **pstEntity);
+
 void SetPosition(
     const double  dPosX,
     const double  dPosY,
+    Entity      **pstEntity);
+
+void SetSpeed(
+    const double  dAcceleration,
+    const double  dMaxVelocityX,
     Entity      **pstEntity);
 
 void UpdateEntity(

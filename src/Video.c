@@ -8,6 +8,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include "Video.h"
 
@@ -17,14 +18,17 @@ void FreeVideo(Video **pstVideo)
     SDL_DestroyRenderer((*pstVideo)->pstRenderer);
     SDL_DestroyWindow((*pstVideo)->pstWindow);
     free(*pstVideo);
-    SDL_Log("Terminate full-screen window.\n");
+    SDL_Log("Terminate window.\n");
 }
 
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const bool    bFullscreen,
     Video **pstVideo)
 {
+    uint32_t  u32Flags = 0;
+
     *pstVideo = NULL;
     *pstVideo = malloc(sizeof(struct Video_t));
     if (NULL == *pstVideo)
@@ -54,14 +58,18 @@ int InitVideo(
         return -1;
     }
 
+    if (bFullscreen)
+    {
+        u32Flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+
     (*pstVideo)->pstWindow = SDL_CreateWindow(
         WINDOW_TITLE,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         (*pstVideo)->s32WindowWidth,
         (*pstVideo)->s32WindowHeight,
-        0);
-    //SDL_WINDOW_FULLSCREEN_DESKTOP);
+        u32Flags);
 
     if (NULL == (*pstVideo)->pstWindow)
     {
@@ -96,7 +104,7 @@ int InitVideo(
     }
 
     SDL_Log(
-        "Setting up full-screen window at resolution %dx%d.\n",
+        "Setting up window at resolution %dx%d.\n",
         (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
 
     SetZoomLevel((*pstVideo)->dZoomLevel, &(*pstVideo));
@@ -123,9 +131,7 @@ int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
 
     (*pstVideo)->dZoomLevel = dZoomLevel;
 
-    SDL_Log(
-        "Set video zoom-level to factor %f.\n",
-        dZoomLevel);
+    SDL_Log("Set video zoom-level to factor %f.\n", dZoomLevel);
 
     return 0;
 }

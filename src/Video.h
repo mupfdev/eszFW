@@ -24,9 +24,11 @@ void FreeVideo(Video **pstVideo);
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const bool    bFullscreen,
     Video **pstVideo);
 
 void RenderScene(SDL_Renderer **pstRenderer);
+int SetFullscreen(const bool dFullscreen, Video **pstVideo);
 int SetZoomLevel(const double dZoomLevel, Video **pstVideo);
 
 #endif // _VIDEO_H_

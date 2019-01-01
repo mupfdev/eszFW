@@ -10,6 +10,7 @@
 
 #include <SDL2/SDL.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,16 +26,17 @@
 
 int InitGame()
 {
-    int     sReturnValue   = 0;
-    Camera *pstCamera      = NULL;
-    Entity *pstPlayer      = NULL;
-    Font   *pstFont        = NULL;
-    Map    *pstMap         = NULL;
-    Sprite *pstSprite      = NULL;
-    Video  *pstVideo       = NULL;
-    double  dTimeA         = 0.f;
+    int     sReturnValue = 0;
+    Camera *pstCamera    = NULL;
+    Entity *pstPlayer    = NULL;
+    Font   *pstFont      = NULL;
+    Map    *pstMap       = NULL;
+    Sprite *pstSprite    = NULL;
+    Video  *pstVideo     = NULL;
+    bool    bDebug       = true;
+    double  dTimeA       = 0.f;
 
-    if (-1 == InitVideo(256, 240, &pstVideo))                  { QUIT(-1); }
+    if (-1 == InitVideo(256, 240, 1, &pstVideo))                  { QUIT(-1); }
     if (-1 == InitCamera(&pstCamera))                          { QUIT(-1); }
     if (-1 == InitEntity(72, 72, &pstPlayer))                  { QUIT(-1); }
     if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT(-1); }
@@ -64,22 +66,29 @@ int InitGame()
             goto quit;
         }
 
-        CLEAR(pstPlayer->u16Flags, IN_MID_AIR);
-        CLEAR(pstPlayer->u16Flags, IS_MOVING);
+        CLEAR(pstPlayer->u16Flags, IS_IN_MID_AIR);
+        CLEAR(pstPlayer->u16Flags, IS_WALKING);
+
+        if (pu8KeyState[SDL_SCANCODE_LSHIFT])
+        {
+            if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = true; }
+        }
+        else
+        {
+            if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = false; }
+        }
 
         if (pu8KeyState[SDL_SCANCODE_LEFT])
         {
-            SET(pstPlayer->u16Flags, IS_MOVING);
-            SET(pstPlayer->u16Flags, IS_FLIPPED);
+            SET(pstPlayer->u16Flags, IS_WALKING);
+            SetOrientation(LEFT, &pstPlayer);
             SetAnimation(0, 3, &pstPlayer);
-            pstPlayer->dPosX -= 75 * dDeltaTime;
         }
         if (pu8KeyState[SDL_SCANCODE_RIGHT])
         {
-            SET(pstPlayer->u16Flags, IS_MOVING);
-            CLEAR(pstPlayer->u16Flags, IS_FLIPPED);
+            SET(pstPlayer->u16Flags, IS_WALKING);
+            SetOrientation(RIGHT, &pstPlayer);
             SetAnimation(0, 3, &pstPlayer);
-            pstPlayer->dPosX += 75 * dDeltaTime;
         }
 
         SetCameraTargetEntity(
@@ -93,14 +102,14 @@ int InitGame()
             pstVideo->s32WindowWidth,
             pstVideo->s32WindowHeight,
             pstVideo->dZoomLevel,
-            pstMap->u32Width,
-            pstMap->u32Height,
+            pstMap->u16Width,
+            pstMap->u16Height,
             &pstCamera);
 
         // Set up collision detection.
         if (false == IsOnPlatform(pstPlayer->dPosX, pstPlayer->dPosY, 18.0, &pstMap))
         {
-            SET(pstPlayer->u16Flags, IN_MID_AIR);
+            SET(pstPlayer->u16Flags, IS_IN_MID_AIR);
         }
         UpdateEntity(dDeltaTime, pstMap->dGravitation, &pstPlayer);
 
@@ -111,7 +120,7 @@ int InitGame()
             QUIT(-1);
         }
 
-        ConnectMapEndsForEntity(pstMap->u32Width, pstMap->u32Height, &pstPlayer);
+        ConnectMapEndsForEntity(pstMap->u16Width, pstMap->u16Height, &pstPlayer);
         DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
 
         if (-1 == DrawMap(
@@ -121,11 +130,17 @@ int InitGame()
             QUIT(-1);
         }
 
-        PrintText("X: ", 8, 4,  &pstVideo->pstRenderer, &pstFont);
-        PrintText("Y: ", 8, 20, &pstVideo->pstRenderer, &pstFont);
-
-        PrintNumber((int32_t)round(pstPlayer->dPosX), 24,  4, &pstVideo->pstRenderer, &pstFont);
-        PrintNumber((int32_t)round(pstPlayer->dPosY), 24, 20, &pstVideo->pstRenderer, &pstFont);
+        if (bDebug)
+        {
+            PrintText("X:  ", 8, 4,  &pstVideo->pstRenderer, &pstFont);
+            PrintText("Y:  ", 8, 20, &pstVideo->pstRenderer, &pstFont);
+            PrintText("HV: ", 8, 36, &pstVideo->pstRenderer, &pstFont);
+            PrintText("VV: ", 8, 52, &pstVideo->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dPosX),      32,  4, &pstVideo->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dPosY),      32, 20, &pstVideo->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dVelocityX), 32, 36, &pstVideo->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dVelocityY), 32, 52, &pstVideo->pstRenderer, &pstFont);
+        }
 
         RenderScene(&pstVideo->pstRenderer);
     }

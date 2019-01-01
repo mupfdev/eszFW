@@ -76,6 +76,16 @@ If you're on NixOS enter:
 nix-shell --command make
 ```
 
+## Controls
+
+```
+D        hide debug information
+LSHIFT+D show debug information
+Q:       quit
+LEFT:    walk left
+RIGHT:   walk right
+```
+
 ## Licence and Credits
 
 This project is licenced under the "THE BEER-WARE LICENCE".  See the

@@ -16,12 +16,20 @@ typedef struct Map_t
 {
     tmx_map     *pstTmxMap;
     SDL_Texture *pstTexture[MAP_TEXTURES];
-    uint32_t     u32Height;
-    uint32_t     u32Width;
+    uint16_t     u16Height;
+    uint16_t     u16Width;
     double       dPosX;
     double       dPosY;
     double       dGravitation;
 } Map;
+
+typedef struct Object_t
+{
+    char   *pacName;
+    char   *pacType;
+    double  dPosX;
+    double  dPosY;
+} Object;
 
 int DrawMap(
     const char    *pacTilesetImageFileName,
@@ -34,6 +42,7 @@ int DrawMap(
     SDL_Renderer **pstRenderer);
 
 void FreeMap(Map **pstMap);
+uint16_t GetObjectCount(Map **pstMap);
 int InitMap(const char *pacFileName, Map **pstMap);
 
 bool IsMapCoordOfType(

@@ -14,6 +14,22 @@
 #include <tmx.h>
 #include "Map.h"
 
+static uint16_t _ClearGidFlags(uint16_t u16Gid)
+{
+    return u16Gid & TMX_FLIP_BITS_REMOVAL;
+}
+
+static void _GetObjectCount(tmx_object *pstObject, uint16_t **pu16ObjectCount)
+{
+    if (NULL != pstObject) {
+        (**pu16ObjectCount)++;
+    }
+
+    if (pstObject && pstObject->next) {
+        _GetObjectCount(pstObject->next, pu16ObjectCount);
+    }
+}
+
 static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
 {
     if (0 == strncmp(pProperty->name, "Gravitation", 11))
@@ -36,7 +52,7 @@ int DrawMap(
     SDL_Renderer **pstRenderer)
 {
     SDL_Texture *pstTileset = NULL;
-    tmx_layer   *pstLayers  = (*pstMap)->pstTmxMap->ly_head;
+    tmx_layer   *pstLayer   = (*pstMap)->pstTmxMap->ly_head;
 
     // The texture has already been rendered and can be drawn.
     if ((*pstMap)->pstTexture[u16Index])
@@ -107,41 +123,41 @@ int DrawMap(
             255);
     }
 
-    while(pstLayers)
+    while(pstLayer)
     {
-        uint32_t     u32Gid;
+        uint16_t     u16Gid;
         SDL_Rect     stDst;
         SDL_Rect     stSrc;
         tmx_tileset *pstTS;
 
-        if (L_LAYER == pstLayers->type)
+        if (L_LAYER == pstLayer->type)
         {
-            if ((pstLayers->visible) && (NULL != strstr(pstLayers->name, pacLayerName)))
+            if ((pstLayer->visible) && (NULL != strstr(pstLayer->name, pacLayerName)))
             {
-                for (uint32_t u32IndexH = 0; u32IndexH < (*pstMap)->pstTmxMap->height; u32IndexH++)
+                for (uint16_t u16IndexH = 0; u16IndexH < (*pstMap)->pstTmxMap->height; u16IndexH++)
                 {
-                    for (uint32_t u32IndexW = 0; u32IndexW < (*pstMap)->pstTmxMap->width; u32IndexW++)
+                    for (uint32_t u16IndexW = 0; u16IndexW < (*pstMap)->pstTmxMap->width; u16IndexW++)
                     {
-                        u32Gid = pstLayers->content.gids[
-                            (u32IndexH * (*pstMap)->pstTmxMap->width) + u32IndexW]
-                            & TMX_FLIP_BITS_REMOVAL;
-                        if (NULL != (*pstMap)->pstTmxMap->tiles[u32Gid])
+                        u16Gid = _ClearGidFlags(pstLayer->content.gids[
+                            (u16IndexH * (*pstMap)->pstTmxMap->width) + u16IndexW]);
+
+                        if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid])
                         {
-                            pstTS    = (*pstMap)->pstTmxMap->tiles[u32Gid]->tileset;
-                            stSrc.x  = (*pstMap)->pstTmxMap->tiles[u32Gid]->ul_x;
-                            stSrc.y  = (*pstMap)->pstTmxMap->tiles[u32Gid]->ul_y;
+                            pstTS    = (*pstMap)->pstTmxMap->tiles[u16Gid]->tileset;
+                            stSrc.x  = (*pstMap)->pstTmxMap->tiles[u16Gid]->ul_x;
+                            stSrc.y  = (*pstMap)->pstTmxMap->tiles[u16Gid]->ul_y;
                             stSrc.w  = stDst.w   = pstTS->tile_width;
                             stSrc.h  = stDst.h   = pstTS->tile_height;
-                            stDst.x  = u32IndexW * pstTS->tile_width;
-                            stDst.y  = u32IndexH * pstTS->tile_height;
+                            stDst.x  = u16IndexW * pstTS->tile_width;
+                            stDst.y  = u16IndexH * pstTS->tile_height;
                             SDL_RenderCopy((*pstRenderer), pstTileset, &stSrc, &stDst);
                         }
                     }
                 }
-                SDL_Log("Render TMX map layer: %s\n", pstLayers->name);
+                SDL_Log("Render TMX map layer: %s\n", pstLayer->name);
             }
         }
-        pstLayers = pstLayers->next;
+        pstLayer = pstLayer->next;
     }
 
     // Switch back to default render target.
@@ -168,12 +184,26 @@ void FreeMap(Map **pstMap)
     SDL_Log("Unload TMX map.\n");
 }
 
-/*
-int GetObjectCount(Map **pstMa)
+uint16_t GetObjectCount(Map **pstMap)
 {
-    // TODO
+    uint16_t   u16ObjectCount  = 0;
+    uint16_t  *pu16ObjectCount = &u16ObjectCount;
+    tmx_layer *pstLayer;
+
+    pstLayer = (*pstMap)->pstTmxMap->ly_head;
+    while(pstLayer)
+    {
+        if (L_OBJGR == pstLayer->type)
+        {
+            _GetObjectCount(pstLayer->content.objgr->head, &pu16ObjectCount);
+        }
+
+        pstLayer = pstLayer->next;
+
+    }
+
+    return u16ObjectCount;
 }
-*/
 
 int InitMap(const char *pacFileName, Map **pstMap)
 {
@@ -194,8 +224,8 @@ int InitMap(const char *pacFileName, Map **pstMap)
         return -1;
     }
 
-    (*pstMap)->u32Height    = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
-    (*pstMap)->u32Width     = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
+    (*pstMap)->u16Height    = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
+    (*pstMap)->u16Width     = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
     (*pstMap)->dPosX        = 0;
     (*pstMap)->dPosY        = 0;
     (*pstMap)->dGravitation = 0;
@@ -234,9 +264,8 @@ bool IsMapCoordOfType(
     while(pstLayers)
     {
         uint16_t u16TsTileCount = (*pstMap)->pstTmxMap->tilecount - 1;
-        uint16_t u16Gid         = pstLayers->content.gids[
-            ((int32_t)dPosY * (*pstMap)->pstTmxMap->width) + (int32_t)dPosX
-            ] & TMX_FLIP_BITS_REMOVAL;
+        uint16_t u16Gid         = _ClearGidFlags(pstLayers->content.gids[
+            ((int32_t)dPosY * (*pstMap)->pstTmxMap->width) + (int32_t)dPosX]);
 
         if (u16Gid > u16TsTileCount)
         {
@@ -247,12 +276,13 @@ bool IsMapCoordOfType(
         {
             if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid]->type)
             {
-                if (0 == strncmp(pacType, (*pstMap)->pstTmxMap->tiles[u16Gid]->type, 15))
+                if (0 == strncmp(pacType, (*pstMap)->pstTmxMap->tiles[u16Gid]->type, 20))
                 {
                     return true;
                 }
             }
         }
+
         pstLayers = pstLayers->next;
     }
 
