@@ -4,7 +4,7 @@
   <property name="Gravitation" type="float" value="9.80665"/>
  </properties>
  <tileset firstgid="1" source="../tilesets/tileset.tsx"/>
- <layer name="Tile Layer BG 1" width="120" height="50">
+ <layer name="Tile Layer BG 1" width="120" height="50" locked="1">
   <data encoding="base64" compression="zlib">
    eJztmjdvFFEURse7rgg2BRgbsAtiZzIS0AAiNsAPIHZkkIAGKEymAUFD7BywMfwCExeQQNAQGzA2wQWxMzmIs9I8MR5tYNez+2ZW35GOZjxraVbvzn3v3nnrOMWjC7vxVpnj3MYl5X19w2c9Rfw+IliqiWkN/sY/KeJby7W6MtvfUvSHo8TvWIrYHufaCcU28twhhnc98U245/c43ld8I49Zg7X2liZmDdbaWxxaY47TFsv/2I4XY7nd05/Dyt3+00wMWlLExwb+HLaVu+Y5m1/e12dce46dKT5TnZCZmTxTs3B27F9853A+F+cV+Xkzz5k/hkO5NgyrUnymOj8z24nhDtzpie8uznfjHgvzienXvDFcyt/LcLnnesI911qSGW//650HbeWF6df8eZpO1YGZ8fa/3nnQ1rrmzV/z3jRdbDU3Z8dbO3vnQVvznje+5r1puviqtspOqv43ubaFrYZW/uaPGdMw1Czpamjz3cJQI0QN/5jarlky5bC3RlDt/P+YMQ3DmKXLYX+vZPs5jBJmTMMyZqbOeksP/g7f4wf8iJ9impvzoToksU1i+rbRcccZg2NxHI7HCXHVzlHH5O8KYrkSV+FqXINr48rfIGnAvbgP9+MBPIiH8DAe8f1/Uyz9/km2fa9L7jtRk78nieUpPI1n8CyeU/4GSgdexit4Fa/hdbyBCbxZwHs/IJYP8RE+xif4NB6OOrBU6MXP+AW/4jf8jj/wJ/4q4L0HUDMPxEE4GCuwMgQ9XClRzzhOxEk4GafgVJyG03FGAcc52RMtwIW4CBdrzyhw1hG/9bgBN+Im3IxbcCtuK3IeKXeDpZGxbMJmbMHz2IpteAHbNdaRppP4vcAu7MaX+ApfJ98RYo/iG2mq6FmGYzXW4AgciaOwFuss/W5MCCGEEEIIIYQIigp620ocoh7XKg3uMZd9WhEdOtyjrX1aUVh63aOtfVpRWOrdd/y29mlF4QnbPq0IjkY3dtqnLU063dhpn7Y0qXL703z2afP5PWuuv3cVQgghhBBCiFz5C6N+EOs=
   </data>
