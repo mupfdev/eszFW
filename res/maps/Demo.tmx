@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="right-down" width="120" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#a1f2ec" nextobjectid="2">
+<map version="1.0" tiledversion="1.1.6" orientation="orthogonal" renderorder="right-down" width="120" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#a1f2ec" nextobjectid="16">
  <properties>
   <property name="Gravitation" type="float" value="9.80665"/>
  </properties>
@@ -30,7 +30,7 @@
   </data>
  </layer>
  <objectgroup name="Object Layer 1">
-  <object id="1" name="Player" x="912" y="288">
+  <object id="14" name="Player" x="1040" y="33">
    <point/>
   </object>
  </objectgroup>

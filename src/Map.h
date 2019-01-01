@@ -25,8 +25,6 @@ typedef struct Map_t
 
 typedef struct Object_t
 {
-    char   *pacName;
-    char   *pacType;
     double  dPosX;
     double  dPosY;
 } Object;
@@ -42,8 +40,16 @@ int DrawMap(
     SDL_Renderer **pstRenderer);
 
 void FreeMap(Map **pstMap);
+void FreeObject(Object **pstObject);
+
+void GetSingleObjectByName(
+    const char *pacName,
+    Map       **pstMap,
+    Object    **pstObject);
+
 uint16_t GetObjectCount(Map **pstMap);
 int InitMap(const char *pacFileName, Map **pstMap);
+int InitObject(Object **pstObject);
 
 bool IsMapCoordOfType(
     const char *pacType,

@@ -31,18 +31,21 @@ int InitGame()
     Entity *pstPlayer    = NULL;
     Font   *pstFont      = NULL;
     Map    *pstMap       = NULL;
+    Object *pstPlrSpawn  = NULL;
     Sprite *pstSprite    = NULL;
     Video  *pstVideo     = NULL;
     bool    bDebug       = true;
     double  dTimeA       = 0.f;
 
-    if (-1 == InitVideo(256, 240, 1, &pstVideo))                  { QUIT(-1); }
+    if (-1 == InitVideo(256, 240, false, &pstVideo))           { QUIT(-1); }
     if (-1 == InitCamera(&pstCamera))                          { QUIT(-1); }
-    if (-1 == InitEntity(72, 72, &pstPlayer))                  { QUIT(-1); }
+    if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT(-1); }
     if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT(-1); }
+    if (-1 == InitObject(&pstPlrSpawn))                        { QUIT(-1); }
     if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont)) { QUIT(-1); }
 
-    SetPosition(16, 16, &pstPlayer);
+    GetSingleObjectByName("Player", &pstMap, &pstPlrSpawn);
+    SetPosition(pstPlrSpawn->dPosX, pstPlrSpawn->dPosY, &pstPlayer);
     SetFrameOffset(0, 2, &pstPlayer);
     SetFontColour(255, 255, 255, &pstFont);
 
@@ -148,6 +151,7 @@ int InitGame()
 quit:
     FreeSprite(&pstSprite);
     FreeFont(&pstFont);
+    FreeObject(&pstPlrSpawn);
     FreeMap(&pstMap);
     FreeVideo(&pstVideo);
     return sReturnValue;

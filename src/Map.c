@@ -19,13 +19,34 @@ static uint16_t _ClearGidFlags(uint16_t u16Gid)
     return u16Gid & TMX_FLIP_BITS_REMOVAL;
 }
 
+static void _FindObjectByName(
+    const char *pacName,
+    tmx_object *pstTmxObject,
+    Object    **pstObject)
+{
+    if (NULL != pstObject)
+    {
+        if (0 == strncmp(pacName, pstTmxObject->name, 20))
+        {
+            (*pstObject)->dPosX = pstTmxObject->x;
+            (*pstObject)->dPosY = pstTmxObject->y;
+        }
+        else if (pstTmxObject && pstTmxObject->next)
+        {
+            _FindObjectByName(pacName, pstTmxObject->next, pstObject);
+        }
+    }
+}
+
 static void _GetObjectCount(tmx_object *pstObject, uint16_t **pu16ObjectCount)
 {
-    if (NULL != pstObject) {
+    if (NULL != pstObject)
+    {
         (**pu16ObjectCount)++;
     }
 
-    if (pstObject && pstObject->next) {
+    if (pstObject && pstObject->next)
+    {
         _GetObjectCount(pstObject->next, pu16ObjectCount);
     }
 }
@@ -184,6 +205,30 @@ void FreeMap(Map **pstMap)
     SDL_Log("Unload TMX map.\n");
 }
 
+void FreeObject(Object **pstObject)
+{
+    free(*pstObject);
+}
+
+void GetSingleObjectByName(
+    const char *pacName,
+    Map       **pstMap,
+    Object    **pstObject)
+{
+    tmx_layer *pstLayer;
+
+    pstLayer = (*pstMap)->pstTmxMap->ly_head;
+    while(pstLayer)
+    {
+        if (L_OBJGR == pstLayer->type)
+        {
+            _FindObjectByName(pacName, pstLayer->content.objgr->head, &(*pstObject));
+        }
+
+        pstLayer = pstLayer->next;
+    }
+}
+
 uint16_t GetObjectCount(Map **pstMap)
 {
     uint16_t   u16ObjectCount  = 0;
@@ -226,9 +271,9 @@ int InitMap(const char *pacFileName, Map **pstMap)
 
     (*pstMap)->u16Height    = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
     (*pstMap)->u16Width     = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
-    (*pstMap)->dPosX        = 0;
-    (*pstMap)->dPosY        = 0;
-    (*pstMap)->dGravitation = 0;
+    (*pstMap)->dPosX        = 0.f;
+    (*pstMap)->dPosY        = 0.f;
+    (*pstMap)->dGravitation = 0.f;
 
     for (uint16_t u16Index = 0; u16Index < MAP_TEXTURES; u16Index++)
     {
@@ -237,6 +282,23 @@ int InitMap(const char *pacFileName, Map **pstMap)
 
     SDL_Log("Load TMX map file: %s.\n", pacFileName);
     SetGravitation(0, true, pstMap);
+
+    return 0;
+}
+
+int InitObject(Object **pstObject)
+{
+    *pstObject = malloc(sizeof(struct Object_t));
+    if (NULL == *pstObject)
+    {
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION,
+            "InitObject(): error allocating memory.\n");
+        return -1;
+    }
+
+    (*pstObject)->dPosX = 0.f;
+    (*pstObject)->dPosY = 0.f;
 
     return 0;
 }
