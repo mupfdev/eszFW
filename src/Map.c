@@ -325,7 +325,7 @@ bool IsMapCoordOfType(
     pstLayers = (*pstMap)->pstTmxMap->ly_head;
     while(pstLayers)
     {
-        uint16_t u16TsTileCount = (*pstMap)->pstTmxMap->tilecount - 1;
+        uint16_t u16TsTileCount = (*pstMap)->pstTmxMap->tiles[1]->tileset->tilecount;
         uint16_t u16Gid         = _ClearGidFlags(pstLayers->content.gids[
             ((int32_t)dPosY * (*pstMap)->pstTmxMap->width) + (int32_t)dPosX]);
 
