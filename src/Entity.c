@@ -8,6 +8,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "AABB.h"
@@ -354,7 +355,8 @@ void UpdateEntity(
     else
     {
         (*pstEntity)->dVelocityY = 0.f;
-        dPosY                    = (*pstEntity)->dPosY;
+        uint8_t u8Correction     = (*pstEntity)->u8Height / 2;
+        dPosY                    = (u8Correction * round((*pstEntity)->dPosY / u8Correction));
     }
 
     // Calculate horizontal velocity.
