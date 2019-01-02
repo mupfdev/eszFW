@@ -16,6 +16,16 @@
 #include "Entity.h"
 #include "Macros.h"
 
+static bool _IsEntityJumping(Entity **pstEntity)
+{
+    if (0.0 > (*pstEntity)->dVelocityY)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 void ConnectHorizontalMapEndsForEntity(
     const uint16_t  u16MapWidth,
     Entity        **pstEntity)
@@ -344,9 +354,30 @@ void UpdateEntity(
     double dPosX = (*pstEntity)->dPosX;
     double dPosY = (*pstEntity)->dPosY;
 
+    // Jump.
+    if (IS_NOT_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
+    {
+        if (IS_SET((*pstEntity)->u16Flags, IS_JUMPING))
+        {
+            CLEAR((*pstEntity)->u16Flags, IS_JUMPING);
+            SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
+            (*pstEntity)->dVelocityY = -2.0;
+
+            if (_IsEntityJumping(&(*pstEntity)))
+            {
+                SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
+            }
+        }
+    }
+
     // Apply gravitation.
     if (IS_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
     {
+        if (false == _IsEntityJumping(&(*pstEntity)))
+        {
+            CLEAR((*pstEntity)->u16Flags, IS_JUMPING);
+        }
+
         double dG                 = dGravitation * METER_IN_PIXEL;
         double dDistanceY         = dG * dDeltaTime * dDeltaTime;
         (*pstEntity)->dVelocityY += dDistanceY;

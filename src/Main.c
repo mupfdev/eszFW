@@ -9,13 +9,9 @@
 
 int main()
 {
-    int sMainStatus = EXIT_SUCCESS;
-
-    if (-1 == InitGame())
-    {
-        sMainStatus = EXIT_FAILURE;
-    }
+    int sExecStatus;
+    sExecStatus = InitGame();
 
     QuitGame();
-    return sMainStatus;
+    return sExecStatus;
 }

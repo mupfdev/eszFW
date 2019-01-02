@@ -2,12 +2,11 @@
 
 ## About
 
-eszFW is a simple framework with the intention to simplify game
-development in C.  Furthermore, this project is the logical continuation
-of my older projects [Rainbow
-Joe](https://github.com/mupfelofen-de/rainbow-joe) and [Boondock
-Sam](https://github.com/mupfelofen-de/boondock-sam), which I wrote to
-familiarise myself with the basics of game programming.
+eszFW is a framework with the intention to simplify game development in
+C.  Furthermore, this project is the logical continuation of my older
+projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
+[Boondock Sam](https://github.com/mupfelofen-de/boondock-sam), which I
+wrote to familiarise myself with the basics of game programming.
 
 It is written in C using SDL2 and the [TMX Map
 Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
@@ -80,8 +79,8 @@ nix-shell --command make
 
 ```
 0        reset zoom
-1        zoom out
-2        zoom in
+1        zoom in
+2        zoom out
 D        hide debug information
 LSHIFT+D show debug information
 Q:       quit
