@@ -1,4 +1,4 @@
-/**
+B/**
  * @file RainbowJoe.c
  * @ingroup RainbowJoe
  * @defgroup RainbowJoe
@@ -29,6 +29,7 @@
 int InitGame()
 {
     int     sExecStatus = EXIT_SUCCESS;
+    bool    bPause      = false;
     Camera *pstCamera   = NULL;
     Entity *pstPlayer   = NULL;
     Font   *pstFont     = NULL;
@@ -36,10 +37,10 @@ int InitGame()
     Object *pstPlrSpawn = NULL;
     Sprite *pstSprite   = NULL;
     Video  *pstVideo    = NULL;
-    bool    bDebug      = true;
+    bool    bDebug      = false;
     double  dTimeA      = 0.f;
 
-    if (-1 == InitVideo(256, 240, false, &pstVideo))           { QUIT_FAILURE; }
+    if (-1 == InitVideo(640, 480, 240, false, &pstVideo))      { QUIT_FAILURE; }
     if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
     if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT_FAILURE; }
     if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT_FAILURE; }
@@ -64,7 +65,6 @@ int InitGame()
         double dTimeB;
         double dDeltaTime;
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
-        ResetEntity(&pstPlayer);
 
         const uint8_t *pu8KeyState;
         if (-1 == ReadInput(&pu8KeyState) || pu8KeyState[SDL_SCANCODE_Q])
@@ -72,20 +72,44 @@ int InitGame()
             QUIT_SUCCESS;
         }
 
-        if (pu8KeyState[SDL_SCANCODE_LSHIFT]) {
-            if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = true; }
+        if (bPause)
+        {
+            if (pu8KeyState[SDL_SCANCODE_ESCAPE]) { bPause = false; }
+            continue;
+        }
+
+        ResetEntity(&pstPlayer);
+
+        if (pu8KeyState[SDL_SCANCODE_D])      { bDebug = true; }
+        if (pu8KeyState[SDL_SCANCODE_ESCAPE]) { bDebug = false; }
+        if (pu8KeyState[SDL_SCANCODE_LEFT])   { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
+        if (pu8KeyState[SDL_SCANCODE_RIGHT])  { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
+        if (pu8KeyState[SDL_SCANCODE_P])
+        {
+            PrintText("PAUSE", 8, 4,  &pstVideo->pstRenderer, &pstFont);
+            bPause = true;
+        }
+
+        // Set zoom level dynamically in relation to vertical velocity.
+        if (0.0 < pstPlayer->dVelocityY)
+        {
+            pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
+            if (1.0 > pstVideo->dZoomLevel)
+            {
+                pstVideo->dZoomLevel = 1;
+            }
         }
         else
         {
-            if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = false; }
+            pstVideo->dZoomLevel += dDeltaTime / 1.75f;
+            if (pstVideo->dZoomLevel > pstVideo->dInitialZoomLevel)
+            {
+                pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
+            }
         }
+        SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
 
-        if (pu8KeyState[SDL_SCANCODE_0]) { SetZoomLevel(pstVideo->dInitialZoomLevel, &pstVideo); }
-        if (pu8KeyState[SDL_SCANCODE_1]) { SetZoomLevel(pstVideo->dZoomLevel + 0.01, &pstVideo); }
-        if (pu8KeyState[SDL_SCANCODE_2]) { SetZoomLevel(pstVideo->dZoomLevel - 0.01, &pstVideo); }
-        if (pu8KeyState[SDL_SCANCODE_LEFT])  { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
-        if (pu8KeyState[SDL_SCANCODE_RIGHT]) { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
-
+        // Follow player entity and set camera boudnaries to map size.
         SetCameraTargetEntity(
             pstVideo->s32WindowWidth,
             pstVideo->s32WindowHeight,
@@ -126,7 +150,7 @@ int InitGame()
             QUIT_FAILURE;
         }
 
-        if (bDebug)
+        if (bDebug && false == bPause)
         {
             PrintText("X:  ", 8, 4,  &pstVideo->pstRenderer, &pstFont);
             PrintText("Y:  ", 8, 20, &pstVideo->pstRenderer, &pstFont);

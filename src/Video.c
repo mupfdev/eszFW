@@ -24,6 +24,7 @@ void FreeVideo(Video **pstVideo)
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const int32_t s32LogicalWindowHeight,
     const bool    bFullscreen,
     Video       **pstVideo)
 {
@@ -90,7 +91,8 @@ int InitVideo(
         &(*pstVideo)->s32WindowWidth,
         &(*pstVideo)->s32WindowHeight);
 
-    (*pstVideo)->dZoomLevel        = (*pstVideo)->s32WindowHeight / s32WindowHeight;
+    (*pstVideo)->dZoomLevel =
+        (double)(*pstVideo)->s32WindowHeight / (double)s32LogicalWindowHeight;
     (*pstVideo)->dInitialZoomLevel = (*pstVideo)->dZoomLevel;
 
     (*pstVideo)->pstRenderer = SDL_CreateRenderer(
@@ -110,6 +112,7 @@ int InitVideo(
         (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
 
     SetZoomLevel((*pstVideo)->dZoomLevel, &(*pstVideo));
+    SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
 
     return 0;
 }
@@ -131,9 +134,13 @@ int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
         return -1;
     }
 
+    #ifdef DEBUG
+    if (dZoomLevel != (*pstVideo)->dZoomLevel)
+    {
+        SDL_Log("Set zoom-level to factor %f.\n", dZoomLevel);
+    }
+    #endif
+
     (*pstVideo)->dZoomLevel = dZoomLevel;
-
-    SDL_Log("Set video zoom-level to factor %f.\n", dZoomLevel);
-
     return 0;
 }

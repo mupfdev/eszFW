@@ -25,6 +25,7 @@ void FreeVideo(Video **pstVideo);
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const int32_t s32LogicalWindowHeight,
     const bool    bFullscreen,
     Video       **pstVideo);
 
