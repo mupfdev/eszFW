@@ -1,4 +1,4 @@
-B/**
+/**
  * @file RainbowJoe.c
  * @ingroup RainbowJoe
  * @defgroup RainbowJoe
