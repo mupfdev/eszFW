@@ -16,19 +16,15 @@
 #include "Entity.h"
 #include "Macros.h"
 
-static bool _IsEntityJumping(Entity **pstEntity)
-{
-    if (0.0 > (*pstEntity)->dVelocityY)
-    {
-        return true;
-    }
-
-    return false;
-}
+#define IS_DEAD       0
+#define IS_IN_MID_AIR 1
+#define IS_LOCKED     2
+#define IS_MOVING     3
+#define IS_WALKING    4
 
 void ConnectHorizontalMapEndsForEntity(
-    const uint16_t  u16MapWidth,
-    Entity        **pstEntity)
+    const uint16_t u16MapWidth,
+    Entity       **pstEntity)
 {
     if ((*pstEntity)->dPosX < 0)
     {
@@ -41,17 +37,17 @@ void ConnectHorizontalMapEndsForEntity(
 }
 
 void ConnectMapEndsForEntity(
-    const uint16_t  u16MapWidth,
-    const uint16_t  u16MapHeight,
-    Entity        **pstEntity)
+    const uint16_t u16MapWidth,
+    const uint16_t u16MapHeight,
+    Entity       **pstEntity)
 {
     ConnectHorizontalMapEndsForEntity(u16MapWidth, pstEntity);
     ConnectVerticalMapEndsForEntity(u16MapHeight, pstEntity);
 }
 
 void ConnectVerticalMapEndsForEntity(
-    const uint16_t  u16MapHeight,
-    Entity        **pstEntity)
+    const uint16_t u16MapHeight,
+    Entity       **pstEntity)
 {
     if ((*pstEntity)->dPosY < 0)
     {
@@ -105,6 +101,11 @@ int DrawEntity(
         return -1;
     }
     return 0;
+}
+
+void Drop(Entity **pstEntity)
+{
+    SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
 }
 
 void FreeCamera(Camera **pstCamera)
@@ -168,6 +169,7 @@ int InitEntity(
     SetPosition(dPosX, dPosY, &(*pstEntity));
     SetSpeed(8.0, 4.5, &(*pstEntity));
     SetOrientation(RIGHT, &(*pstEntity));
+    SetAnimation(0, 0, &(*pstEntity));
 
     (*pstEntity)->dVelocityX     =  0.f;
     (*pstEntity)->dVelocityY     =  0.f;
@@ -180,8 +182,6 @@ int InitEntity(
     (*pstEntity)->u8Height       = 32;
     (*pstEntity)->u8FrameOffsetX =  0;
     (*pstEntity)->u8AnimFrame    =  0;
-    (*pstEntity)->u8AnimStart    =  0;
-    (*pstEntity)->u8AnimEnd      =  0;
     (*pstEntity)->dAnimDelay     =  0.f;
 
     return 0;
@@ -229,12 +229,32 @@ int InitSprite(
     return 0;
 }
 
+void Move(
+    const bool    bOrientation,
+    const double  dAcceleration,
+    const double  dMaxVelocityX,
+    const uint8_t u8AnimStart,
+    const uint8_t u8AnimEnd,
+    Entity      **pstEntity)
+{
+    SET((*pstEntity)->u16Flags, IS_WALKING);
+    SetSpeed(dAcceleration, dMaxVelocityX, &(*pstEntity));
+    SetOrientation(bOrientation, &(*pstEntity));
+    SetAnimation(u8AnimStart, u8AnimEnd, &(*pstEntity));
+}
+
+void ResetEntity(Entity **pstEntity)
+{
+    CLEAR((*pstEntity)->u16Flags, IS_WALKING);
+    CLEAR((*pstEntity)->u16Flags, IS_IN_MID_AIR);
+}
+
 void SetCameraTargetEntity(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const double  dZoomLevel,
-    Camera       **pstCamera,
-    Entity       **pstEntity)
+    Camera      **pstCamera,
+    Entity      **pstEntity)
 {
     if (IS_NOT_SET((*pstCamera)->u16Flags, IS_LOCKED))
     {
@@ -251,9 +271,9 @@ void SetCameraTargetEntity(
 }
 
 void SetAnimation(
-    const uint8_t  u8AnimStart,
-    const uint8_t  u8AnimEnd,
-    Entity       **pstEntity)
+    const uint8_t u8AnimStart,
+    const uint8_t u8AnimEnd,
+    Entity      **pstEntity)
 {
     if (u8AnimStart <= u8AnimEnd)
     {
@@ -268,12 +288,12 @@ void SetAnimation(
 }
 
 void SetCameraBoundariesToMapSize(
-    const int32_t   s32WindowWidth,
-    const int32_t   s32WindowHeight,
-    const double    dZoomLevel,
-    const uint16_t  u16MapWidth,
-    const uint16_t  u16MapHeight,
-    Camera        **pstCamera)
+    const int32_t  s32WindowWidth,
+    const int32_t  s32WindowHeight,
+    const double   dZoomLevel,
+    const uint16_t u16MapWidth,
+    const uint16_t u16MapHeight,
+    Camera       **pstCamera)
 {
     if (0 == (*pstCamera)->s32MaxPosX || 0 == (*pstCamera)->s32MaxPosY)
     {
@@ -308,9 +328,9 @@ void SetCameraBoundariesToMapSize(
 }
 
 void SetFrameOffset(
-    const uint8_t  u8OffsetX,
-    const uint8_t  u8OffsetY,
-    Entity       **pstEntity)
+    const uint8_t u8OffsetX,
+    const uint8_t u8OffsetY,
+    Entity      **pstEntity)
 {
     (*pstEntity)->u8FrameOffsetX = u8OffsetX;
     (*pstEntity)->u8FrameOffsetY = u8OffsetY;
@@ -329,18 +349,18 @@ void SetOrientation(const bool bOrientation, Entity **pstEntity)
 }
 
 void SetPosition(
-    const double  dPosX,
-    const double  dPosY,
-    Entity      **pstEntity)
+    const double dPosX,
+    const double dPosY,
+    Entity     **pstEntity)
 {
     (*pstEntity)->dPosX = dPosX;
     (*pstEntity)->dPosY = dPosY;
 }
 
 void SetSpeed(
-    const double  dAcceleration,
-    const double  dMaxVelocityX,
-    Entity      **pstEntity)
+    const double dAcceleration,
+    const double dMaxVelocityX,
+    Entity     **pstEntity)
 {
     (*pstEntity)->dAcceleration = dAcceleration;
     (*pstEntity)->dMaxVelocityX = dMaxVelocityX;
@@ -349,35 +369,14 @@ void SetSpeed(
 void UpdateEntity(
     const double dDeltaTime,
     const double dGravitation,
-    Entity **pstEntity)
+    Entity     **pstEntity)
 {
     double dPosX = (*pstEntity)->dPosX;
     double dPosY = (*pstEntity)->dPosY;
 
-    // Jump.
-    if (IS_NOT_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
-    {
-        if (IS_SET((*pstEntity)->u16Flags, IS_JUMPING))
-        {
-            CLEAR((*pstEntity)->u16Flags, IS_JUMPING);
-            SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
-            (*pstEntity)->dVelocityY = -2.0;
-
-            if (_IsEntityJumping(&(*pstEntity)))
-            {
-                SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
-            }
-        }
-    }
-
     // Apply gravitation.
     if (IS_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
     {
-        if (false == _IsEntityJumping(&(*pstEntity)))
-        {
-            CLEAR((*pstEntity)->u16Flags, IS_JUMPING);
-        }
-
         double dG                 = dGravitation * METER_IN_PIXEL;
         double dDistanceY         = dG * dDeltaTime * dDeltaTime;
         (*pstEntity)->dVelocityY += dDistanceY;

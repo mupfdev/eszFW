@@ -11,8 +11,8 @@
 
 typedef struct Font_t
 {
-    TTF_Font   *pstTTF;
-    SDL_Colour  stColour;
+    TTF_Font  *pstTTF;
+    SDL_Colour stColour;
 } Font;
 
 void FreeFont(Font **pstFont);
@@ -33,9 +33,9 @@ int PrintText(
     Font         **pstFont);
 
 void SetFontColour(
-    const uint8_t  u8Red,
-    const uint8_t  u8Green,
-    const uint8_t  u8Blue,
-    Font         **pstFont);
+    const uint8_t u8Red,
+    const uint8_t u8Green,
+    const uint8_t u8Blue,
+    Font        **pstFont);
 
 #endif // _FONT_H_

@@ -26,7 +26,7 @@ int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const bool    bFullscreen,
-    Video **pstVideo);
+    Video       **pstVideo);
 
 void RenderScene(SDL_Renderer **pstRenderer);
 int SetFullscreen(const bool dFullscreen, Video **pstVideo);

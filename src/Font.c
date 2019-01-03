@@ -138,10 +138,10 @@ int PrintText(
 }
 
 void SetFontColour(
-    const uint8_t  u8Red,
-    const uint8_t  u8Green,
-    const uint8_t  u8Blue,
-    Font         **pstFont)
+    const uint8_t u8Red,
+    const uint8_t u8Green,
+    const uint8_t u8Blue,
+    Font        **pstFont)
 {
     (*pstFont)->stColour.r = u8Red;
     (*pstFont)->stColour.g = u8Green;

@@ -1,5 +1,7 @@
 /**
  * @file      Macros.h
+ * @ingroup   Macros
+ * @defgroup  Macros
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */

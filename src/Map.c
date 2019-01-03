@@ -352,10 +352,10 @@ bool IsMapCoordOfType(
 }
 
 bool IsOnPlatform(
-    const double  dPosX,
-    const double  dPosY,
-    const double  dOffsetY,
-    Map         **pstMap)
+    const double dPosX,
+    const double dPosY,
+    const double dOffsetY,
+    Map        **pstMap)
 {
     if (IsMapCoordOfType("Platform", dPosX, dPosY + dOffsetY, &(*pstMap)))
     {
@@ -366,9 +366,9 @@ bool IsOnPlatform(
 }
 
 void SetGravitation(
-    const double  dGravitation,
-    const bool    bUseTmxConstant,
-    Map         **pstMap)
+    const double dGravitation,
+    const bool   bUseTmxConstant,
+    Map        **pstMap)
 {
     if (bUseTmxConstant)
     {

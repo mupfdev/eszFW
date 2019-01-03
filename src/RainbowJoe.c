@@ -64,6 +64,7 @@ int InitGame()
         double dTimeB;
         double dDeltaTime;
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
+        ResetEntity(&pstPlayer);
 
         const uint8_t *pu8KeyState;
         if (-1 == ReadInput(&pu8KeyState) || pu8KeyState[SDL_SCANCODE_Q])
@@ -71,11 +72,7 @@ int InitGame()
             QUIT_SUCCESS;
         }
 
-        CLEAR(pstPlayer->u16Flags, IS_IN_MID_AIR);
-        CLEAR(pstPlayer->u16Flags, IS_WALKING);
-
-        if (pu8KeyState[SDL_SCANCODE_LSHIFT])
-        {
+        if (pu8KeyState[SDL_SCANCODE_LSHIFT]) {
             if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = true; }
         }
         else
@@ -83,40 +80,11 @@ int InitGame()
             if (pu8KeyState[SDL_SCANCODE_D]) { bDebug = false; }
         }
 
-        if (pu8KeyState[SDL_SCANCODE_0])
-        {
-            SetZoomLevel(pstVideo->dInitialZoomLevel, &pstVideo);
-        }
-        if (pu8KeyState[SDL_SCANCODE_1])
-        {
-            SetZoomLevel(pstVideo->dZoomLevel + 0.01, &pstVideo);
-        }
-        if (pu8KeyState[SDL_SCANCODE_2])
-        {
-            SetZoomLevel(pstVideo->dZoomLevel - 0.01, &pstVideo);
-        }
-
-        if (pu8KeyState[SDL_SCANCODE_SPACE])
-        {
-            if ((IS_NOT_SET(pstPlayer->u16Flags, IS_JUMPING)) &&
-                (IS_NOT_SET(pstPlayer->u16Flags, IS_IN_MID_AIR)))
-            {
-                SET(pstPlayer->u16Flags, IS_JUMPING);
-            }
-        }
-
-        if (pu8KeyState[SDL_SCANCODE_LEFT])
-        {
-            SET(pstPlayer->u16Flags, IS_WALKING);
-            SetOrientation(LEFT, &pstPlayer);
-            SetAnimation(0, 3, &pstPlayer);
-        }
-        if (pu8KeyState[SDL_SCANCODE_RIGHT])
-        {
-            SET(pstPlayer->u16Flags, IS_WALKING);
-            SetOrientation(RIGHT, &pstPlayer);
-            SetAnimation(0, 3, &pstPlayer);
-        }
+        if (pu8KeyState[SDL_SCANCODE_0]) { SetZoomLevel(pstVideo->dInitialZoomLevel, &pstVideo); }
+        if (pu8KeyState[SDL_SCANCODE_1]) { SetZoomLevel(pstVideo->dZoomLevel + 0.01, &pstVideo); }
+        if (pu8KeyState[SDL_SCANCODE_2]) { SetZoomLevel(pstVideo->dZoomLevel - 0.01, &pstVideo); }
+        if (pu8KeyState[SDL_SCANCODE_LEFT])  { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
+        if (pu8KeyState[SDL_SCANCODE_RIGHT]) { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
 
         SetCameraTargetEntity(
             pstVideo->s32WindowWidth,
@@ -136,8 +104,9 @@ int InitGame()
         // Set up collision detection.
         if (false == IsOnPlatform(pstPlayer->dPosX, pstPlayer->dPosY, 18.0, &pstMap))
         {
-            SET(pstPlayer->u16Flags, IS_IN_MID_AIR);
+            Drop(&pstPlayer);
         }
+
         UpdateEntity(dDeltaTime, pstMap->dGravitation, &pstPlayer);
 
         if (-1 == DrawMap(

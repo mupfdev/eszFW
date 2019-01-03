@@ -18,9 +18,9 @@ void InitFPSLimiter(double *dTimeA)
 
 void LimitFramerate(
     const uint16_t u16FPS,
-    double *dTimeA,
-    double *dTimeB,
-    double *dDeltaTime
+    double        *dTimeA,
+    double        *dTimeB,
+    double        *dDeltaTime
 )
 {
     *dTimeB     = SDL_GetTicks();

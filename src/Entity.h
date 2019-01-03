@@ -6,15 +6,8 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-#define IS_DEAD       0
-#define IS_IN_MID_AIR 1
-#define IS_JUMPING    2
-#define IS_LOCKED     3
-#define IS_MOVING     4
-#define IS_WALKING    5
-
-#define RIGHT         0
-#define LEFT          1
+#define RIGHT 0
+#define LEFT  1
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -60,17 +53,17 @@ typedef struct Sprite_t
 } Sprite;
 
 void ConnectHorizontalMapEndsForEntity(
-    const uint16_t  u16MapWidth,
-    Entity        **pstEntity);
+    const uint16_t u16MapWidth,
+    Entity       **pstEntity);
 
 void ConnectMapEndsForEntity(
-    const uint16_t  u16MapWidth,
-    const uint16_t  u16MapHeight,
-    Entity        **pstEntity);
+    const uint16_t u16MapWidth,
+    const uint16_t u16MapHeight,
+    Entity       **pstEntity);
 
 void ConnectVerticalMapEndsForEntity(
-    const uint16_t  u16MapHeight,
-    Entity        **pstEntity);
+    const uint16_t u16MapHeight,
+    Entity       **pstEntity);
 
 int DrawEntity(
     Entity       **pstEntity,
@@ -78,6 +71,7 @@ int DrawEntity(
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer);
 
+void Drop(Entity **pstEntity);
 void FreeCamera(Camera **pstCamera);
 void FreeEntity(Entity **pstEntity);
 void FreeSprite(Sprite **pstSprite);
@@ -97,46 +91,56 @@ int InitSprite(
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer);
 
+void Move(
+    const bool    bOrientation,
+    const double  dAcceleration,
+    const double  dMaxVelocityX,
+    const uint8_t u8AnimStart,
+    const uint8_t u8AnimEnd,
+    Entity      **pstEntity);
+
+void ResetEntity(Entity **pstEntity);
+
 void SetCameraBoundariesToMapSize(
-    const int32_t   s32WindowWidth,
-    const int32_t   s32WindowHeight,
-    const double    dZoomLevel,
-    const uint16_t  u16MapWidth,
-    const uint16_t  u16MapHeight,
-    Camera        **pstCamera);
+    const int32_t  s32WindowWidth,
+    const int32_t  s32WindowHeight,
+    const double   dZoomLevel,
+    const uint16_t u16MapWidth,
+    const uint16_t u16MapHeight,
+    Camera       **pstCamera);
 
 void SetCameraTargetEntity(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const double  dZoomLevel,
-    Camera       **pstCamera,
-    Entity       **pstEntity);
+    Camera      **pstCamera,
+    Entity      **pstEntity);
 
 void SetAnimation(
-    const uint8_t  u8AnimStart,
-    const uint8_t  u8AnimEnd,
-    Entity       **pstEntity);
+    const uint8_t u8AnimStart,
+    const uint8_t u8AnimEnd,
+    Entity      **pstEntity);
 
 void SetFrameOffset(
-    const uint8_t  u8OffsetX,
-    const uint8_t  u8OffsetY,
-    Entity       **pstEntity);
+    const uint8_t u8OffsetX,
+    const uint8_t u8OffsetY,
+    Entity      **pstEntity);
 
 void SetOrientation(const bool bOrientation, Entity **pstEntity);
 
 void SetPosition(
-    const double  dPosX,
-    const double  dPosY,
-    Entity      **pstEntity);
+    const double dPosX,
+    const double dPosY,
+    Entity     **pstEntity);
 
 void SetSpeed(
-    const double  dAcceleration,
-    const double  dMaxVelocityX,
-    Entity      **pstEntity);
+    const double dAcceleration,
+    const double dMaxVelocityX,
+    Entity     **pstEntity);
 
 void UpdateEntity(
     const double dDeltaTime,
     const double dGravitation,
-    Entity **pstEntity);
+    Entity     **pstEntity);
 
 #endif // _ENTITY_H_

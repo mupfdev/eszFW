@@ -25,7 +25,7 @@ int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const bool    bFullscreen,
-    Video **pstVideo)
+    Video       **pstVideo)
 {
     uint32_t  u32Flags = 0;
 

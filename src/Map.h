@@ -25,8 +25,8 @@ typedef struct Map_t
 
 typedef struct Object_t
 {
-    double  dPosX;
-    double  dPosY;
+    double dPosX;
+    double dPosY;
 } Object;
 
 int DrawMap(
@@ -58,14 +58,14 @@ bool IsMapCoordOfType(
     Map       **pstMap);
 
 bool IsOnPlatform(
-    const double  dPosX,
-    const double  dPosY,
-    const double  dOffsetY,
-    Map         **pstMap);
+    const double dPosX,
+    const double dPosY,
+    const double dOffsetY,
+    Map        **pstMap);
 
 void SetGravitation(
-    const double  dGravitation,
-    const bool    bUseTmxConstant,
-    Map         **pstMap);
+    const double dGravitation,
+    const bool   bUseTmxConstant,
+    Map        **pstMap);
 
 #endif // _MAP_H_
