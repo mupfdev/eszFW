@@ -40,10 +40,11 @@ int InitVideo(
         return -1;
     }
 
-    (*pstVideo)->pstRenderer     = NULL;
-    (*pstVideo)->pstWindow       = NULL;
-    (*pstVideo)->s32WindowHeight = s32WindowHeight;
-    (*pstVideo)->s32WindowWidth  = s32WindowWidth;
+    (*pstVideo)->pstRenderer            = NULL;
+    (*pstVideo)->pstWindow              = NULL;
+    (*pstVideo)->s32WindowHeight        = s32WindowHeight;
+    (*pstVideo)->s32WindowWidth         = s32WindowWidth;
+    (*pstVideo)->s32LogicalWindowHeight = s32LogicalWindowHeight;
 
     if (0 > SDL_Init(SDL_INIT_VIDEO))
     {
@@ -133,6 +134,8 @@ int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
     }
+
+    (*pstVideo)->s32LogicalWindowHeight = (*pstVideo)->s32WindowHeight / dZoomLevel;
 
     #ifdef DEBUG
     if (dZoomLevel != (*pstVideo)->dZoomLevel)

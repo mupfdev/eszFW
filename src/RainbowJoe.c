@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "AABB.h"
+#include "Background.h"
 #include "Entity.h"
 #include "Font.h"
 #include "FPSLimiter.h"
@@ -28,17 +29,26 @@
 
 int InitGame()
 {
-    int     sExecStatus = EXIT_SUCCESS;
-    bool    bPause      = false;
-    Camera *pstCamera   = NULL;
-    Entity *pstPlayer   = NULL;
-    Font   *pstFont     = NULL;
-    Map    *pstMap      = NULL;
-    Object *pstPlrSpawn = NULL;
-    Sprite *pstSprite   = NULL;
-    Video  *pstVideo    = NULL;
-    bool    bDebug      = false;
-    double  dTimeA      = 0.f;
+    int         sExecStatus   = EXIT_SUCCESS;
+    bool        bPause        = false;
+    Background *pstBackground = NULL;
+    Camera     *pstCamera     = NULL;
+    Entity     *pstPlayer     = NULL;
+    Font       *pstFont       = NULL;
+    Map        *pstMap        = NULL;
+    Object     *pstPlrSpawn   = NULL;
+    Sprite     *pstSprite     = NULL;
+    Video      *pstVideo      = NULL;
+    bool        bDebug        = false;
+    double      dTimeA        = 0.f;
+
+    const char *pacBgFileNames[4] =
+        {
+            "res/images/sky.png",
+            "res/images/clouds.png",
+            "res/images/sea.png",
+            "res/images/far-grounds.png",
+        };
 
     if (-1 == InitVideo(640, 480, 240, false, &pstVideo))      { QUIT_FAILURE; }
     if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
@@ -47,10 +57,16 @@ int InitGame()
     if (-1 == InitObject(&pstPlrSpawn))                        { QUIT_FAILURE; }
     if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont)) { QUIT_FAILURE; }
 
-    GetSingleObjectByName("Player", &pstMap, &pstPlrSpawn);
-    SetPosition(pstPlrSpawn->dPosX, pstPlrSpawn->dPosY, &pstPlayer);
-    SetFrameOffset(0, 2, &pstPlayer);
-    SetFontColour(255, 255, 255, &pstFont);
+    if (-1 == InitBackground(
+            4,
+            pacBgFileNames,
+            pstVideo->s32WindowWidth,
+            BOTTOM,
+            &pstVideo->pstRenderer,
+            &pstBackground))
+    {
+        QUIT_FAILURE;
+    }
 
     if (-1 == InitSprite(
             "res/images/characters_7.png", 736, 128, 0, 0,
@@ -58,6 +74,11 @@ int InitGame()
     {
         QUIT_FAILURE;
     }
+
+    GetSingleObjectByName("Player", &pstMap, &pstPlrSpawn);
+    SetPosition(pstPlrSpawn->dPosX, pstPlrSpawn->dPosY, &pstPlayer);
+    SetFrameOffset(0, 2, &pstPlayer);
+    SetFontColour(255, 255, 255, &pstFont);
 
     InitFPSLimiter(&dTimeA);
     while (1)
@@ -96,7 +117,7 @@ int InitGame()
             pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
             if (1.0 > pstVideo->dZoomLevel)
             {
-                pstVideo->dZoomLevel = 1;
+                pstVideo->dZoomLevel = 1.0;
             }
         }
         else
@@ -133,9 +154,21 @@ int InitGame()
 
         UpdateEntity(dDeltaTime, pstMap->dGravitation, &pstPlayer);
 
+        if (-1 == DrawBackground(
+                pstPlayer->bOrientation,
+                pstVideo->s32LogicalWindowHeight,
+                pstCamera->dPosY,
+                pstPlayer->dVelocityX,
+                &pstVideo->pstRenderer,
+                &pstBackground))
+        {
+            QUIT_FAILURE;
+        }
+
         if (-1 == DrawMap(
-                "res/images/tileset.png", false, 0, "BG",
-                pstCamera->dPosX, pstCamera->dPosY, &pstMap, &pstVideo->pstRenderer))
+                0, "res/images/tileset.png", true, "BG",
+                pstCamera->dPosX, pstCamera->dPosY,
+                &pstMap, &pstVideo->pstRenderer))
         {
             QUIT_FAILURE;
         }
@@ -144,8 +177,9 @@ int InitGame()
         DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
 
         if (-1 == DrawMap(
-                "res/images/tileset.png", false, 1, "FG",
-                pstCamera->dPosX, pstCamera->dPosY, &pstMap, &pstVideo->pstRenderer))
+                1, "res/images/tileset.png", false, "FG",
+                pstCamera->dPosX, pstCamera->dPosY,
+                &pstMap, &pstVideo->pstRenderer))
         {
             QUIT_FAILURE;
         }
@@ -167,6 +201,7 @@ int InitGame()
 
 quit:
     FreeSprite(&pstSprite);
+    FreeBackground(&pstBackground);
     FreeFont(&pstFont);
     FreeObject(&pstPlrSpawn);
     FreeMap(&pstMap);

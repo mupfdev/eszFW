@@ -6,9 +6,6 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-#define RIGHT 0
-#define LEFT  1
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "AABB.h"

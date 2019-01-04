@@ -131,7 +131,10 @@ int PrintText(
     }
 
     exit:
-    SDL_DestroyTexture(pstTexture);
+    if (NULL != pstTexture)
+    {
+        SDL_DestroyTexture(pstTexture);
+    }
     SDL_FreeSurface(pstSurface);
 
     return sReturnValue;

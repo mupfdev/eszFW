@@ -30,9 +30,9 @@ typedef struct Object_t
 } Object;
 
 int DrawMap(
+    const uint16_t u16Index,
     const char    *pacTilesetImageFileName,
     const bool     bRenderBgColour,
-    const uint16_t u16Index,
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,

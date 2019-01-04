@@ -16,6 +16,7 @@ typedef struct Video_t
     SDL_Window   *pstWindow;
     int32_t       s32WindowHeight;
     int32_t       s32WindowWidth;
+    int32_t       s32LogicalWindowHeight;
     double        dZoomLevel;
     double        dInitialZoomLevel;
 } Video;
