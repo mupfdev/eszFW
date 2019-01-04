@@ -78,7 +78,7 @@ int InitGame()
     GetSingleObjectByName("Player", &pstMap, &pstPlrSpawn);
     SetPosition(pstPlrSpawn->dPosX, pstPlrSpawn->dPosY, &pstPlayer);
     SetFrameOffset(0, 2, &pstPlayer);
-    SetFontColour(255, 255, 255, &pstFont);
+    SetFontColour(255, 0, 0, &pstFont);
 
     InitFPSLimiter(&dTimeA);
     while (1)
