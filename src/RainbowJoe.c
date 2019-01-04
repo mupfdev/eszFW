@@ -122,11 +122,7 @@ int InitGame()
         }
         else
         {
-            pstVideo->dZoomLevel += dDeltaTime / 1.75f;
-            if (pstVideo->dZoomLevel > pstVideo->dInitialZoomLevel)
-            {
-                pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
-            }
+            pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
         }
         SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
 
