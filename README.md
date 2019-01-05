@@ -81,16 +81,22 @@ cd examples
 make
 ```
 
-## Controls
+## Rainbow Joe
+#### Controls
 
 ```
 D:       show debug information
 P:       pause
 ESCAPE:  hide debug information
+LSHIFT:  hold to unlock camera
          unpause
 Q:       quit
+UP:      move unlocked camera up
+DOWN:    move unlocked camera down
 LEFT:    walk left
+         move unlocked camera left
 RIGHT:   walk right
+         move unlocked camera right
 ```
 
 ## Licence and Credits
