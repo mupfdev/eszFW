@@ -96,12 +96,25 @@ int InitGame()
         }
 
         ResetEntity(&pstPlayer);
+        SetCameraLock(false, &pstCamera);
 
-        if (pu8KeyState[SDL_SCANCODE_D])      { bDebug = true; }
+        if (pu8KeyState[SDL_SCANCODE_D])      { bDebug = true;  }
         if (pu8KeyState[SDL_SCANCODE_ESCAPE]) { bDebug = false; }
-        if (pu8KeyState[SDL_SCANCODE_LEFT])   { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
-        if (pu8KeyState[SDL_SCANCODE_RIGHT])  { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
-        if (pu8KeyState[SDL_SCANCODE_P])      { bPause = true; }
+        if (pu8KeyState[SDL_SCANCODE_P])      { bPause = true;  }
+        if (pu8KeyState[SDL_SCANCODE_LSHIFT]) { SetCameraLock(true, &pstCamera); }
+
+        if (IsCameraLocked(&pstCamera))
+        {
+            if (pu8KeyState[SDL_SCANCODE_UP])    { pstCamera->dPosY -= 5.0f; }
+            if (pu8KeyState[SDL_SCANCODE_DOWN])  { pstCamera->dPosY += 5.0f; }
+            if (pu8KeyState[SDL_SCANCODE_LEFT])  { pstCamera->dPosX -= 5.0f; }
+            if (pu8KeyState[SDL_SCANCODE_RIGHT]) { pstCamera->dPosX += 5.0f; }
+        }
+        else
+        {
+            if (pu8KeyState[SDL_SCANCODE_LEFT])  { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
+            if (pu8KeyState[SDL_SCANCODE_RIGHT]) { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
+        }
 
         // Follow player entity and set camera boudnaries to map size.
         SetCameraTargetEntity(

@@ -88,6 +88,8 @@ int InitSprite(
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer);
 
+bool IsCameraLocked(Camera **pstCamera);
+
 void Move(
     const bool    bOrientation,
     const double  dAcceleration,
@@ -97,6 +99,7 @@ void Move(
     Entity      **pstEntity);
 
 void ResetEntity(Entity **pstEntity);
+void SetCameraLock(const bool bLock, Camera **pstCamera);
 
 void SetCameraBoundariesToMapSize(
     const int32_t  s32LogicalWindowWidth,

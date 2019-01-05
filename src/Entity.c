@@ -228,6 +228,18 @@ int InitSprite(
     return 0;
 }
 
+bool IsCameraLocked(Camera **pstCamera)
+{
+    if (IS_SET((*pstCamera)->u16Flags, IS_LOCKED))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 void Move(
     const bool    bOrientation,
     const double  dAcceleration,
@@ -246,6 +258,18 @@ void ResetEntity(Entity **pstEntity)
 {
     CLEAR((*pstEntity)->u16Flags, IS_WALKING);
     CLEAR((*pstEntity)->u16Flags, IS_IN_MID_AIR);
+}
+
+void SetCameraLock(const bool bLock, Camera **pstCamera)
+{
+    if (bLock)
+    {
+        SET((*pstCamera)->u16Flags, IS_LOCKED);
+    }
+    else
+    {
+        CLEAR((*pstCamera)->u16Flags, IS_LOCKED);
+    }
 }
 
 void SetCameraTargetEntity(
