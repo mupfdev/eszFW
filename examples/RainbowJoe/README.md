@@ -4,8 +4,11 @@
 
 Rainbow Joe is a classic 2D platformer game in the spirit of the 1990s
 written in C to demonstrate the use of
-[eszFW](https://github.com/mupfelofen-de/eszFW); a framework with the
+[eszFW](https://github.com/mupfelofen-de/eszFW): a framework with the
 intention to simplify game development in C.
+
+[![Rainbow Joe](.media/scrshot-tn.png)](.media/scrshot.png?raw=true
+"Rainbow Joe")
 
 ## Controls
 
