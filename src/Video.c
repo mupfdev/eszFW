@@ -24,6 +24,7 @@ void FreeVideo(Video **pstVideo)
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const int32_t s32LogicalWindowWidth,
     const int32_t s32LogicalWindowHeight,
     const bool    bFullscreen,
     Video       **pstVideo)
@@ -44,6 +45,7 @@ int InitVideo(
     (*pstVideo)->pstWindow              = NULL;
     (*pstVideo)->s32WindowHeight        = s32WindowHeight;
     (*pstVideo)->s32WindowWidth         = s32WindowWidth;
+    (*pstVideo)->s32LogicalWindowWidth  = s32LogicalWindowWidth;
     (*pstVideo)->s32LogicalWindowHeight = s32LogicalWindowHeight;
 
     if (0 > SDL_Init(SDL_INIT_VIDEO))
@@ -126,16 +128,18 @@ void RenderScene(SDL_Renderer **pstRenderer)
 
 int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
 {
+    (*pstVideo)->dZoomLevel             = dZoomLevel;
+    (*pstVideo)->s32LogicalWindowWidth  = (*pstVideo)->s32WindowWidth  / dZoomLevel;
+    (*pstVideo)->s32LogicalWindowHeight = (*pstVideo)->s32WindowHeight / dZoomLevel;
+
     if (0 != SDL_RenderSetLogicalSize(
             (*pstVideo)->pstRenderer,
-            (*pstVideo)->s32WindowWidth  / dZoomLevel,
-            (*pstVideo)->s32WindowHeight / dZoomLevel))
+            (*pstVideo)->s32LogicalWindowWidth,
+            (*pstVideo)->s32LogicalWindowHeight))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
     }
-
-    (*pstVideo)->s32LogicalWindowHeight = (*pstVideo)->s32WindowHeight / dZoomLevel;
 
     #ifdef DEBUG
     if (dZoomLevel != (*pstVideo)->dZoomLevel)
@@ -144,6 +148,5 @@ int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
     }
     #endif
 
-    (*pstVideo)->dZoomLevel = dZoomLevel;
     return 0;
 }

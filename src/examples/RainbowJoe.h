@@ -6,7 +6,7 @@
 #ifndef _RAINBOW_JOE_H_
 #define _RAINBOW_JOE_H_
 
-int InitGame();
-void QuitGame();
+int InitRainbowJoe();
+void QuitRainbowJoe();
 
 #endif // _RAINBOW_JOE_H_

@@ -27,7 +27,7 @@
 #include "RainbowJoe.h"
 #include "Video.h"
 
-int InitGame()
+int InitRainbowJoe()
 {
     int         sExecStatus   = EXIT_SUCCESS;
     bool        bPause        = false;
@@ -50,7 +50,7 @@ int InitGame()
             "res/images/far-grounds.png",
         };
 
-    if (-1 == InitVideo(640, 480, 240, false, &pstVideo))      { QUIT_FAILURE; }
+    if (-1 == InitVideo(640, 480, 320, 240, false, &pstVideo)) { QUIT_FAILURE; }
     if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
     if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT_FAILURE; }
     if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT_FAILURE; }
@@ -105,11 +105,21 @@ int InitGame()
         if (pu8KeyState[SDL_SCANCODE_ESCAPE]) { bDebug = false; }
         if (pu8KeyState[SDL_SCANCODE_LEFT])   { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
         if (pu8KeyState[SDL_SCANCODE_RIGHT])  { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
-        if (pu8KeyState[SDL_SCANCODE_P])
-        {
-            PrintText("PAUSE", 8, 4,  &pstVideo->pstRenderer, &pstFont);
-            bPause = true;
-        }
+        if (pu8KeyState[SDL_SCANCODE_P])      { bPause = true; }
+
+        // Follow player entity and set camera boudnaries to map size.
+        SetCameraTargetEntity(
+            pstVideo->s32LogicalWindowWidth,
+            pstVideo->s32LogicalWindowHeight,
+            &pstCamera,
+            &pstPlayer);
+
+        SetCameraBoundariesToMapSize(
+            pstVideo->s32LogicalWindowWidth,
+            pstVideo->s32LogicalWindowHeight,
+            pstMap->u16Width,
+            pstMap->u16Height,
+            &pstCamera);
 
         // Set zoom level dynamically in relation to vertical velocity.
         if (0.0 < pstPlayer->dVelocityY)
@@ -117,30 +127,18 @@ int InitGame()
             pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
             if (1.0 > pstVideo->dZoomLevel)
             {
-                pstVideo->dZoomLevel = 1.0;
+                pstVideo->dZoomLevel = 1;
             }
         }
         else
         {
-            pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
+            pstVideo->dZoomLevel += dDeltaTime / 1.75f;
+            if (pstVideo->dZoomLevel > pstVideo->dInitialZoomLevel)
+            {
+                pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
+            }
         }
         SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
-
-        // Follow player entity and set camera boudnaries to map size.
-        SetCameraTargetEntity(
-            pstVideo->s32WindowWidth,
-            pstVideo->s32WindowHeight,
-            pstVideo->dZoomLevel,
-            &pstCamera,
-            &pstPlayer);
-
-        SetCameraBoundariesToMapSize(
-            pstVideo->s32WindowWidth,
-            pstVideo->s32WindowHeight,
-            pstVideo->dZoomLevel,
-            pstMap->u16Width,
-            pstMap->u16Height,
-            &pstCamera);
 
         // Set up collision detection.
         if (false == IsOnPlatform(pstPlayer->dPosX, pstPlayer->dPosY, 18.0, &pstMap))
@@ -180,7 +178,7 @@ int InitGame()
             QUIT_FAILURE;
         }
 
-        if (bDebug && false == bPause)
+        if (bDebug)
         {
             PrintText("X:  ", 8, 4,  &pstVideo->pstRenderer, &pstFont);
             PrintText("Y:  ", 8, 20, &pstVideo->pstRenderer, &pstFont);
@@ -205,7 +203,7 @@ quit:
     return sExecStatus;
 }
 
-void QuitGame()
+void QuitRainbowJoe()
 {
     SDL_Quit();
 }

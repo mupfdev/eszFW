@@ -5,13 +5,14 @@
  */
 
 #include <stdlib.h>
-#include "RainbowJoe.h"
+#include "examples/RainbowJoe.h"
 
 int main()
 {
     int sExecStatus;
-    sExecStatus = InitGame();
 
-    QuitGame();
+    sExecStatus = InitRainbowJoe();
+    QuitRainbowJoe();
+
     return sExecStatus;
 }

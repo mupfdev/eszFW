@@ -99,17 +99,15 @@ void Move(
 void ResetEntity(Entity **pstEntity);
 
 void SetCameraBoundariesToMapSize(
-    const int32_t  s32WindowWidth,
-    const int32_t  s32WindowHeight,
-    const double   dZoomLevel,
+    const int32_t  s32LogicalWindowWidth,
+    const int32_t  s32LogicalWindowHeight,
     const uint16_t u16MapWidth,
     const uint16_t u16MapHeight,
     Camera       **pstCamera);
 
 void SetCameraTargetEntity(
-    const int32_t s32WindowWidth,
-    const int32_t s32WindowHeight,
-    const double  dZoomLevel,
+    const int32_t s32LogicalWindowWidth,
+    const int32_t s32LogicalWindowHeight,
     Camera      **pstCamera,
     Entity      **pstEntity);
 

@@ -21,6 +21,7 @@ CFLAGS=\
 	-D_REENTRANT\
 	-DSDL_MAIN_HANDLED\
 	-DWANT_ZLIB\
+	-Isrc\
 	-Isrc/inih\
 	-Isrc/tmx/src\
 	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
@@ -33,7 +34,8 @@ CFLAGS=\
 
 SRCS=\
 	$(wildcard src/*.c)\
-	$(wildcard src/tmx/src/*.c)\
-	$(wildcard src/inih/*.c)
+	$(wildcard src/examples/*.c)\
+	$(wildcard src/inih/*.c)\
+	$(wildcard src/tmx/src/*.c)
 
 OBJS=$(patsubst %.c, %.o, $(SRCS))

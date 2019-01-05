@@ -14,8 +14,9 @@ typedef struct Video_t
 {
     SDL_Renderer *pstRenderer;
     SDL_Window   *pstWindow;
-    int32_t       s32WindowHeight;
     int32_t       s32WindowWidth;
+    int32_t       s32WindowHeight;
+    int32_t       s32LogicalWindowWidth;
     int32_t       s32LogicalWindowHeight;
     double        dZoomLevel;
     double        dInitialZoomLevel;
@@ -26,6 +27,7 @@ void FreeVideo(Video **pstVideo);
 int InitVideo(
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
+    const int32_t s32LogicalWindowWidth,
     const int32_t s32LogicalWindowHeight,
     const bool    bFullscreen,
     Video       **pstVideo);

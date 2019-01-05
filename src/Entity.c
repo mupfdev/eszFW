@@ -250,18 +250,17 @@ void ResetEntity(Entity **pstEntity)
 }
 
 void SetCameraTargetEntity(
-    const int32_t s32WindowWidth,
-    const int32_t s32WindowHeight,
-    const double  dZoomLevel,
+    const int32_t s32LogicalWindowWidth,
+    const int32_t s32LogicalWindowHeight,
     Camera      **pstCamera,
     Entity      **pstEntity)
 {
     if (IS_NOT_SET((*pstCamera)->u16Flags, IS_LOCKED))
     {
         (*pstCamera)->dPosX  = (*pstEntity)->dPosX;
-        (*pstCamera)->dPosX -= (s32WindowWidth  / 2) / dZoomLevel;
+        (*pstCamera)->dPosX -= s32LogicalWindowWidth  / 2;
         (*pstCamera)->dPosY  = (*pstEntity)->dPosY;
-        (*pstCamera)->dPosY -= (s32WindowHeight / 2) / dZoomLevel;
+        (*pstCamera)->dPosY -= s32LogicalWindowHeight / 2;
 
         if ((*pstCamera)->dPosX < 0)
         {
@@ -288,23 +287,21 @@ void SetAnimation(
 }
 
 void SetCameraBoundariesToMapSize(
-    const int32_t  s32WindowWidth,
-    const int32_t  s32WindowHeight,
-    const double   dZoomLevel,
+    const int32_t  s32LogicalWindowWidth,
+    const int32_t  s32LogicalWindowHeight,
     const uint16_t u16MapWidth,
     const uint16_t u16MapHeight,
     Camera       **pstCamera)
 {
-    if (0 == (*pstCamera)->s32MaxPosX || 0 == (*pstCamera)->s32MaxPosY)
-    {
-        (*pstCamera)->s32MaxPosX = u16MapWidth  - s32WindowWidth  / dZoomLevel;
-        (*pstCamera)->s32MaxPosY = u16MapHeight - s32WindowHeight / dZoomLevel;
+    (*pstCamera)->s32MaxPosX = u16MapWidth  - s32LogicalWindowWidth;
+    (*pstCamera)->s32MaxPosY = u16MapHeight - s32LogicalWindowHeight;
 
-        SDL_Log(
-            "Set camera boundaries to map size (x: %d y: %d).\n",
-            (*pstCamera)->s32MaxPosX,
-            (*pstCamera)->s32MaxPosY);
-    }
+    #ifdef DEBUG
+    SDL_Log(
+        "Set camera boundaries to map size (x: %d y: %d).\n",
+        (*pstCamera)->s32MaxPosX,
+        (*pstCamera)->s32MaxPosY);
+    #endif
 
     if ((*pstCamera)->dPosX < 0)
     {
