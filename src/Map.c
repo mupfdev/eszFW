@@ -250,7 +250,10 @@ uint16_t GetObjectCount(Map **pstMap)
     return u16ObjectCount;
 }
 
-int InitMap(const char *pacFileName, Map **pstMap)
+int InitMap(
+    const char   *pacFileName,
+    const uint8_t u8MeterInPixel,
+    Map         **pstMap)
 {
     *pstMap = malloc(sizeof(struct Map_t));
     if (NULL == *pstMap)
@@ -269,11 +272,12 @@ int InitMap(const char *pacFileName, Map **pstMap)
         return -1;
     }
 
-    (*pstMap)->u16Height    = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
-    (*pstMap)->u16Width     = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
-    (*pstMap)->dPosX        = 0.f;
-    (*pstMap)->dPosY        = 0.f;
-    (*pstMap)->dGravitation = 0.f;
+    (*pstMap)->u16Height      = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
+    (*pstMap)->u16Width       = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
+    (*pstMap)->dPosX          = 0.f;
+    (*pstMap)->dPosY          = 0.f;
+    (*pstMap)->dGravitation   = 0.f;
+    (*pstMap)->u8MeterInPixel = u8MeterInPixel;
 
     for (uint16_t u16Index = 0; u16Index < MAP_TEXTURES; u16Index++)
     {
@@ -366,9 +370,9 @@ bool IsOnPlatform(
 }
 
 void SetGravitation(
-    const double dGravitation,
-    const bool   bUseTmxConstant,
-    Map        **pstMap)
+    const double  dGravitation,
+    const bool    bUseTmxConstant,
+    Map         **pstMap)
 {
     if (bUseTmxConstant)
     {
@@ -388,5 +392,5 @@ void SetGravitation(
     SDL_Log(
         "Set gravitational constant to %f (g*%dpx/s^2).\n",
         (*pstMap)->dGravitation,
-        METER_IN_PIXEL);
+        (*pstMap)->u8MeterInPixel);
 }

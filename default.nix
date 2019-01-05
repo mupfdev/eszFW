@@ -16,6 +16,6 @@ in pkgs.stdenv.mkDerivation {
     NIX_CFLAGS_LINK    = (makeSDLDFlags SDLlibs) ++ [ "-L${getLib zlib}/lib" "-L${getLib libxml2}/lib" "-L${getLib lzma}/lib" "-L${getLib icu}/lib" ];
 
     installPhase = ''
-        install -Dsm 755 RainbowJoe $out/bin/RainbowJoe
+        install -Dsm 755 RainbowJoe $out/lib/eszFW.so
     '';
 }

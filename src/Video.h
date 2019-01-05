@@ -8,7 +8,6 @@
 
 #include <SDL2/SDL.h>
 #include <stdint.h>
-#include "Config.h"
 
 typedef struct Video_t
 {
@@ -25,6 +24,7 @@ typedef struct Video_t
 void FreeVideo(Video **pstVideo);
 
 int InitVideo(
+    const char   *pacWindowTitle,
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const int32_t s32LogicalWindowWidth,

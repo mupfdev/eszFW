@@ -22,6 +22,7 @@ void FreeVideo(Video **pstVideo)
 }
 
 int InitVideo(
+    const char   *pacWindowTitle,
     const int32_t s32WindowWidth,
     const int32_t s32WindowHeight,
     const int32_t s32LogicalWindowWidth,
@@ -68,7 +69,7 @@ int InitVideo(
     }
 
     (*pstVideo)->pstWindow = SDL_CreateWindow(
-        WINDOW_TITLE,
+        pacWindowTitle,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         (*pstVideo)->s32WindowWidth,

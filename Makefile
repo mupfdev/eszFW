@@ -3,7 +3,7 @@
 include config.mk
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $(OUT)
+	$(AR) rcs $(OUT) $(OBJS)
 
 %: %.c
 	$(CC) -c $(CFLAGS) $(LIBS) -o $@ $<

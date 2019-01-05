@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "AABB.h"
-#include "Config.h"
 #include "Entity.h"
 #include "Macros.h"
 
@@ -364,9 +363,10 @@ void SetSpeed(
 }
 
 void UpdateEntity(
-    const double dDeltaTime,
-    const double dGravitation,
-    Entity     **pstEntity)
+    const double  dDeltaTime,
+    const double  dGravitation,
+    const uint8_t u8MeterInPixel,
+    Entity      **pstEntity)
 {
     double dPosX = (*pstEntity)->dPosX;
     double dPosY = (*pstEntity)->dPosY;
@@ -374,7 +374,7 @@ void UpdateEntity(
     // Apply gravitation.
     if (IS_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
     {
-        double dG                 = dGravitation * METER_IN_PIXEL;
+        double dG                 = dGravitation * u8MeterInPixel;
         double dDistanceY         = dG * dDeltaTime * dDeltaTime;
         (*pstEntity)->dVelocityY += dDistanceY;
         dPosY                    += (*pstEntity)->dVelocityY;
@@ -389,7 +389,7 @@ void UpdateEntity(
     // Calculate horizontal velocity.
     if (IS_SET((*pstEntity)->u16Flags, IS_WALKING))
     {
-        double dAccel             = (*pstEntity)->dAcceleration * METER_IN_PIXEL;
+        double dAccel             = (*pstEntity)->dAcceleration * (double)u8MeterInPixel;
         double dDistanceX         = dAccel * dDeltaTime * dDeltaTime;
         (*pstEntity)->dVelocityX += dDistanceX;
         SET((*pstEntity)->u16Flags, IS_MOVING);

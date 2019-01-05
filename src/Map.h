@@ -10,7 +10,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <tmx.h>
-#include "Config.h"
+
+#ifndef MAP_TEXTURES
+#define MAP_TEXTURES 3
+#endif
 
 typedef struct Map_t
 {
@@ -21,6 +24,7 @@ typedef struct Map_t
     double       dPosX;
     double       dPosY;
     double       dGravitation;
+    uint8_t      u8MeterInPixel;
 } Map;
 
 typedef struct Object_t
@@ -48,7 +52,12 @@ void GetSingleObjectByName(
     Object    **pstObject);
 
 uint16_t GetObjectCount(Map **pstMap);
-int InitMap(const char *pacFileName, Map **pstMap);
+
+int InitMap(
+    const char   *pacFileName,
+    const uint8_t u8MeterInPixel,
+    Map         **pstMap);
+
 int InitObject(Object **pstObject);
 
 bool IsMapCoordOfType(
@@ -64,8 +73,8 @@ bool IsOnPlatform(
     Map        **pstMap);
 
 void SetGravitation(
-    const double dGravitation,
-    const bool   bUseTmxConstant,
-    Map        **pstMap);
+    const double  dGravitation,
+    const bool    bUseTmxConstant,
+    Map         **pstMap);
 
 #endif // _MAP_H_

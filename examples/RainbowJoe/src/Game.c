@@ -1,7 +1,7 @@
 /**
- * @file RainbowJoe.c
- * @ingroup RainbowJoe
- * @defgroup RainbowJoe
+ * @file Game.c
+ * @ingroup Game
+ * @defgroup Game
  * @author Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
@@ -10,27 +10,17 @@
 #define QUIT_SUCCESS { sExecStatus = EXIT_SUCCESS; goto quit; }
 
 #include <SDL2/SDL.h>
+#include <eszFW.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "AABB.h"
-#include "Background.h"
-#include "Entity.h"
-#include "Font.h"
-#include "FPSLimiter.h"
-#include "Input.h"
-#include "Macros.h"
-#include "Map.h"
-#include "RainbowJoe.h"
-#include "Video.h"
 
-int InitRainbowJoe()
+int InitGame()
 {
     int         sExecStatus   = EXIT_SUCCESS;
-    bool        bPause        = false;
     Background *pstBackground = NULL;
     Camera     *pstCamera     = NULL;
     Entity     *pstPlayer     = NULL;
@@ -40,6 +30,7 @@ int InitRainbowJoe()
     Sprite     *pstSprite     = NULL;
     Video      *pstVideo      = NULL;
     bool        bDebug        = false;
+    bool        bPause        = false;
     double      dTimeA        = 0.f;
 
     const char *pacBgFileNames[4] =
@@ -50,13 +41,18 @@ int InitRainbowJoe()
             "res/images/far-grounds.png",
         };
 
-    if (-1 == InitVideo(640, 480, 320, 240, false, &pstVideo)) { QUIT_FAILURE; }
+    if (-1 == InitVideo(
+            "Rainbow Joe", 640, 480, 320, 240,
+            false, &pstVideo))
+    {
+        QUIT_FAILURE;
+    }
+
     if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
     if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT_FAILURE; }
-    if (-1 == InitMap("res/maps/Demo.tmx", &pstMap))           { QUIT_FAILURE; }
+    if (-1 == InitMap("res/maps/Demo.tmx", 24, &pstMap))       { QUIT_FAILURE; }
     if (-1 == InitObject(&pstPlrSpawn))                        { QUIT_FAILURE; }
     if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont)) { QUIT_FAILURE; }
-
     if (-1 == InitBackground(
             4,
             pacBgFileNames,
@@ -146,7 +142,7 @@ int InitRainbowJoe()
             Drop(&pstPlayer);
         }
 
-        UpdateEntity(dDeltaTime, pstMap->dGravitation, &pstPlayer);
+        UpdateEntity(dDeltaTime, pstMap->dGravitation, pstMap->u8MeterInPixel, &pstPlayer);
 
         if (-1 == DrawBackground(
                 pstPlayer->bOrientation,
@@ -203,7 +199,7 @@ quit:
     return sExecStatus;
 }
 
-void QuitRainbowJoe()
+void QuitGame()
 {
     SDL_Quit();
 }

@@ -134,8 +134,9 @@ void SetSpeed(
     Entity     **pstEntity);
 
 void UpdateEntity(
-    const double dDeltaTime,
-    const double dGravitation,
-    Entity     **pstEntity);
+    const double  dDeltaTime,
+    const double  dGravitation,
+    const uint8_t u8MeterInPixel,
+    Entity      **pstEntity);
 
 #endif // _ENTITY_H_

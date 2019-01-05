@@ -1,14 +1,15 @@
-PROJECT=eszFW
+PROJECT=RainbowJoe
 
 ifeq ($(OS),Windows_NT)
-	OUT=lib/$(PROJECT).lib
+	OUT=$(PROJECT).exe
 	TOOLCHAIN=i686-w64-mingw32
-	AR=$(TOOLCHAIN)-ar
 	CC=$(TOOLCHAIN)-cc
+	ESZFW=../../lib/eszFW.lib
 else
-	OUT=lib/$(PROJECT).a
+	OUT=$(PROJECT)
 	TOOLCHAIN=local
 	UNAME_S := $(shell uname -s)
+	ESZFW=../../lib/eszFW.a
 endif
 
 LIBS=\
@@ -22,9 +23,9 @@ CFLAGS=\
 	-D_REENTRANT\
 	-DSDL_MAIN_HANDLED\
 	-DWANT_ZLIB\
-	-Isrc\
-	-Isrc/inih\
-	-Isrc/tmx/src\
+	-I../../src\
+	-I../../src/inih\
+	-I../../src/tmx/src\
 	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
 	-O2\
 	-pedantic-errors\
@@ -34,8 +35,6 @@ CFLAGS=\
 	-Wextra
 
 SRCS=\
-	$(wildcard src/*.c)\
-	$(wildcard src/inih/*.c)\
-	$(wildcard src/tmx/src/*.c)
+	$(wildcard src/*.c)
 
 OBJS=$(patsubst %.c, %.o, $(SRCS))
