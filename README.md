@@ -88,8 +88,8 @@ make
 D:       show debug information
 P:       pause
 ESCAPE:  hide debug information
-LSHIFT:  hold to unlock camera
          unpause
+LSHIFT:  hold to unlock camera
 Q:       quit
 UP:      move unlocked camera up
 DOWN:    move unlocked camera down
