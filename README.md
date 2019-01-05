@@ -75,6 +75,12 @@ If you're on NixOS enter:
 nix-shell --command make
 ```
 
+To compile the example applications:
+```
+cd examples
+make
+```
+
 ## Controls
 
 ```
