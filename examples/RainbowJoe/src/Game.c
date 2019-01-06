@@ -150,7 +150,12 @@ int InitGame()
         SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
 
         // Set up collision detection.
-        if (false == IsOnPlatform(pstPlayer->dPosX, pstPlayer->dPosY, 18.0, &pstMap))
+        if (false == IsOnTileOfType(
+                "Platform",
+                pstPlayer->dPosX,
+                pstPlayer->dPosY,
+                18.0,
+                &pstMap))
         {
             Drop(&pstPlayer);
         }

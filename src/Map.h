@@ -66,7 +66,8 @@ bool IsMapCoordOfType(
     double      dPosY,
     Map       **pstMap);
 
-bool IsOnPlatform(
+bool IsOnTileOfType(
+    const char  *pacType,
     const double dPosX,
     const double dPosY,
     const double dOffsetY,

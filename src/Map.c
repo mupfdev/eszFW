@@ -355,13 +355,14 @@ bool IsMapCoordOfType(
     return false;
 }
 
-bool IsOnPlatform(
+bool IsOnTileOfType(
+    const char  *pacType,
     const double dPosX,
     const double dPosY,
     const double dOffsetY,
     Map        **pstMap)
 {
-    if (IsMapCoordOfType("Platform", dPosX, dPosY + dOffsetY, &(*pstMap)))
+    if (IsMapCoordOfType(pacType, dPosX, dPosY + dOffsetY, &(*pstMap)))
     {
         return true;
     }
