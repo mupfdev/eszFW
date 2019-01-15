@@ -5,14 +5,17 @@
  */
 
 #include <stdlib.h>
-#include "Game.h"
+#include "Launcher.h"
 
-int main()
+int main(int sArgC, char *pacArgV[])
 {
     int sExecStatus;
 
-    sExecStatus = InitGame();
-    QuitGame();
+    // Avoid 'error: unused parameter':
+    (void)sArgC; (void)pacArgV;
+
+    sExecStatus = InitLauncher();
+    Quit();
 
     return sExecStatus;
 }

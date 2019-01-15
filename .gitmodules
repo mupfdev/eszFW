@@ -1,6 +1,3 @@
-[submodule "src/tmx"]
-	path = src/tmx
-	url = https://github.com/baylej/tmx.git
-[submodule "src/inih"]
-	path = src/inih
-	url = https://github.com/benhoyt/inih
+[submodule "external/tmx"]
+	path = external/tmx
+	url = https://github.com/mupfelofen-de/tmx-android.git

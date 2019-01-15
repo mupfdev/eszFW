@@ -6,8 +6,13 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#include <SDL_image.h>
+#else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#endif
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>

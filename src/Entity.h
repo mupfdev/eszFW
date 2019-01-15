@@ -6,6 +6,11 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif
 #include <stdbool.h>
 #include <stdint.h>
 #include "AABB.h"

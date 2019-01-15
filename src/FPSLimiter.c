@@ -6,7 +6,11 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
 #include <stdint.h>
 #include "FPSLimiter.h"
 

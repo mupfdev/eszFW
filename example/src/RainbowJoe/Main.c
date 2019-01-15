@@ -1,15 +1,19 @@
 /**
- * @file Game.c
- * @ingroup Game
- * @defgroup Game
+ * @file Main.c
+ * @ingroup RainbowJoe
+ * @defgroup RainbowJoe
  * @author Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#define QUIT_FAILURE { sExecStatus = EXIT_FAILURE; goto quit; }
-#define QUIT_SUCCESS { sExecStatus = EXIT_SUCCESS; goto quit; }
+#define QUIT_FAILURE { sExecStatus = -1; goto quit; }
+#define QUIT_SUCCESS { sExecStatus =  0; goto quit; }
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
 #include <eszFW.h>
 #include <math.h>
 #include <stdbool.h>
@@ -17,10 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Main.h"
 
-int InitGame()
+int RainbowJoe(Video **pstVideo)
 {
-    int         sExecStatus   = EXIT_SUCCESS;
+    int         sExecStatus   = 0;
     Background *pstBackground = NULL;
     Camera     *pstCamera     = NULL;
     Entity     *pstPlayer     = NULL;
@@ -28,7 +33,7 @@ int InitGame()
     Map        *pstMap        = NULL;
     Object     *pstPlrSpawn   = NULL;
     Sprite     *pstSprite     = NULL;
-    Video      *pstVideo      = NULL;
+    Touch      *pstTouch      = NULL;
     bool        bDebug        = false;
     bool        bPause        = false;
     double      dTimeA        = 0.f;
@@ -41,13 +46,6 @@ int InitGame()
             "res/images/far-grounds.png",
         };
 
-    if (-1 == InitVideo(
-            "Rainbow Joe", 640, 480, 320, 240,
-            false, &pstVideo))
-    {
-        QUIT_FAILURE;
-    }
-
     if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
     if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT_FAILURE; }
     if (-1 == InitMap("res/maps/Demo.tmx", 24, &pstMap))       { QUIT_FAILURE; }
@@ -56,9 +54,9 @@ int InitGame()
     if (-1 == InitBackground(
             4,
             pacBgFileNames,
-            pstVideo->s32WindowWidth,
+            (*pstVideo)->s32WindowWidth,
             BOTTOM,
-            &pstVideo->pstRenderer,
+            &(*pstVideo)->pstRenderer,
             &pstBackground))
     {
         QUIT_FAILURE;
@@ -66,7 +64,12 @@ int InitGame()
 
     if (-1 == InitSprite(
             "res/images/characters_7.png", 736, 128, 0, 0,
-            &pstSprite, &pstVideo->pstRenderer))
+            &pstSprite, &(*pstVideo)->pstRenderer))
+    {
+        QUIT_FAILURE;
+    }
+
+    if (-1 == InitTouch((*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight, &pstTouch))
     {
         QUIT_FAILURE;
     }
@@ -84,7 +87,7 @@ int InitGame()
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
 
         const uint8_t *pu8KeyState;
-        if (-1 == ReadInput(&pu8KeyState) || pu8KeyState[SDL_SCANCODE_Q])
+        if (-1 == ReadInput(&pu8KeyState) || pu8KeyState[SDL_SCANCODE_Q] || pu8KeyState[SDL_SCANCODE_AC_BACK])
         {
             QUIT_SUCCESS;
         }
@@ -96,6 +99,7 @@ int InitGame()
         }
 
         ResetEntity(&pstPlayer);
+        GetTouchPosition(&pstTouch);
         SetCameraLock(false, &pstCamera);
 
         if (pu8KeyState[SDL_SCANCODE_D])      { bDebug = true;  }
@@ -112,42 +116,57 @@ int InitGame()
         }
         else
         {
-            if (pu8KeyState[SDL_SCANCODE_LEFT])  { Move(LEFT, 8.0, 4.0, 0, 3, &pstPlayer);  }
-            if (pu8KeyState[SDL_SCANCODE_RIGHT]) { Move(RIGHT, 8.0, 4.0, 0, 3, &pstPlayer); }
+            if (pu8KeyState[SDL_SCANCODE_LEFT])  { Move(LEFT , 6.0, 3.0, 0, 3, &pstPlayer); }
+            if (pu8KeyState[SDL_SCANCODE_RIGHT]) { Move(RIGHT, 6.0, 3.0, 0, 3, &pstPlayer); }
+        }
+
+        // Rudimentary touch controls for testing purposes only.
+        if (pstTouch->s32PosX != 0)
+        {
+            if (pstTouch->s32PosX < ((*pstVideo)->s32WindowWidth / 3))
+            {
+                Move(LEFT,  6.0, 3.0, 0, 3, &pstPlayer);
+            }
+            else if (pstTouch->s32PosX >= (((*pstVideo)->s32WindowWidth / 3) * 2))
+            {
+                Move(RIGHT, 6.0, 3.0, 0, 3, &pstPlayer);
+            }
         }
 
         // Follow player entity and set camera boudnaries to map size.
         SetCameraTargetEntity(
-            pstVideo->s32LogicalWindowWidth,
-            pstVideo->s32LogicalWindowHeight,
+            (*pstVideo)->s32LogicalWindowWidth,
+            (*pstVideo)->s32LogicalWindowHeight,
             &pstCamera,
             &pstPlayer);
 
         SetCameraBoundariesToMapSize(
-            pstVideo->s32LogicalWindowWidth,
-            pstVideo->s32LogicalWindowHeight,
+            (*pstVideo)->s32LogicalWindowWidth,
+            (*pstVideo)->s32LogicalWindowHeight,
             pstMap->u16Width,
             pstMap->u16Height,
             &pstCamera);
 
         // Set zoom level dynamically in relation to vertical velocity.
+        #ifndef __ANDROID__
         if (0.0 < pstPlayer->dVelocityY)
         {
-            pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
-            if (1.0 > pstVideo->dZoomLevel)
+            (*pstVideo)->dZoomLevel -= dDeltaTime / 3.5f;
+            if (1.0 > (*pstVideo)->dZoomLevel)
             {
-                pstVideo->dZoomLevel = 1;
+                (*pstVideo)->dZoomLevel = 1;
             }
         }
         else
         {
-            pstVideo->dZoomLevel += dDeltaTime / 1.75f;
-            if (pstVideo->dZoomLevel > pstVideo->dInitialZoomLevel)
+            (*pstVideo)->dZoomLevel += dDeltaTime / 1.75f;
+            if ((*pstVideo)->dZoomLevel > (*pstVideo)->dInitialZoomLevel)
             {
-                pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
+                (*pstVideo)->dZoomLevel = (*pstVideo)->dInitialZoomLevel;
             }
         }
-        SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
+        SetZoomLevel((*pstVideo)->dZoomLevel, &(*pstVideo));
+        #endif
 
         // Set up collision detection.
         if (false == IsOnTileOfType(
@@ -164,10 +183,10 @@ int InitGame()
 
         if (-1 == DrawBackground(
                 pstPlayer->bOrientation,
-                pstVideo->s32LogicalWindowHeight,
+                (*pstVideo)->s32LogicalWindowHeight,
                 pstCamera->dPosY,
                 pstPlayer->dVelocityX,
-                &pstVideo->pstRenderer,
+                &(*pstVideo)->pstRenderer,
                 &pstBackground))
         {
             QUIT_FAILURE;
@@ -176,48 +195,43 @@ int InitGame()
         if (-1 == DrawMap(
                 0, "res/images/tileset.png", true, "BG",
                 pstCamera->dPosX, pstCamera->dPosY,
-                &pstMap, &pstVideo->pstRenderer))
+                &pstMap, &(*pstVideo)->pstRenderer))
         {
             QUIT_FAILURE;
         }
 
         ConnectMapEndsForEntity(pstMap->u16Width, pstMap->u16Height, &pstPlayer);
-        DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &pstVideo->pstRenderer);
+        DrawEntity(&pstPlayer, &pstCamera, &pstSprite, &(*pstVideo)->pstRenderer);
 
         if (-1 == DrawMap(
                 1, "res/images/tileset.png", false, "FG",
                 pstCamera->dPosX, pstCamera->dPosY,
-                &pstMap, &pstVideo->pstRenderer))
+                &pstMap, &(*pstVideo)->pstRenderer))
         {
             QUIT_FAILURE;
         }
 
         if (bDebug)
         {
-            PrintText("X:  ", 8, 4,  &pstVideo->pstRenderer, &pstFont);
-            PrintText("Y:  ", 8, 20, &pstVideo->pstRenderer, &pstFont);
-            PrintText("HV: ", 8, 36, &pstVideo->pstRenderer, &pstFont);
-            PrintText("VV: ", 8, 52, &pstVideo->pstRenderer, &pstFont);
-            PrintNumber((int32_t)round(pstPlayer->dPosX),      32,  4, &pstVideo->pstRenderer, &pstFont);
-            PrintNumber((int32_t)round(pstPlayer->dPosY),      32, 20, &pstVideo->pstRenderer, &pstFont);
-            PrintNumber((int32_t)round(pstPlayer->dVelocityX), 32, 36, &pstVideo->pstRenderer, &pstFont);
-            PrintNumber((int32_t)round(pstPlayer->dVelocityY), 32, 52, &pstVideo->pstRenderer, &pstFont);
+            PrintText("X:  ", 8, 4,  &(*pstVideo)->pstRenderer, &pstFont);
+            PrintText("Y:  ", 8, 20, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintText("HV: ", 8, 36, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintText("VV: ", 8, 52, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dPosX),      32,  4, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dPosY),      32, 20, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dVelocityX), 32, 36, &(*pstVideo)->pstRenderer, &pstFont);
+            PrintNumber((int32_t)round(pstPlayer->dVelocityY), 32, 52, &(*pstVideo)->pstRenderer, &pstFont);
         }
 
-        RenderScene(&pstVideo->pstRenderer);
+        RenderScene(&(*pstVideo)->pstRenderer);
     }
 
 quit:
+    FreeTouch(&pstTouch);
     FreeSprite(&pstSprite);
     FreeBackground(&pstBackground);
     FreeFont(&pstFont);
     FreeObject(&pstPlrSpawn);
     FreeMap(&pstMap);
-    FreeVideo(&pstVideo);
     return sExecStatus;
-}
-
-void QuitGame()
-{
-    SDL_Quit();
 }

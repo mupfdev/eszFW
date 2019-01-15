@@ -6,8 +6,13 @@
 #ifndef _FONT_H_
 #define _FONT_H_
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#include <SDL_ttf.h>
+#else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#endif
 
 typedef struct Font_t
 {

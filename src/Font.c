@@ -6,8 +6,13 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#include <SDL_ttf.h>
+#else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#endif
 #include <string.h>
 #include "Font.h"
 

@@ -6,8 +6,13 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#ifdef __ANDROID__
+#include <SDL.h>
+#include <SDL_image.h>
+#else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#endif
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -203,11 +208,6 @@ int InitSprite(
             SDL_LOG_CATEGORY_APPLICATION,
             "InitSprite(): error allocating memory.\n");
         return -1;
-    }
-
-    if (NULL != (*pstSprite)->pstTexture)
-    {
-        SDL_DestroyTexture((*pstSprite)->pstTexture);
     }
 
     (*pstSprite)->pstTexture = IMG_LoadTexture((*pstRenderer), pacFileName);

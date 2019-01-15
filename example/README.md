@@ -1,6 +1,8 @@
-# Rainbow Joe
+# eszFW Demo
 
-## About
+## Rainbow Joe
+
+### About
 
 Rainbow Joe is a classic 2D platformer game in the spirit of the 1990s
 written in C to demonstrate the use of
@@ -10,7 +12,10 @@ intention to simplify game development in C.
 [![Rainbow Joe](.media/scrshot-tn.png)](.media/scrshot.png?raw=true
 "Rainbow Joe")
 
-## Controls
+### Controls
+
+Note: to control the game using your touch screen, just click at the
+left, right or at the middle of the screen.
 
 ```
 D:       show debug information
