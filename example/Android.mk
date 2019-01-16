@@ -8,9 +8,8 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/RainbowJoe
 LOCAL_MODULE := main
 
 LOCAL_SRC_FILES := \
-	src/Launcher.c\
-	src/Main.c\
-	src/RainbowJoe/Main.c
+	$(wildcard $(LOCAL_PATH)/src/*.c)\
+	$(wildcard $(LOCAL_PATH)/src/RainbowJoe/*.c)
 
 LOCAL_CFLAGS := \
 	-D_REENTRANT\

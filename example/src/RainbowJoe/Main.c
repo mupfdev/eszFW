@@ -1,13 +1,8 @@
 /**
  * @file Main.c
- * @ingroup RainbowJoe
- * @defgroup RainbowJoe
  * @author Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
-
-#define QUIT_FAILURE { sExecStatus = -1; goto quit; }
-#define QUIT_SUCCESS { sExecStatus =  0; goto quit; }
 
 #ifdef __ANDROID__
 #include <SDL.h>
@@ -46,32 +41,56 @@ int RainbowJoe(Video **pstVideo)
             "res/images/far-grounds.png",
         };
 
-    if (-1 == InitCamera(&pstCamera))                          { QUIT_FAILURE; }
-    if (-1 == InitEntity(0, 0, &pstPlayer))                    { QUIT_FAILURE; }
-    if (-1 == InitMap("res/maps/Demo.tmx", 24, &pstMap))       { QUIT_FAILURE; }
-    if (-1 == InitObject(&pstPlrSpawn))                        { QUIT_FAILURE; }
-    if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont)) { QUIT_FAILURE; }
-    if (-1 == InitBackground(
-            4,
-            pacBgFileNames,
-            (*pstVideo)->s32WindowWidth,
-            BOTTOM,
-            &(*pstVideo)->pstRenderer,
-            &pstBackground))
+    if (-1 == InitCamera(&pstCamera))
     {
-        QUIT_FAILURE;
+        sExecStatus = -1;
+        goto error_init_camera;
+    }
+
+    if (-1 == InitEntity(0, 0, &pstPlayer))
+    {
+        sExecStatus = -1;
+        goto error_init_player;
+    }
+
+    if (-1 == InitMap("res/maps/Demo.tmx", 24, &pstMap))
+    {
+        sExecStatus = -1;
+        goto error_init_map;
+    }
+
+    if (-1 == InitObject(&pstPlrSpawn))
+    {
+        sExecStatus = -1;
+        goto error_init_plrspawn;
+    }
+
+    if (-1 == InitFont("res/ttf/FifteenNarrow.ttf", &pstFont))
+    {
+        sExecStatus = -1;
+        goto error_init_font;
+    }
+
+    if (-1 == InitBackground(
+            4, pacBgFileNames, (*pstVideo)->s32WindowWidth, BOTTOM,
+            &(*pstVideo)->pstRenderer, &pstBackground))
+    {
+        sExecStatus = -1;
+        goto error_init_background;
     }
 
     if (-1 == InitSprite(
             "res/images/characters_7.png", 736, 128, 0, 0,
             &pstSprite, &(*pstVideo)->pstRenderer))
     {
-        QUIT_FAILURE;
+        sExecStatus = -1;
+        goto error_init_sprite;
     }
 
     if (-1 == InitTouch((*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight, &pstTouch))
     {
-        QUIT_FAILURE;
+        sExecStatus = -1;
+        goto error_init_touch;
     }
 
     GetSingleObjectByName("Player", &pstMap, &pstPlrSpawn);
@@ -89,7 +108,7 @@ int RainbowJoe(Video **pstVideo)
         const uint8_t *pu8KeyState;
         if (-1 == ReadInput(&pu8KeyState) || pu8KeyState[SDL_SCANCODE_Q] || pu8KeyState[SDL_SCANCODE_AC_BACK])
         {
-            QUIT_SUCCESS;
+            goto quit;
         }
 
         if (bPause)
@@ -189,7 +208,8 @@ int RainbowJoe(Video **pstVideo)
                 &(*pstVideo)->pstRenderer,
                 &pstBackground))
         {
-            QUIT_FAILURE;
+            sExecStatus = -1;
+            goto error;
         }
 
         if (-1 == DrawMap(
@@ -197,7 +217,8 @@ int RainbowJoe(Video **pstVideo)
                 pstCamera->dPosX, pstCamera->dPosY,
                 &pstMap, &(*pstVideo)->pstRenderer))
         {
-            QUIT_FAILURE;
+            sExecStatus = -1;
+            goto error;
         }
 
         ConnectMapEndsForEntity(pstMap->u16Width, pstMap->u16Height, &pstPlayer);
@@ -208,7 +229,8 @@ int RainbowJoe(Video **pstVideo)
                 pstCamera->dPosX, pstCamera->dPosY,
                 &pstMap, &(*pstVideo)->pstRenderer))
         {
-            QUIT_FAILURE;
+            sExecStatus = -1;
+            goto error;
         }
 
         if (bDebug)
@@ -226,12 +248,24 @@ int RainbowJoe(Video **pstVideo)
         RenderScene(&(*pstVideo)->pstRenderer);
     }
 
-quit:
+    // Error handling:
+error:
+error_init_touch:
     FreeTouch(&pstTouch);
+error_init_sprite:
     FreeSprite(&pstSprite);
+error_init_background:
     FreeBackground(&pstBackground);
+error_init_font:
     FreeFont(&pstFont);
+error_init_plrspawn:
     FreeObject(&pstPlrSpawn);
+error_init_map:
     FreeMap(&pstMap);
+error_init_player:
+    FreeEntity(&pstPlayer);
+error_init_camera:
+    FreeCamera(&pstCamera);
+quit:
     return sExecStatus;
 }

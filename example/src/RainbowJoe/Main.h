@@ -1,6 +1,5 @@
 /**
  * @file Main.h
- * @ingroup RainbowJoe
  */
 
 #ifndef _RAINBOW_JOE_MAIN_H_
