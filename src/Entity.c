@@ -20,11 +20,23 @@
 #include "Entity.h"
 #include "Macros.h"
 
-#define IS_DEAD       0
-#define IS_IN_MID_AIR 1
-#define IS_LOCKED     2
-#define IS_MOVING     3
+#define IS_ANIMATED   0
+#define IS_DEAD       1
+#define IS_IN_MID_AIR 2
+#define IS_LOCKED     3
 #define IS_WALKING    4
+
+void AnimateEntity(bool bAnimate, Entity **pstEntity)
+{
+    if (bAnimate)
+    {
+        SET((*pstEntity)->u16Flags, IS_ANIMATED);
+    }
+    else
+    {
+        CLEAR((*pstEntity)->u16Flags, IS_ANIMATED);
+    }
+}
 
 void ConnectHorizontalMapEndsForEntity(
     const uint16_t u16MapWidth,
@@ -107,7 +119,7 @@ int DrawEntity(
     return 0;
 }
 
-void Drop(Entity **pstEntity)
+void DropEntity(Entity **pstEntity)
 {
     SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
 }
@@ -124,7 +136,7 @@ void FreeEntity(Entity **pstEntity)
 
 void FreeSprite(Sprite **pstSprite)
 {
-    if (NULL != (*pstSprite))
+    if ((*pstSprite))
     {
         SDL_DestroyTexture((*pstSprite)->pstTexture);
     }
@@ -136,7 +148,7 @@ int InitCamera(Camera **pstCamera)
 {
     *pstCamera = NULL;
     *pstCamera = malloc(sizeof(struct Camera_t));
-    if (NULL == *pstCamera)
+    if (! *pstCamera)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -156,13 +168,15 @@ int InitCamera(Camera **pstCamera)
 }
 
 int InitEntity(
-    const double dPosX,
-    const double dPosY,
+    const double  dPosX,
+    const double  dPosY,
+    const uint8_t u8Width,
+    const uint8_t u8Height,
     Entity     **pstEntity)
 {
     *pstEntity = NULL;
     *pstEntity = malloc(sizeof(struct Entity_t));
-    if (NULL == *pstEntity)
+    if (! *pstEntity)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -171,9 +185,9 @@ int InitEntity(
     }
 
     SetPosition(dPosX, dPosY, &(*pstEntity));
-    SetSpeed(8.0, 4.5, &(*pstEntity));
+    SetSpeed(8.0f, 4.5f, &(*pstEntity));
     SetOrientation(RIGHT, &(*pstEntity));
-    SetAnimation(0, 0, &(*pstEntity));
+    SetAnimation(0, 0, 12.5f, &(*pstEntity));
 
     (*pstEntity)->dVelocityX     =  0.f;
     (*pstEntity)->dVelocityY     =  0.f;
@@ -182,8 +196,8 @@ int InitEntity(
     (*pstEntity)->stBB.dRight    =  0;
     (*pstEntity)->stBB.dTop      =  0;
     (*pstEntity)->u16Flags       =  0;
-    (*pstEntity)->u8Width        = 32;
-    (*pstEntity)->u8Height       = 32;
+    (*pstEntity)->u8Width        = u8Width;
+    (*pstEntity)->u8Height       = u8Height;
     (*pstEntity)->u8FrameOffsetX =  0;
     (*pstEntity)->u8AnimFrame    =  0;
     (*pstEntity)->dAnimDelay     =  0.f;
@@ -202,7 +216,7 @@ int InitSprite(
 {
     *pstSprite = NULL;
     *pstSprite = malloc(sizeof(struct Sprite_t));
-    if (NULL == *pstSprite)
+    if (! *pstSprite)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -211,10 +225,9 @@ int InitSprite(
     }
 
     (*pstSprite)->pstTexture = IMG_LoadTexture((*pstRenderer), pacFileName);
-    if (NULL == (*pstSprite)->pstTexture)
+    if (! (*pstSprite)->pstTexture)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
-        free(*pstSprite);
         return -1;
     }
 
@@ -240,24 +253,26 @@ bool IsCameraLocked(Camera **pstCamera)
     }
 }
 
-void Move(
+void MoveEntity(
     const bool    bOrientation,
     const double  dAcceleration,
     const double  dMaxVelocityX,
     const uint8_t u8AnimStart,
     const uint8_t u8AnimEnd,
+    const double  dAnimSpeed,
+    const uint8_t u8FrameOffsetY,
     Entity      **pstEntity)
 {
     SET((*pstEntity)->u16Flags, IS_WALKING);
+    SetFrameOffset(0, u8FrameOffsetY, &(*pstEntity));
     SetSpeed(dAcceleration, dMaxVelocityX, &(*pstEntity));
     SetOrientation(bOrientation, &(*pstEntity));
-    SetAnimation(u8AnimStart, u8AnimEnd, &(*pstEntity));
+    SetAnimation(u8AnimStart, u8AnimEnd, dAnimSpeed, &(*pstEntity));
 }
 
 void ResetEntity(Entity **pstEntity)
 {
-    CLEAR((*pstEntity)->u16Flags, IS_WALKING);
-    CLEAR((*pstEntity)->u16Flags, IS_IN_MID_AIR);
+    (*pstEntity)->u16Flags = 0;
 }
 
 void SetCameraLock(const bool bLock, Camera **pstCamera)
@@ -295,8 +310,11 @@ void SetCameraTargetEntity(
 void SetAnimation(
     const uint8_t u8AnimStart,
     const uint8_t u8AnimEnd,
+    const double  dAnimSpeed,
     Entity      **pstEntity)
 {
+    (*pstEntity)->dAnimSpeed = dAnimSpeed;
+
     if (u8AnimStart <= u8AnimEnd)
     {
         (*pstEntity)->u8AnimStart = u8AnimStart;
@@ -408,6 +426,8 @@ void UpdateEntity(
         (*pstEntity)->dVelocityY = 0.f;
         uint8_t u8Correction     = (*pstEntity)->u8Height / 2;
         dPosY                    = (u8Correction * round((*pstEntity)->dPosY / u8Correction));
+        // Round to next number divisable by 2, 4, 8 or 16:
+        dPosY                    = (16.f * round(dPosY / 16.f));
     }
 
     // Calculate horizontal velocity.
@@ -416,11 +436,9 @@ void UpdateEntity(
         double dAccel             = (*pstEntity)->dAcceleration * (double)u8MeterInPixel;
         double dDistanceX         = dAccel * dDeltaTime * dDeltaTime;
         (*pstEntity)->dVelocityX += dDistanceX;
-        SET((*pstEntity)->u16Flags, IS_MOVING);
     }
     else
     {
-        CLEAR((*pstEntity)->u16Flags, IS_MOVING);
         (*pstEntity)->dVelocityX -= (*pstEntity)->dAcceleration * dDeltaTime;
     }
 
@@ -451,13 +469,13 @@ void UpdateEntity(
     SetPosition(dPosX, dPosY, &(*pstEntity));
 
     // Update bounding box.
-    (*pstEntity)->stBB.dBottom = dPosY + (*pstEntity)->u8Height;
-    (*pstEntity)->stBB.dLeft   = dPosX;
-    (*pstEntity)->stBB.dRight  = dPosX + (*pstEntity)->u8Width;
-    (*pstEntity)->stBB.dTop    = dPosY;
+    (*pstEntity)->stBB.dBottom = dPosY + ((*pstEntity)->u8Height / 2);
+    (*pstEntity)->stBB.dLeft   = dPosX - ((*pstEntity)->u8Width  / 2);
+    (*pstEntity)->stBB.dRight  = dPosX + ((*pstEntity)->u8Width  / 2);
+    (*pstEntity)->stBB.dTop    = dPosY - ((*pstEntity)->u8Height / 2);
 
     // Update animation frame.
-    if (IS_SET((*pstEntity)->u16Flags, IS_MOVING))
+    if (IS_SET((*pstEntity)->u16Flags, IS_ANIMATED))
     {
         (*pstEntity)->dAnimDelay += dDeltaTime;
 
@@ -466,7 +484,7 @@ void UpdateEntity(
             (*pstEntity)->u8AnimFrame = (*pstEntity)->u8AnimStart;
         }
 
-        if ((*pstEntity)->dAnimDelay > 1.0 / 6.25)
+        if ((*pstEntity)->dAnimDelay > 1.0 / (*pstEntity)->dAnimSpeed)
         {
             (*pstEntity)->u8AnimFrame++;
             (*pstEntity)->dAnimDelay = 0.0;

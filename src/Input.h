@@ -8,24 +8,29 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "AABB.h"
 
-typedef struct Touch_t
+typedef struct Input_t
 {
-    int32_t s32WindowWidth;
-    int32_t s32WindowHeight;
-    int32_t s32PosX;
-    int32_t s32PosY;
-} Touch;
+    const uint8_t *pu8KeyState;
+    int32_t        s32WindowWidth;
+    int32_t        s32WindowHeight;
+    int32_t        s32TouchPosX;
+    int32_t        s32TouchPosY;
+    uint32_t       u32TouchType;
+    AABB           stTouchBB;
+} Input;
 
-void FreeTouch(Touch **pstTouch);
+void FreeInput(Input **pstInput);
+int32_t GetTouchPosX(Input **pstInput);
+int32_t GetTouchPosY(Input **pstInput);
 
-int InitTouch(
+int InitInput(
     int32_t s32WindowWidth,
     int32_t s32WindowHeight,
-    Touch **pstTouch);
+    Input **pstInput);
 
-int ReadInput(const uint8_t **pu8Input);
-
-void GetTouchPosition(Touch **pstTouch);
+bool IsKeyPressed(const uint16_t u16Scancode, Input **pstInput);
+bool UpdateInput(Input **pstInput);
 
 #endif // _INPUT_H_

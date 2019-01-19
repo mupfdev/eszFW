@@ -71,10 +71,10 @@ bool IsMapCoordOfType(
     Map       **pstMap);
 
 bool IsOnTileOfType(
-    const char  *pacType,
-    const double dPosX,
-    const double dPosY,
-    const double dOffsetY,
+    const char   *pacType,
+    const double  dPosX,
+    const double  dPosY,
+    const uint8_t u8EntityHeight,
     Map        **pstMap);
 
 void SetGravitation(

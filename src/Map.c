@@ -29,7 +29,7 @@ static void _FindObjectByName(
     tmx_object *pstTmxObject,
     Object    **pstObject)
 {
-    if (NULL != pstObject)
+    if (pstObject)
     {
         if (0 == strncmp(pacName, pstTmxObject->name, 20))
         {
@@ -45,7 +45,7 @@ static void _FindObjectByName(
 
 static void _GetObjectCount(tmx_object *pstObject, uint16_t **pu16ObjectCount)
 {
-    if (NULL != pstObject)
+    if (pstObject)
     {
         (**pu16ObjectCount)++;
     }
@@ -116,7 +116,7 @@ int DrawMap(
         (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width,
         (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height);
 
-    if (NULL == (*pstMap)->pstTexture[u16Index])
+    if (! (*pstMap)->pstTexture[u16Index])
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -126,7 +126,7 @@ int DrawMap(
         (*pstRenderer),
         pacTilesetImageFileName);
 
-    if (NULL == pstTileset)
+    if (! pstTileset)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
         return -1;
@@ -135,7 +135,10 @@ int DrawMap(
     if (0 != SDL_SetRenderTarget((*pstRenderer), (*pstMap)->pstTexture[u16Index]))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(pstTileset);
+        if (pstTileset)
+        {
+            SDL_DestroyTexture(pstTileset);
+        }
         return -1;
     }
 
@@ -158,7 +161,7 @@ int DrawMap(
 
         if (L_LAYER == pstLayer->type)
         {
-            if ((pstLayer->visible) && (NULL != strstr(pstLayer->name, pacLayerName)))
+            if ((pstLayer->visible) && (strstr(pstLayer->name, pacLayerName)))
             {
                 for (uint16_t u16IndexH = 0; u16IndexH < (*pstMap)->pstTmxMap->height; u16IndexH++)
                 {
@@ -167,7 +170,7 @@ int DrawMap(
                         u16Gid = _ClearGidFlags(pstLayer->content.gids[
                             (u16IndexH * (*pstMap)->pstTmxMap->width) + u16IndexW]);
 
-                        if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid])
+                        if ((*pstMap)->pstTmxMap->tiles[u16Gid])
                         {
                             pstTS    = (*pstMap)->pstTmxMap->tiles[u16Gid]->tileset;
                             stSrc.x  = (*pstMap)->pstTmxMap->tiles[u16Gid]->ul_x;
@@ -204,8 +207,11 @@ int DrawMap(
 
 void FreeMap(Map **pstMap)
 {
-    tmx_map_free((*pstMap)->pstTmxMap);
-    free(*pstMap);
+    if (! pstMap)
+    {
+        tmx_map_free((*pstMap)->pstTmxMap);
+    }
+    free((*pstMap));
 
     SDL_Log("Unload TMX map.\n");
 }
@@ -261,7 +267,7 @@ int InitMap(
     Map         **pstMap)
 {
     *pstMap = malloc(sizeof(struct Map_t));
-    if (NULL == *pstMap)
+    if (! *pstMap)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -270,10 +276,9 @@ int InitMap(
     }
 
     (*pstMap)->pstTmxMap = tmx_load(pacFileName);
-    if (NULL == (*pstMap)->pstTmxMap)
+    if (! (*pstMap)->pstTmxMap)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", tmx_strerr());
-        free(*pstMap);
         return -1;
     }
 
@@ -298,7 +303,7 @@ int InitMap(
 int InitObject(Object **pstObject)
 {
     *pstObject = malloc(sizeof(struct Object_t));
-    if (NULL == *pstObject)
+    if (! *pstObject)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -343,9 +348,9 @@ bool IsMapCoordOfType(
             return false;
         }
 
-        if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid])
+        if ((*pstMap)->pstTmxMap->tiles[u16Gid])
         {
-            if (NULL != (*pstMap)->pstTmxMap->tiles[u16Gid]->type)
+            if ((*pstMap)->pstTmxMap->tiles[u16Gid]->type)
             {
                 if (0 == strncmp(pacType, (*pstMap)->pstTmxMap->tiles[u16Gid]->type, 20))
                 {
@@ -361,13 +366,13 @@ bool IsMapCoordOfType(
 }
 
 bool IsOnTileOfType(
-    const char  *pacType,
-    const double dPosX,
-    const double dPosY,
-    const double dOffsetY,
+    const char   *pacType,
+    const double  dPosX,
+    const double  dPosY,
+    const uint8_t u8EntityHeight,
     Map        **pstMap)
 {
-    if (IsMapCoordOfType(pacType, dPosX, dPosY + dOffsetY, &(*pstMap)))
+    if (IsMapCoordOfType(pacType, dPosX, dPosY + (double)(u8EntityHeight / 2.f), &(*pstMap)))
     {
         return true;
     }

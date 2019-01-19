@@ -2,14 +2,13 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/RainbowJoe $(LOCAL_PATH)/src/eszFW
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/RainbowJoe
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 LOCAL_MODULE := main
 
 LOCAL_SRC_FILES := \
-	$(wildcard $(LOCAL_PATH)/src/*.c)\
-	$(wildcard $(LOCAL_PATH)/src/RainbowJoe/*.c)
+	$(wildcard $(LOCAL_PATH)/src/*.c)
 
 LOCAL_CFLAGS := \
 	-D_REENTRANT\

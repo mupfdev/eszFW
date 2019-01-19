@@ -27,7 +27,7 @@ int InitFont(const char *pacFileName, Font **pstFont)
 {
     *pstFont = NULL;
     *pstFont = malloc(sizeof(struct Font_t));
-    if (NULL == *pstFont)
+    if (! *pstFont)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -36,15 +36,13 @@ int InitFont(const char *pacFileName, Font **pstFont)
     if (-1 == TTF_Init())
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
-        free(pstFont);
         return -1;
     }
 
     (*pstFont)->pstTTF = TTF_OpenFont(pacFileName, 16);
-    if (NULL == (*pstFont)->pstTTF)
+    if (! (*pstFont)->pstTTF)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
-        free(pstFont);
         return -1;
     }
 
@@ -99,7 +97,7 @@ int PrintText(
     SDL_Rect     stSrc;
 
     pstSurface = TTF_RenderText_Solid((*pstFont)->pstTTF, pacText, (*pstFont)->stColour);
-    if (NULL == pstSurface)
+    if (! pstSurface)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
         sReturnValue = -1;
@@ -107,7 +105,7 @@ int PrintText(
     }
 
     pstTexture = SDL_CreateTextureFromSurface((*pstRenderer), pstSurface);
-    if (NULL == pstSurface)
+    if (! pstSurface)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
@@ -136,11 +134,14 @@ int PrintText(
     }
 
     exit:
-    if (NULL != pstTexture)
+    if (pstTexture)
     {
         SDL_DestroyTexture(pstTexture);
     }
-    SDL_FreeSurface(pstSurface);
+    if (pstSurface)
+    {
+        SDL_FreeSurface(pstSurface);
+    }
 
     return sReturnValue;
 }

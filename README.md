@@ -2,11 +2,12 @@
 
 ## About
 
-eszFW is a framework with the intention to simplify game development in
-C.  Furthermore, this project is the logical continuation of my older
-projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
-[Boondock Sam](https://github.com/mupfelofen-de/boondock-sam), which I
-wrote to familiarise myself with the basics of game programming.
+eszFW is a portable framework with the intention to simplify 2D game
+development in C.  Furthermore, this project is the logical continuation
+of my older projects [Rainbow
+Joe](https://github.com/mupfelofen-de/rainbow-joe) and [Boondock
+Sam](https://github.com/mupfelofen-de/boondock-sam), which I wrote to
+familiarise myself with the basics of game programming.
 
 It is written in C using SDL2 and the [TMX Map
 Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
@@ -89,9 +90,4 @@ file [LICENCE.md](LICENCE.md) for details.
 [TMX C Loader](https://github.com/baylej/tmx/) by Bayle Jonathan is
 licenced under a BSD 2-Clause "Simplified" Licence.  See the file
 [COPYING](https://raw.githubusercontent.com/baylej/tmx/master/COPYING)
-for details.
-
-[inih](https://github.com/benhoyt/inih) by Ben Hoyt is licensed the New
-BSD licence.  See the file
-[LICENSE.txt](https://raw.githubusercontent.com/benhoyt/inih/master/LICENSE.txt)
 for details.

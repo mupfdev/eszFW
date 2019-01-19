@@ -16,55 +16,89 @@
 #include <stdint.h>
 #include "Input.h"
 
-void FreeTouch(Touch **pstTouch)
+void FreeInput(Input **pstInput)
 {
-    free(*pstTouch);
+    free(*pstInput);
 }
 
-int InitTouch(
+int32_t GetTouchPosX(Input **pstInput)
+{
+    return (*pstInput)->s32TouchPosX;
+}
+
+int32_t GetTouchPosY(Input **pstInput)
+{
+    return (*pstInput)->s32TouchPosY;
+}
+
+int InitInput(
     int32_t s32WindowWidth,
     int32_t s32WindowHeight,
-    Touch **pstTouch)
+    Input **pstInput)
 {
-    *pstTouch = NULL;
-    *pstTouch = malloc(sizeof(struct Touch_t));
-    if (NULL == *pstTouch)
+    *pstInput = NULL;
+    *pstInput = malloc(sizeof(struct Input_t));
+    if (! *pstInput)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
-            "InitTouch(): error allocating memory.\n");
+            "InitInput(): error allocating memory.\n");
         return -1;
     }
 
-    (*pstTouch)->s32WindowWidth  = s32WindowWidth;
-    (*pstTouch)->s32WindowHeight = s32WindowHeight;
-    (*pstTouch)->s32PosX         = 0;
-    (*pstTouch)->s32PosY         = 0;
+    (*pstInput)->pu8KeyState       = SDL_GetKeyboardState(NULL);
+    (*pstInput)->s32WindowWidth    = s32WindowWidth;
+    (*pstInput)->s32WindowHeight   = s32WindowHeight;
+    (*pstInput)->s32TouchPosX      = s32WindowWidth  / 2;
+    (*pstInput)->s32TouchPosY      = s32WindowHeight / 2;
+    (*pstInput)->u32TouchType      = 0;
+    (*pstInput)->stTouchBB.dBottom = 0;
+    (*pstInput)->stTouchBB.dLeft   = 0;
+    (*pstInput)->stTouchBB.dRight  = 0;
+    (*pstInput)->stTouchBB.dTop    = 0;
 
     return 0;
 }
 
-int ReadInput(const uint8_t **pu8KeyState)
+bool IsKeyPressed(const uint16_t u16Scancode, Input **pstInput)
 {
+    if ((*pstInput)->pu8KeyState[u16Scancode])
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool UpdateInput(Input **pstInput)
+{
+    SDL_Event stEvent;
+
+    SDL_PollEvent(&stEvent);
     SDL_PumpEvents();
-    *pu8KeyState = SDL_GetKeyboardState(NULL);
 
     if (0 < SDL_PeepEvents(0, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT))
     {
-        return -1;
+        return true;
     }
 
-    return 0;
-}
+    (*pstInput)->u32TouchType = stEvent.type;
 
-void GetTouchPosition(Touch **pstTouch)
-{
-    SDL_Event stEvent;
-    SDL_PollEvent(&stEvent);
-
-    if(SDL_FINGERDOWN == stEvent.type || SDL_FINGERMOTION == stEvent.type)
+    if (SDL_FINGERDOWN   == stEvent.type ||
+        SDL_FINGERUP     == stEvent.type ||
+        SDL_FINGERMOTION == stEvent.type)
     {
-        (*pstTouch)->s32PosX = (int32_t)round(stEvent.tfinger.x * (*pstTouch)->s32WindowWidth);
-        (*pstTouch)->s32PosY = (int32_t)round(stEvent.tfinger.y * (*pstTouch)->s32WindowHeight);
+        (*pstInput)->s32TouchPosX = (int32_t)round(stEvent.tfinger.x * (*pstInput)->s32WindowWidth);
+        (*pstInput)->s32TouchPosY = (int32_t)round(stEvent.tfinger.y * (*pstInput)->s32WindowHeight);
     }
+
+    // Update axis-aligned bounding box.
+    (*pstInput)->stTouchBB.dBottom = (*pstInput)->s32TouchPosY + 32;
+    (*pstInput)->stTouchBB.dLeft   = (*pstInput)->s32TouchPosX - 32;
+    (*pstInput)->stTouchBB.dRight  = (*pstInput)->s32TouchPosX + 32;
+    (*pstInput)->stTouchBB.dTop    = (*pstInput)->s32TouchPosY - 32;
+
+    return false;
 }

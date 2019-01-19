@@ -120,7 +120,7 @@ static int _RenderLayer(
     uint8_t      u8WidthFactor  = 0;
 
     pstImage = IMG_LoadTexture((*pstRenderer), pacFileName);
-    if (NULL == pstImage)
+    if (! pstImage)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
         sReturnValue = -1;
@@ -145,7 +145,7 @@ static int _RenderLayer(
         s32LayerWidth,
         s32LayerHeight);
 
-    if (NULL == (*pstLayer))
+    if (! (*pstLayer))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
@@ -187,11 +187,11 @@ static int _RenderLayer(
 exit:
     if (-1 == sReturnValue)
     {
-        if (NULL != (*pstLayer))
+        if ((*pstLayer))
         {
             SDL_DestroyTexture((*pstLayer));
         }
-        if (NULL != pstImage)
+        if (pstImage)
         {
             SDL_DestroyTexture(pstImage);
         }
@@ -245,7 +245,7 @@ int InitBackground(
     *pstBackground = malloc(
         sizeof(struct Background_t)
         + (u8Num * sizeof(struct BGLayer_t)));
-    if (NULL == *pstBackground)
+    if (! *pstBackground)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,

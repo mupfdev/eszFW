@@ -20,8 +20,14 @@
 void FreeVideo(Video **pstVideo)
 {
     IMG_Quit();
-    SDL_DestroyRenderer((*pstVideo)->pstRenderer);
-    SDL_DestroyWindow((*pstVideo)->pstWindow);
+    if ((*pstVideo)->pstRenderer)
+    {
+        SDL_DestroyRenderer((*pstVideo)->pstRenderer);
+    }
+    if ((*pstVideo)->pstWindow)
+    {
+        SDL_DestroyWindow((*pstVideo)->pstWindow);
+    }
     free(*pstVideo);
     SDL_Log("Terminate window.\n");
 }
@@ -39,7 +45,7 @@ int InitVideo(
 
     *pstVideo = NULL;
     *pstVideo = malloc(sizeof(struct Video_t));
-    if (NULL == *pstVideo)
+    if (! *pstVideo)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -57,14 +63,12 @@ int InitVideo(
     if (0 > SDL_Init(SDL_INIT_VIDEO))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        free(pstVideo);
         return -1;
     }
 
     if (IMG_INIT_PNG != IMG_Init(IMG_INIT_PNG))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
-        free(pstVideo);
         return -1;
     }
 
@@ -81,17 +85,15 @@ int InitVideo(
         (*pstVideo)->s32WindowHeight,
         u32Flags);
 
-    if (NULL == (*pstVideo)->pstWindow)
+    if (! (*pstVideo)->pstWindow)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        free(pstVideo);
         return -1;
     }
 
     if (0 > SDL_ShowCursor(SDL_DISABLE))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        free(pstVideo);
         return -1;
     }
 
@@ -109,10 +111,9 @@ int InitVideo(
         -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
-    if (NULL == (*pstVideo)->pstRenderer)
+    if (! (*pstVideo)->pstRenderer)
     {
         SDL_DestroyWindow((*pstVideo)->pstWindow);
-        free(pstVideo);
         return -1;
     }
 

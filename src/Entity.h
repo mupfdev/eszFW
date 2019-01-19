@@ -43,6 +43,7 @@ typedef struct Entity_t
     uint8_t  u8AnimStart;
     uint8_t  u8AnimEnd;
     double   dAnimDelay;
+    double   dAnimSpeed;
 } Entity;
 
 typedef struct Sprite_t
@@ -53,6 +54,8 @@ typedef struct Sprite_t
     uint16_t     u16ImageOffsetX;
     uint16_t     u16ImageOffsetY;
 } Sprite;
+
+void AnimateEntity(bool bAnimate, Entity **pstEntity);
 
 void ConnectHorizontalMapEndsForEntity(
     const uint16_t u16MapWidth,
@@ -73,7 +76,7 @@ int DrawEntity(
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer);
 
-void Drop(Entity **pstEntity);
+void DropEntity(Entity **pstEntity);
 void FreeCamera(Camera **pstCamera);
 void FreeEntity(Entity **pstEntity);
 void FreeSprite(Sprite **pstSprite);
@@ -82,6 +85,8 @@ int InitCamera(Camera **pstCamera);
 int InitEntity(
     const double dPosX,
     const double dPosY,
+    const uint8_t u8Width,
+    const uint8_t u8Height,
     Entity     **pstEntity);
 
 int InitSprite(
@@ -95,12 +100,14 @@ int InitSprite(
 
 bool IsCameraLocked(Camera **pstCamera);
 
-void Move(
+void MoveEntity(
     const bool    bOrientation,
     const double  dAcceleration,
     const double  dMaxVelocityX,
     const uint8_t u8AnimStart,
     const uint8_t u8AnimEnd,
+    const double  dAnimSpeed,
+    const uint8_t u8FrameOffsetY,
     Entity      **pstEntity);
 
 void ResetEntity(Entity **pstEntity);
@@ -122,6 +129,7 @@ void SetCameraTargetEntity(
 void SetAnimation(
     const uint8_t u8AnimStart,
     const uint8_t u8AnimEnd,
+    const double  dAnimSpeed,
     Entity      **pstEntity);
 
 void SetFrameOffset(

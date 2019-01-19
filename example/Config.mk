@@ -35,7 +35,6 @@ CFLAGS=\
 	-Wextra
 
 SRCS=\
-	$(wildcard src/*.c)\
-	$(wildcard src/RainbowJoe/*.c)
+	$(wildcard src/*.c)
 
 OBJS=$(patsubst %.c, %.o, $(SRCS))
