@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include "AABB.h"
 
-bool BoxesAreIntersecting(const AABB stBoxA, const AABB stBoxB)
+bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
 {
     double dAx = stBoxB.dLeft - stBoxA.dRight;
     double dAy = stBoxB.dTop  - stBoxA.dBottom;

@@ -7,8 +7,8 @@
 #define _CONTROLS_H_
 
 #include <stdbool.h>
-#include "GameData.h"
+#include "Resources.h"
 
-int UpdateControls(const bool bPause, GameData **pstGameData);
+int UpdateControls(const bool bPause, Resources **pstResources);
 
 #endif // _CONTROLS_H_

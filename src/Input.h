@@ -15,22 +15,26 @@ typedef struct Input_t
     const uint8_t *pu8KeyState;
     int32_t        s32WindowWidth;
     int32_t        s32WindowHeight;
+    int32_t        s32TouchDispPosX;
+    int32_t        s32TouchDispPosY;
     int32_t        s32TouchPosX;
     int32_t        s32TouchPosY;
-    uint32_t       u32TouchType;
     AABB           stTouchBB;
+    uint32_t       u32TouchType;
 } Input;
 
 void FreeInput(Input **pstInput);
-int32_t GetTouchPosX(Input **pstInput);
-int32_t GetTouchPosY(Input **pstInput);
 
 int InitInput(
-    int32_t s32WindowWidth,
-    int32_t s32WindowHeight,
+    const int32_t s32WindowWidth,
+    const int32_t s32WindowHeight,
     Input **pstInput);
 
 bool IsKeyPressed(const uint16_t u16Scancode, Input **pstInput);
-bool UpdateInput(Input **pstInput);
+
+bool UpdateInput(
+    const double dCameraPosX,
+    const double dCameraPosY,
+    Input      **pstInput);
 
 #endif // _INPUT_H_

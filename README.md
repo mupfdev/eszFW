@@ -78,7 +78,7 @@ nix-shell --command make
 
 To compile the example applications:
 ```
-cd examples
+cd example
 make
 ```
 

@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include "Controls.h"
 #include "Game.h"
-#include "GameData.h"
+#include "Resources.h"
 #include "Render.h"
 #include "World.h"
 
@@ -23,14 +23,14 @@ int SDL_main(int sArgC, char *pacArgV[])
 {
     int       sReturnValue = 0;
     bool      bIsRunning   = true;
-    GameData *pstGameData  = NULL;
+    Resources *pstResources  = NULL;
     bool      bPause       = false;
     double    dTimeA       = 0.f;
 
     (void)sArgC;
     (void)pacArgV;
 
-    sReturnValue = InitGameData(&pstGameData);
+    sReturnValue = InitResources(&pstResources);
     if (-1 == sReturnValue) { bIsRunning = false; };
 
     InitFPSLimiter(&dTimeA);
@@ -41,17 +41,21 @@ int SDL_main(int sArgC, char *pacArgV[])
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
 
         // Set the player's idle animation.
-        ResetEntity(&pstGameData->pstEntity[ENT_PLAYER]);
-        AnimateEntity(true, &pstGameData->pstEntity[ENT_PLAYER]);
-        SetFrameOffset(0, 0, &pstGameData->pstEntity[ENT_PLAYER]);
+        ResetEntity(&pstResources->pstEntity[ENT_PLAYER]);
+        AnimateEntity(true, &pstResources->pstEntity[ENT_PLAYER]);
+        SetFrameOffset(0, 0, &pstResources->pstEntity[ENT_PLAYER]);
         SetAnimation(
             0, 11,
-            pstGameData->pstEntity[ENT_PLAYER]->dAnimSpeed,
-            &pstGameData->pstEntity[ENT_PLAYER]);
+            pstResources->pstEntity[ENT_PLAYER]->dAnimSpeed,
+            &pstResources->pstEntity[ENT_PLAYER]);
 
-        UpdateInput(&pstGameData->pstInput);
+        SetCameraLock(false, &pstResources->pstCamera);
+        UpdateInput(
+            pstResources->pstCamera->dPosX,
+            pstResources->pstCamera->dPosY,
+            &pstResources->pstInput);
 
-        switch (UpdateControls(bPause, &pstGameData))
+        switch (UpdateControls(bPause, &pstResources))
         {
           case 1:
               bIsRunning = false;
@@ -66,8 +70,8 @@ int SDL_main(int sArgC, char *pacArgV[])
 
         if (bPause) { continue; }
 
-        UpdateWorld(dDeltaTime, &pstGameData);
-        sReturnValue = Render(&pstGameData);
+        UpdateWorld(dDeltaTime, &pstResources);
+        sReturnValue = Render(&pstResources);
 
         if (-1 == sReturnValue)
         {
@@ -76,7 +80,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         };
     }
 
-    FreeGameData(&pstGameData);
+    FreeResources(&pstResources);
     return sReturnValue;
 }
 

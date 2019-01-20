@@ -189,18 +189,18 @@ int InitEntity(
     SetOrientation(RIGHT, &(*pstEntity));
     SetAnimation(0, 0, 12.5f, &(*pstEntity));
 
-    (*pstEntity)->dVelocityX     =  0.f;
-    (*pstEntity)->dVelocityY     =  0.f;
-    (*pstEntity)->stBB.dBottom   =  0;
-    (*pstEntity)->stBB.dLeft     =  0;
-    (*pstEntity)->stBB.dRight    =  0;
-    (*pstEntity)->stBB.dTop      =  0;
-    (*pstEntity)->u16Flags       =  0;
+    (*pstEntity)->dVelocityX     = 0.f;
+    (*pstEntity)->dVelocityY     = 0.f;
+    (*pstEntity)->stBB.dBottom   = 0.f;
+    (*pstEntity)->stBB.dLeft     = 0.f;
+    (*pstEntity)->stBB.dRight    = 0.f;
+    (*pstEntity)->stBB.dTop      = 0.f;
+    (*pstEntity)->u16Flags       = 0;
     (*pstEntity)->u8Width        = u8Width;
     (*pstEntity)->u8Height       = u8Height;
-    (*pstEntity)->u8FrameOffsetX =  0;
-    (*pstEntity)->u8AnimFrame    =  0;
-    (*pstEntity)->dAnimDelay     =  0.f;
+    (*pstEntity)->u8FrameOffsetX = 0;
+    (*pstEntity)->u8AnimFrame    = 0;
+    (*pstEntity)->dAnimDelay     = 0.f;
 
     return 0;
 }
@@ -466,7 +466,7 @@ void UpdateEntity(
     // Update position.
     SetPosition(dPosX, dPosY, &(*pstEntity));
 
-    // Update bounding box.
+    // Update axis-aligned bounding box.
     (*pstEntity)->stBB.dBottom = dPosY + ((*pstEntity)->u8Height / 2);
     (*pstEntity)->stBB.dLeft   = dPosX - ((*pstEntity)->u8Width  / 2);
     (*pstEntity)->stBB.dRight  = dPosX + ((*pstEntity)->u8Width  / 2);

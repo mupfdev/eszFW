@@ -16,6 +16,6 @@ typedef struct AABB_t {
     double dTop;
 } AABB;
 
-bool BoxesAreIntersecting(const AABB stBoxA, const AABB stBoxB);
+bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);
 
 #endif // _AABB_H_

@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "AABB.h"
 #include "Input.h"
 
 void FreeInput(Input **pstInput)
@@ -21,19 +22,9 @@ void FreeInput(Input **pstInput)
     free(*pstInput);
 }
 
-int32_t GetTouchPosX(Input **pstInput)
-{
-    return (*pstInput)->s32TouchPosX;
-}
-
-int32_t GetTouchPosY(Input **pstInput)
-{
-    return (*pstInput)->s32TouchPosY;
-}
-
 int InitInput(
-    int32_t s32WindowWidth,
-    int32_t s32WindowHeight,
+    const int32_t s32WindowWidth,
+    const int32_t s32WindowHeight,
     Input **pstInput)
 {
     *pstInput = NULL;
@@ -49,13 +40,15 @@ int InitInput(
     (*pstInput)->pu8KeyState       = SDL_GetKeyboardState(NULL);
     (*pstInput)->s32WindowWidth    = s32WindowWidth;
     (*pstInput)->s32WindowHeight   = s32WindowHeight;
-    (*pstInput)->s32TouchPosX      = s32WindowWidth  / 2;
-    (*pstInput)->s32TouchPosY      = s32WindowHeight / 2;
+    (*pstInput)->s32TouchDispPosX  = 0;
+    (*pstInput)->s32TouchDispPosY  = 0;
+    (*pstInput)->s32TouchPosX      = 0;
+    (*pstInput)->s32TouchPosY      = 0;
+    (*pstInput)->stTouchBB.dBottom = 0.f;
+    (*pstInput)->stTouchBB.dLeft   = 0.f;
+    (*pstInput)->stTouchBB.dRight  = 0.f;
+    (*pstInput)->stTouchBB.dTop    = 0.f;
     (*pstInput)->u32TouchType      = 0;
-    (*pstInput)->stTouchBB.dBottom = 0;
-    (*pstInput)->stTouchBB.dLeft   = 0;
-    (*pstInput)->stTouchBB.dRight  = 0;
-    (*pstInput)->stTouchBB.dTop    = 0;
 
     return 0;
 }
@@ -72,7 +65,10 @@ bool IsKeyPressed(const uint16_t u16Scancode, Input **pstInput)
     }
 }
 
-bool UpdateInput(Input **pstInput)
+bool UpdateInput(
+    const double dCameraPosX,
+    const double dCameraPosY,
+    Input      **pstInput)
 {
     SDL_Event stEvent;
 
@@ -90,15 +86,20 @@ bool UpdateInput(Input **pstInput)
         SDL_FINGERUP     == stEvent.type ||
         SDL_FINGERMOTION == stEvent.type)
     {
-        (*pstInput)->s32TouchPosX = (int32_t)round(stEvent.tfinger.x * (*pstInput)->s32WindowWidth);
-        (*pstInput)->s32TouchPosY = (int32_t)round(stEvent.tfinger.y * (*pstInput)->s32WindowHeight);
-    }
+        int32_t s32PosX = (int32_t)round(stEvent.tfinger.x * (*pstInput)->s32WindowWidth);
+        int32_t s32PosY = (int32_t)round(stEvent.tfinger.y * (*pstInput)->s32WindowHeight);
 
-    // Update axis-aligned bounding box.
-    (*pstInput)->stTouchBB.dBottom = (*pstInput)->s32TouchPosY + 32;
-    (*pstInput)->stTouchBB.dLeft   = (*pstInput)->s32TouchPosX - 32;
-    (*pstInput)->stTouchBB.dRight  = (*pstInput)->s32TouchPosX + 32;
-    (*pstInput)->stTouchBB.dTop    = (*pstInput)->s32TouchPosY - 32;
+        (*pstInput)->s32TouchDispPosX = s32PosX;
+        (*pstInput)->s32TouchDispPosY = s32PosY;
+        (*pstInput)->s32TouchPosX     = s32PosX + dCameraPosX;
+        (*pstInput)->s32TouchPosY     = s32PosY + dCameraPosY;
+
+        // Update axis-aligned bounding box.
+        (*pstInput)->stTouchBB.dBottom = (*pstInput)->s32TouchPosY + 8.f;
+        (*pstInput)->stTouchBB.dLeft   = (*pstInput)->s32TouchPosX - 8.f;
+        (*pstInput)->stTouchBB.dRight  = (*pstInput)->s32TouchPosX + 8.f;
+        (*pstInput)->stTouchBB.dTop    = (*pstInput)->s32TouchPosY - 8.f;
+    }
 
     return false;
 }

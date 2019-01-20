@@ -7,8 +7,8 @@
 #define _WORLD_H_
 
 #include <stdbool.h>
-#include "GameData.h"
+#include "Resources.h"
 
-void UpdateWorld(const double dDeltaTime, GameData **pstGameData);
+void UpdateWorld(const double dDeltaTime, Resources **pstResources);
 
 #endif // _WORLD_H_

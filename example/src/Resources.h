@@ -1,6 +1,6 @@
 /**
- * @file GameData.h
- * @ingroup GameData
+ * @file Resources.h
+ * @ingroup Resources
  */
 
 #ifndef _INIT_H_
@@ -11,7 +11,7 @@
 
 #include <eszFW.h>
 
-typedef struct GameData_t
+typedef struct Resources_t
 {
     Entity *pstEntity[1];
     Object *pstObject[1];
@@ -23,9 +23,9 @@ typedef struct GameData_t
     Video      *pstVideo;
     Map        *pstMap;
     Sprite     *pstSprite;
-} GameData;
+} Resources;
 
-void FreeGameData(GameData **pstGameData);
-int InitGameData(GameData **pstGameData);
+void FreeResources(Resources **pstResources);
+int InitResources(Resources **pstResources);
 
-#endif // _INIT_H_
+#endif // _RESOURCES_H_

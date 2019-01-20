@@ -8,52 +8,52 @@
 
 #include <eszFW.h>
 #include <stdbool.h>
-#include "GameData.h"
+#include "Resources.h"
 #include "Render.h"
 
-int Render(GameData **pstGameData)
+int Render(Resources **pstResources)
 {
     if (-1 == DrawBackground(
-        (*pstGameData)->pstEntity[ENT_PLAYER]->bOrientation,
-        (*pstGameData)->pstVideo->s32LogicalWindowHeight,
-        (*pstGameData)->pstCamera->dPosY,
-        (*pstGameData)->pstEntity[ENT_PLAYER]->dVelocityX,
-        &(*pstGameData)->pstVideo->pstRenderer,
-        &(*pstGameData)->pstBackground))
+            (*pstResources)->pstEntity[ENT_PLAYER]->bOrientation,
+            (*pstResources)->pstVideo->s32LogicalWindowHeight,
+            (*pstResources)->pstCamera->dPosY,
+            (*pstResources)->pstEntity[ENT_PLAYER]->dVelocityX,
+            &(*pstResources)->pstVideo->pstRenderer,
+            &(*pstResources)->pstBackground))
     {
         return -1;
     }
 
     if (-1 == DrawMap(
-        0, "res/images/tileset.png", true, "BG",
-        (*pstGameData)->pstCamera->dPosX,
-        (*pstGameData)->pstCamera->dPosY,
-        &(*pstGameData)->pstMap,
-        &(*pstGameData)->pstVideo->pstRenderer))
+            0, "res/images/tileset.png", true, "BG",
+            (*pstResources)->pstCamera->dPosX,
+            (*pstResources)->pstCamera->dPosY,
+            &(*pstResources)->pstMap,
+            &(*pstResources)->pstVideo->pstRenderer))
     {
         return -1;
     }
 
     if (-1 == DrawEntity(
-        &(*pstGameData)->pstEntity[ENT_PLAYER],
-        &(*pstGameData)->pstCamera,
-        &(*pstGameData)->pstSprite,
-        &(*pstGameData)->pstVideo->pstRenderer))
+            &(*pstResources)->pstEntity[ENT_PLAYER],
+            &(*pstResources)->pstCamera,
+            &(*pstResources)->pstSprite,
+            &(*pstResources)->pstVideo->pstRenderer))
     {
         return -1;
     }
 
     if (-1 == DrawMap(
-        1, "res/images/tileset.png", false, "FG",
-        (*pstGameData)->pstCamera->dPosX,
-        (*pstGameData)->pstCamera->dPosY,
-        &(*pstGameData)->pstMap,
-        &(*pstGameData)->pstVideo->pstRenderer))
+            1, "res/images/tileset.png", false, "FG",
+            (*pstResources)->pstCamera->dPosX,
+            (*pstResources)->pstCamera->dPosY,
+            &(*pstResources)->pstMap,
+            &(*pstResources)->pstVideo->pstRenderer))
     {
         return -1;
     }
 
-    RenderScene(&(*pstGameData)->pstVideo->pstRenderer);
+    RenderScene(&(*pstResources)->pstVideo->pstRenderer);
 
     return 0;
 }

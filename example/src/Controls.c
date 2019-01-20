@@ -14,73 +14,82 @@
 #include <eszFW.h>
 #include <stdbool.h>
 #include "Controls.h"
-#include "GameData.h"
+#include "Resources.h"
 
-int UpdateControls(const bool bPause, GameData **pstGameData)
+int UpdateControls(const bool bPause, Resources **pstResources)
 {
     // Ignore all keys except ESC when game is paused.
     if (bPause)
     {
-        if (IsKeyPressed(SDL_SCANCODE_ESCAPE, &(*pstGameData)->pstInput)) { return 2; }
+        if (IsKeyPressed(SDL_SCANCODE_ESCAPE, &(*pstResources)->pstInput)) { return 2; }
         return 0;
     }
 
-    if (IsKeyPressed(SDL_SCANCODE_Q, &(*pstGameData)->pstInput))       { return 1; }
-    if (IsKeyPressed(SDL_SCANCODE_AC_BACK, &(*pstGameData)->pstInput)) { return 1; }
-    if (IsKeyPressed(SDL_SCANCODE_P, &(*pstGameData)->pstInput))       { return 3; }
+    if (IsKeyPressed(SDL_SCANCODE_Q, &(*pstResources)->pstInput))       { return 1; }
+    if (IsKeyPressed(SDL_SCANCODE_AC_BACK, &(*pstResources)->pstInput)) { return 1; }
+    if (IsKeyPressed(SDL_SCANCODE_P, &(*pstResources)->pstInput))       { return 3; }
 
-    if (IsKeyPressed(SDL_SCANCODE_LSHIFT, &(*pstGameData)->pstInput))
+    if (IsKeyPressed(SDL_SCANCODE_LSHIFT, &(*pstResources)->pstInput))
     {
-        SetCameraLock(true, &(*pstGameData)->pstCamera);
+        SetCameraLock(true, &(*pstResources)->pstCamera);
     }
 
     // Unlocked camera controls.
-    if (IsCameraLocked(&(*pstGameData)->pstCamera))
+    if (IsCameraLocked(&(*pstResources)->pstCamera))
     {
-        if (IsKeyPressed(SDL_SCANCODE_UP, &(*pstGameData)->pstInput))
-        {
-            (*pstGameData)->pstCamera->dPosY -= 5.0f;
-        }
-        if (IsKeyPressed(SDL_SCANCODE_DOWN, &(*pstGameData)->pstInput))
-        {
-            (*pstGameData)->pstCamera->dPosY += 5.0f;
-        }
-        if (IsKeyPressed(SDL_SCANCODE_LEFT, &(*pstGameData)->pstInput))
-        {
-            (*pstGameData)->pstCamera->dPosX -= 5.0f;
-        }
-        if (IsKeyPressed(SDL_SCANCODE_RIGHT, &(*pstGameData)->pstInput)) {
-            (*pstGameData)->pstCamera->dPosX += 5.0f;
-        }
+        double dPosX = 0.f;
+        double dPosY = 0.f;
+
+        if (IsKeyPressed(SDL_SCANCODE_UP, &(*pstResources)->pstInput))    { dPosY -= 5.f; }
+        if (IsKeyPressed(SDL_SCANCODE_DOWN, &(*pstResources)->pstInput))  { dPosY += 5.f; }
+        if (IsKeyPressed(SDL_SCANCODE_LEFT, &(*pstResources)->pstInput))  { dPosX -= 5.f; }
+        if (IsKeyPressed(SDL_SCANCODE_RIGHT, &(*pstResources)->pstInput)) { dPosX += 5.f; }
+
+        (*pstResources)->pstCamera->dPosX += dPosX;
+        (*pstResources)->pstCamera->dPosY += dPosY;
     }
     else
     {
+        bool bMovePlayer  = false;
+        bool bOrientation = LEFT;
+
         // Player controls.
-        #ifdef __ANDROID__
-        if (((*pstGameData)->pstVideo->s32WindowWidth / 3) >= GetTouchPosX(&(*pstGameData)->pstInput))
-        #else
-        if (IsKeyPressed(SDL_SCANCODE_LEFT, &(*pstGameData)->pstInput))
-        #endif
+        if (IsKeyPressed(SDL_SCANCODE_LEFT, &(*pstResources)->pstInput))
         {
-            AnimateEntity(true, &(*pstGameData)->pstEntity[ENT_PLAYER]);
-            MoveEntity(
-                    LEFT, 6.0, 3.0, 1, 7,
-                    (*pstGameData)->pstEntity[ENT_PLAYER]->dAnimSpeed,
-                    1,
-                    &(*pstGameData)->pstEntity[ENT_PLAYER]);
+            bMovePlayer  = true;
+            bOrientation = LEFT;
         }
-        #ifdef __ANDROID__
-        if (((*pstGameData)->pstVideo->s32WindowWidth / 3) * 2 <= GetTouchPosX(&(*pstGameData)->pstInput))
-        #else
-        if (IsKeyPressed(SDL_SCANCODE_RIGHT, &(*pstGameData)->pstInput))
-        #endif
+        if (IsKeyPressed(SDL_SCANCODE_RIGHT, &(*pstResources)->pstInput))
         {
-            AnimateEntity(true, &(*pstGameData)->pstEntity[ENT_PLAYER]);
+            bMovePlayer  = true;
+            bOrientation = RIGHT;
+        }
+        // Experimental touchscreen controls.
+        #ifdef __ANDROID__
+        double s32TouchDispPosX   = (*pstResources)->pstInput->s32TouchDispPosX;
+        double s32HalfWindowWidth = (*pstResources)->pstVideo->s32LogicalWindowWidth / 2;
+
+        if (s32TouchDispPosX < s32HalfWindowWidth) { bOrientation = LEFT;  }
+        else                                       { bOrientation = RIGHT; }
+
+        if (! BoxesDoIntersect(
+                (*pstResources)->pstEntity[ENT_PLAYER]->stBB,
+                (*pstResources)->pstInput->stTouchBB))
+        {
+            // Prevent player from running at start.
+            if (0 != (*pstResources)->pstInput->s32TouchDispPosX) { bMovePlayer = true;  }
+            else                                                  { bMovePlayer = false; }
+        }
+        #endif // __ANDROID__
+
+        if (bMovePlayer)
+        {
+            AnimateEntity(true, &(*pstResources)->pstEntity[ENT_PLAYER]);
             MoveEntity(
-                RIGHT, 6.0, 3.0, 0, 7,
-                (*pstGameData)->pstEntity[ENT_PLAYER]->dAnimSpeed,
+                bOrientation, 6.0, 3.0, 1, 7,
+                (*pstResources)->pstEntity[ENT_PLAYER]->dAnimSpeed,
                 1,
-                &(*pstGameData)->pstEntity[ENT_PLAYER]);
+                &(*pstResources)->pstEntity[ENT_PLAYER]);
         }
     }
 
