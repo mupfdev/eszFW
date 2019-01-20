@@ -17,7 +17,7 @@
 #include "Game.h"
 #include "GameData.h"
 #include "Render.h"
-#include "WorldLogic.h"
+#include "World.h"
 
 int SDL_main(int sArgC, char *pacArgV[])
 {
@@ -40,7 +40,15 @@ int SDL_main(int sArgC, char *pacArgV[])
         double         dDeltaTime;
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
 
-        UpdateWorldStart(&pstGameData);
+        // Set the player's idle animation.
+        ResetEntity(&pstGameData->pstEntity[ENT_PLAYER]);
+        AnimateEntity(true, &pstGameData->pstEntity[ENT_PLAYER]);
+        SetFrameOffset(0, 0, &pstGameData->pstEntity[ENT_PLAYER]);
+        SetAnimation(
+            0, 11,
+            pstGameData->pstEntity[ENT_PLAYER]->dAnimSpeed,
+            &pstGameData->pstEntity[ENT_PLAYER]);
+
         UpdateInput(&pstGameData->pstInput);
 
         switch (UpdateControls(bPause, &pstGameData))
@@ -58,7 +66,7 @@ int SDL_main(int sArgC, char *pacArgV[])
 
         if (bPause) { continue; }
 
-        UpdateWorldEnd(dDeltaTime, &pstGameData);
+        UpdateWorld(dDeltaTime, &pstGameData);
         sReturnValue = Render(&pstGameData);
 
         if (-1 == sReturnValue)

@@ -1,7 +1,7 @@
 /**
- * @file WorldLogic.c
- * @ingroup WorldLogic
- * @defgroup WorldLogic
+ * @file World.c
+ * @ingroup World
+ * @defgroup World
  * @author Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
@@ -10,22 +10,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "GameData.h"
-#include "WorldLogic.h"
+#include "World.h"
 
-void UpdateWorldStart(GameData **pstGameData)
+void UpdateWorld(const double dDeltaTime, GameData **pstGameData)
 {
-    ResetEntity(&(*pstGameData)->pstEntity[ENT_PLAYER]);
     SetCameraLock(false, &(*pstGameData)->pstCamera);
-    AnimateEntity(true, &(*pstGameData)->pstEntity[ENT_PLAYER]);
-    SetFrameOffset(0, 0, &(*pstGameData)->pstEntity[ENT_PLAYER]);
-    SetAnimation(
-        0, 11,
-        (*pstGameData)->pstEntity[ENT_PLAYER]->dAnimSpeed,
-        &(*pstGameData)->pstEntity[ENT_PLAYER]);
-}
 
-void UpdateWorldEnd(const double dDeltaTime, GameData **pstGameData)
-{
     // Follow player entity and set camera boudnaries to map size.
     SetCameraTargetEntity(
         (*pstGameData)->pstVideo->s32LogicalWindowWidth,

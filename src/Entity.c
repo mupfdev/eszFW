@@ -423,11 +423,9 @@ void UpdateEntity(
     }
     else
     {
+        // Correct position along the y-axis.
         (*pstEntity)->dVelocityY = 0.f;
-        uint8_t u8Correction     = (*pstEntity)->u8Height / 2;
-        dPosY                    = (u8Correction * round((*pstEntity)->dPosY / u8Correction));
-        // Round to next number divisable by 2, 4, 8 or 16:
-        dPosY                    = (16.f * round(dPosY / 16.f));
+        dPosY = (16.f * round(dPosY / 16.f));
     }
 
     // Calculate horizontal velocity.
