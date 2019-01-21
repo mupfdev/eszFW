@@ -12,8 +12,9 @@ with the intention to simplify 2D game development in C.
 
 ## Controls
 
-Note: to control the game using your touch screen, just click at the
-left, right or at the middle of the screen.
+Note: to control the game using your touch screen, just click left,
+right or at the center fifth of the screen.  In addition, the player
+stops as soon as he reaches the spot that was tapped.
 
 ```
 P:       pause

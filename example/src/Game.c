@@ -21,11 +21,13 @@
 
 int SDL_main(int sArgC, char *pacArgV[])
 {
-    int       sReturnValue = 0;
-    bool      bIsRunning   = true;
-    Resources *pstResources  = NULL;
-    bool      bPause       = false;
-    double    dTimeA       = 0.f;
+    int        sReturnValue  = 0;
+    bool       bIsRunning    = true;
+    Resources *pstResources = NULL;
+    bool       bPause        = false;
+    double     dTimeA        = 0.f;
+    double     dTimeB        = 0.f;
+    double     dDeltaTime    = 0.f;
 
     (void)sArgC;
     (void)pacArgV;
@@ -33,12 +35,12 @@ int SDL_main(int sArgC, char *pacArgV[])
     sReturnValue = InitResources(&pstResources);
     if (-1 == sReturnValue) { bIsRunning = false; };
 
-    InitFPSLimiter(&dTimeA);
+    InitFPSLimiterTest(&dTimeA, &dTimeB, &dDeltaTime);
     while (bIsRunning)
     {
-        double         dTimeB;
-        double         dDeltaTime;
-        LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
+        //double dTimeB;
+        //double dDeltaTime;
+        //LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
 
         // Set the player's idle animation.
         ResetEntity(&pstResources->pstEntity[ENT_PLAYER]);
@@ -78,6 +80,8 @@ int SDL_main(int sArgC, char *pacArgV[])
             bIsRunning = false;
             continue;
         };
+
+        LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
     }
 
     FreeResources(&pstResources);

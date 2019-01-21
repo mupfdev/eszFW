@@ -8,13 +8,17 @@
 
 #include <stdint.h>
 
+void InitFPSLimiterTest(
+    double *dTimeA,
+    double *dTimeB,
+    double *dDeltaTime);
+
 void InitFPSLimiter(double *dTimeA);
 
 void LimitFramerate(
     const uint16_t u16FPS,
     double        *dTimeA,
     double        *dTimeB,
-    double        *dDeltaTime
-);
+    double        *dDeltaTime);
 
 #endif // _FPS_LIMITER_H_

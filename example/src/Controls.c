@@ -52,7 +52,6 @@ int UpdateControls(const bool bPause, Resources **pstResources)
     {
         bool bMovePlayer  = false;
         bool bOrientation = LEFT;
-
         // Player controls.
         if (IsKeyPressed(SDL_SCANCODE_LEFT, &(*pstResources)->pstInput))
         {
@@ -66,19 +65,38 @@ int UpdateControls(const bool bPause, Resources **pstResources)
         }
         // Experimental touchscreen controls.
         #ifdef __ANDROID__
-        double s32TouchDispPosX   = (*pstResources)->pstInput->s32TouchDispPosX;
-        double s32HalfWindowWidth = (*pstResources)->pstVideo->s32LogicalWindowWidth / 2;
+        int32_t s32TouchPosX       = (*pstResources)->pstInput->s32TouchDispPosX;
+        int32_t s32HalfWindowWidth = (*pstResources)->pstVideo->s32LogicalWindowWidth / 2;
+        int32_t s32WindowFifth     = (*pstResources)->pstVideo->s32LogicalWindowWidth / 5;
 
-        if (s32TouchDispPosX < s32HalfWindowWidth) { bOrientation = LEFT;  }
-        else                                       { bOrientation = RIGHT; }
-
+        if (s32TouchPosX < s32HalfWindowWidth)
+        {
+            bOrientation = LEFT;
+        }
+        else
+        {
+            bOrientation = RIGHT;
+        }
+        // Halt when player entity intersect touch position or as soon
+        // the center fifth of the screen is touched.
         if (! BoxesDoIntersect(
                 (*pstResources)->pstEntity[ENT_PLAYER]->stBB,
                 (*pstResources)->pstInput->stTouchBB))
         {
-            // Prevent player from running at start.
-            if (0 != (*pstResources)->pstInput->s32TouchDispPosX) { bMovePlayer = true;  }
-            else                                                  { bMovePlayer = false; }
+            if (0 != s32TouchPosX)
+            {
+                bMovePlayer = true;
+            }
+            else
+            {
+                bMovePlayer = false;
+            }
+            if (
+                (s32TouchPosX >= s32WindowFifth * 2) &&
+                (s32TouchPosX <= s32WindowFifth * 3))
+            {
+                bMovePlayer = false;
+            }
         }
         #endif // __ANDROID__
 

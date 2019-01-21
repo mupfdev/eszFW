@@ -113,7 +113,7 @@ int InitResources(Resources **pstResources)
         &(*pstResources)->pstEntity[ENT_PLAYER]);
 
     SetFrameOffset(0, 0, &(*pstResources)->pstEntity[ENT_PLAYER]);
-    SetFontColour(255, 0, 0, &(*pstResources)->pstFont);
+    SetFontColour(0xfe, 0x95, 0x14, &(*pstResources)->pstFont);
 
     exit:
     return sReturnValue;
