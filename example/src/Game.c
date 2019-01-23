@@ -24,7 +24,6 @@ int SDL_main(int sArgC, char *pacArgV[])
     int        sReturnValue  = 0;
     bool       bIsRunning    = true;
     Resources *pstResources = NULL;
-    bool       bPause        = false;
     double     dTimeA        = 0.f;
     double     dTimeB        = 0.f;
     double     dDeltaTime    = 0.f;
@@ -57,20 +56,7 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstResources->pstCamera->dPosY,
             &pstResources->pstInput);
 
-        switch (UpdateControls(bPause, &pstResources))
-        {
-          case 1:
-              bIsRunning = false;
-              break;
-          case 2:
-              bPause = false;
-              break;
-          case 3:
-              bPause = true;
-              break;
-        }
-
-        if (bPause) { continue; }
+        if (! UpdateControls(&pstResources)) { bIsRunning = false; };
 
         UpdateWorld(dDeltaTime, &pstResources);
         sReturnValue = Render(&pstResources);

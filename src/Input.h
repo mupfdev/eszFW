@@ -20,6 +20,8 @@ typedef struct Input_t
     int32_t        s32TouchPosX;
     int32_t        s32TouchPosY;
     AABB           stTouchBB;
+    uint8_t        u8TouchBBWidth;
+    uint8_t        u8TouchBBHeight;
     uint32_t       u32TouchType;
 } Input;
 
@@ -36,5 +38,10 @@ bool UpdateInput(
     const double dCameraPosX,
     const double dCameraPosY,
     Input      **pstInput);
+
+void SetTouchBBSize(
+    const uint8_t u8Width,
+    const uint8_t u8Height,
+    Input       **pstInput);
 
 #endif // _INPUT_H_

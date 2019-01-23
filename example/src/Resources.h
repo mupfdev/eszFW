@@ -16,13 +16,15 @@ typedef struct Resources_t
     Entity *pstEntity[1];
     Object *pstObject[1];
 
+    Audio      *pstAudio;
     Background *pstBackground;
     Camera     *pstCamera;
     Font       *pstFont;
     Input      *pstInput;
-    Video      *pstVideo;
     Map        *pstMap;
+    Music      *pstMusic;
     Sprite     *pstSprite;
+    Video      *pstVideo;
 } Resources;
 
 void FreeResources(Resources **pstResources);

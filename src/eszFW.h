@@ -7,6 +7,7 @@
 #define _ESZFW_H_
 
 #include "AABB.h"
+#include "Audio.h"
 #include "Background.h"
 #include "Entity.h"
 #include "Font.h"

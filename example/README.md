@@ -17,9 +17,7 @@ right or at the center fifth of the screen.  In addition, the player
 stops as soon as he reaches the spot that was tapped.
 
 ```
-P:       pause
 Q:       quit
-ESCAPE:  unpause
 LSHIFT:  hold to unlock camera
 UP:      move unlocked camera up
 DOWN:    move unlocked camera down

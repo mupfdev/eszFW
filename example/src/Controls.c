@@ -16,18 +16,10 @@
 #include "Controls.h"
 #include "Resources.h"
 
-int UpdateControls(const bool bPause, Resources **pstResources)
+int UpdateControls(Resources **pstResources)
 {
-    // Ignore all keys except ESC when game is paused.
-    if (bPause)
-    {
-        if (IsKeyPressed(SDL_SCANCODE_ESCAPE, &(*pstResources)->pstInput)) { return 2; }
-        return 0;
-    }
-
-    if (IsKeyPressed(SDL_SCANCODE_Q, &(*pstResources)->pstInput))       { return 1; }
-    if (IsKeyPressed(SDL_SCANCODE_AC_BACK, &(*pstResources)->pstInput)) { return 1; }
-    if (IsKeyPressed(SDL_SCANCODE_P, &(*pstResources)->pstInput))       { return 3; }
+    if (IsKeyPressed(SDL_SCANCODE_Q, &(*pstResources)->pstInput))       { return 0; }
+    if (IsKeyPressed(SDL_SCANCODE_AC_BACK, &(*pstResources)->pstInput)) { return 0; }
 
     if (IsKeyPressed(SDL_SCANCODE_LSHIFT, &(*pstResources)->pstInput))
     {
@@ -67,7 +59,6 @@ int UpdateControls(const bool bPause, Resources **pstResources)
         #ifdef __ANDROID__
         int32_t s32TouchPosX       = (*pstResources)->pstInput->s32TouchDispPosX;
         int32_t s32HalfWindowWidth = (*pstResources)->pstVideo->s32LogicalWindowWidth / 2;
-        int32_t s32WindowFifth     = (*pstResources)->pstVideo->s32LogicalWindowWidth / 5;
 
         if (s32TouchPosX < s32HalfWindowWidth)
         {
@@ -77,8 +68,7 @@ int UpdateControls(const bool bPause, Resources **pstResources)
         {
             bOrientation = RIGHT;
         }
-        // Halt when player entity intersect touch position or as soon
-        // the center fifth of the screen is touched.
+        // Halt when player entity intersect touch position.
         if (! BoxesDoIntersect(
                 (*pstResources)->pstEntity[ENT_PLAYER]->stBB,
                 (*pstResources)->pstInput->stTouchBB))
@@ -88,12 +78,6 @@ int UpdateControls(const bool bPause, Resources **pstResources)
                 bMovePlayer = true;
             }
             else
-            {
-                bMovePlayer = false;
-            }
-            if (
-                (s32TouchPosX >= s32WindowFifth * 2) &&
-                (s32TouchPosX <= s32WindowFifth * 3))
             {
                 bMovePlayer = false;
             }
@@ -111,5 +95,5 @@ int UpdateControls(const bool bPause, Resources **pstResources)
         }
     }
 
-    return 0;
+    return 1;
 }

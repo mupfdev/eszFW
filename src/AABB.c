@@ -9,6 +9,13 @@
 #include <stdbool.h>
 #include "AABB.h"
 
+/**
+ * @brief Check if two bounding boxes intersect.
+ * @param stBoxA bounding box A.
+ * @param stBoxB bounding box B.
+ * @return 1 if boxes are intersecting, 0 if not.
+ * @ingroup AABB
+ */
 bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
 {
     double dAx = stBoxB.dLeft - stBoxA.dRight;

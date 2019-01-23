@@ -13,6 +13,8 @@
 
 void FreeResources(Resources **pstResources)
 {
+    FreeMusic(&(*pstResources)->pstMusic);
+    FreeAudio(&(*pstResources)->pstAudio);
     FreeSprite(&(*pstResources)->pstSprite);
     FreeBackground(&(*pstResources)->pstBackground);
     FreeFont(&(*pstResources)->pstFont);
@@ -49,21 +51,23 @@ int InitResources(Resources **pstResources)
 
     (*pstResources)->pstEntity[ENT_PLAYER]       = NULL;
     (*pstResources)->pstObject[OBJ_PLAYER_SPAWN] = NULL;;
+    (*pstResources)->pstAudio                    = NULL;
     (*pstResources)->pstBackground               = NULL;
     (*pstResources)->pstCamera                   = NULL;
     (*pstResources)->pstInput                    = NULL;
     (*pstResources)->pstFont                     = NULL;
-    (*pstResources)->pstVideo                    = NULL;
     (*pstResources)->pstMap                      = NULL;
+    (*pstResources)->pstMusic                    = NULL;
     (*pstResources)->pstSprite                   = NULL;
+    (*pstResources)->pstVideo                    = NULL;
 
     #ifdef __ANDROID__
     bFullscreen = true;
     #endif
 
     sReturnValue = InitVideo(
-            "Rainbow Joe", 640, 360, 384, 216,
-            bFullscreen, &(*pstResources)->pstVideo);
+        "Rainbow Joe", 640, 360, 384, 216,
+        bFullscreen, &(*pstResources)->pstVideo);
     if (-1 == sReturnValue) { goto exit; }
 
     sReturnValue = InitCamera(&(*pstResources)->pstCamera);
@@ -88,19 +92,27 @@ int InitResources(Resources **pstResources)
     if (-1 == sReturnValue) { goto exit; }
 
     sReturnValue = InitBackground(
-            4, pacBgFileNames, (*pstResources)->pstVideo->s32WindowWidth, BOTTOM,
-            &(*pstResources)->pstVideo->pstRenderer, &(*pstResources)->pstBackground);
+        4, pacBgFileNames, (*pstResources)->pstVideo->s32WindowWidth, BOTTOM,
+        &(*pstResources)->pstVideo->pstRenderer, &(*pstResources)->pstBackground);
     if (-1 == sReturnValue) { goto exit; }
 
-    /*sReturnValue = InitSprite(
-            "res/images/characters_7.png", 736, 128, 0, 0,
-            &(*pstResources)->pstSprite, &(*pstResources)->pstVideo->pstRenderer);
-    if (-1 == sReturnValue) { goto exit; }*/
+    /* sReturnValue = InitSprite(
+        "res/images/characters_7.png", 736, 128, 0, 0,
+        &(*pstResources)->pstSprite, &(*pstResources)->pstVideo->pstRenderer);
+    if (-1 == sReturnValue) { goto exit; } */
 
     sReturnValue = InitSprite(
-            "res/images/player.png", 360, 80, 0, 0,
-            &(*pstResources)->pstSprite, &(*pstResources)->pstVideo->pstRenderer);
+        "res/images/player.png", 360, 80, 0, 0,
+        &(*pstResources)->pstSprite, &(*pstResources)->pstVideo->pstRenderer);
     if (-1 == sReturnValue) { goto exit; }
+
+    sReturnValue = InitAudio(&(*pstResources)->pstAudio);
+    if (-1 == sReturnValue) { goto exit; }
+
+    sReturnValue = InitMusic(
+        "res/music/LeftRightExcluded.ogg", -1,
+        &(*pstResources)->pstMusic);
+    PlayMusic(3000, &(*pstResources)->pstMusic);
 
     GetSingleObjectByName(
         "Player",
@@ -114,6 +126,11 @@ int InitResources(Resources **pstResources)
 
     SetFrameOffset(0, 0, &(*pstResources)->pstEntity[ENT_PLAYER]);
     SetFontColour(0xfe, 0x95, 0x14, &(*pstResources)->pstFont);
+
+    SetTouchBBSize(
+        (*pstResources)->pstEntity[ENT_PLAYER]->u8Width,
+        (*pstResources)->pstVideo->s32LogicalWindowHeight * 2,
+        &(*pstResources)->pstInput);
 
     exit:
     return sReturnValue;

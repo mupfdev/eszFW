@@ -48,6 +48,8 @@ int InitInput(
     (*pstInput)->stTouchBB.dLeft   = 0.f;
     (*pstInput)->stTouchBB.dRight  = 0.f;
     (*pstInput)->stTouchBB.dTop    = 0.f;
+    (*pstInput)->u8TouchBBWidth    = 16;
+    (*pstInput)->u8TouchBBHeight   = 16;
     (*pstInput)->u32TouchType      = 0;
 
     return 0;
@@ -88,6 +90,8 @@ bool UpdateInput(
     {
         int32_t s32PosX = (int32_t)round(stEvent.tfinger.x * (*pstInput)->s32WindowWidth);
         int32_t s32PosY = (int32_t)round(stEvent.tfinger.y * (*pstInput)->s32WindowHeight);
+        uint8_t u8HalfW = (*pstInput)->u8TouchBBWidth  / 2;
+        uint8_t u8HalfH = (*pstInput)->u8TouchBBHeight / 2;
 
         (*pstInput)->s32TouchDispPosX = s32PosX;
         (*pstInput)->s32TouchDispPosY = s32PosY;
@@ -95,11 +99,20 @@ bool UpdateInput(
         (*pstInput)->s32TouchPosY     = s32PosY + dCameraPosY;
 
         // Update axis-aligned bounding box.
-        (*pstInput)->stTouchBB.dBottom = (*pstInput)->s32TouchPosY + 8.f;
-        (*pstInput)->stTouchBB.dLeft   = (*pstInput)->s32TouchPosX - 8.f;
-        (*pstInput)->stTouchBB.dRight  = (*pstInput)->s32TouchPosX + 8.f;
-        (*pstInput)->stTouchBB.dTop    = (*pstInput)->s32TouchPosY - 8.f;
+        (*pstInput)->stTouchBB.dBottom = (*pstInput)->s32TouchPosY + u8HalfH;
+        (*pstInput)->stTouchBB.dLeft   = (*pstInput)->s32TouchPosX - u8HalfW;
+        (*pstInput)->stTouchBB.dRight  = (*pstInput)->s32TouchPosX + u8HalfW;
+        (*pstInput)->stTouchBB.dTop    = (*pstInput)->s32TouchPosY - u8HalfH;
     }
 
     return false;
+}
+
+void SetTouchBBSize(
+    const uint8_t u8Width,
+    const uint8_t u8Height,
+    Input       **pstInput)
+{
+    (*pstInput)->u8TouchBBWidth  = u8Width;
+    (*pstInput)->u8TouchBBHeight = u8Height;
 }

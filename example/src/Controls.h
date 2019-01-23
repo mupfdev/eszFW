@@ -9,6 +9,6 @@
 #include <stdbool.h>
 #include "Resources.h"
 
-int UpdateControls(const bool bPause, Resources **pstResources);
+int UpdateControls(Resources **pstResources);
 
 #endif // _CONTROLS_H_
