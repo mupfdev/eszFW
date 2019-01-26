@@ -69,10 +69,7 @@ int InitAudio(Audio **pstAudio)
     return 0;
 }
 
-int InitMusic(
-    const char  *pacFileName,
-    const int8_t s8Loops,
-    Music      **pstMusic)
+int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
 {
     *pstMusic = NULL;
     *pstMusic = malloc(sizeof(struct Music_t));

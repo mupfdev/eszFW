@@ -41,7 +41,7 @@ int InitVideo(
     const bool    bFullscreen,
     Video       **pstVideo)
 {
-    uint32_t  u32Flags = 0;
+    uint32_t u32Flags = 0;
 
     *pstVideo = NULL;
     *pstVideo = malloc(sizeof(struct Video_t));
@@ -76,6 +76,16 @@ int InitVideo(
     {
         u32Flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
+
+    #ifdef __ANDROID__
+    u32Flags = u32Flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
+    /*SDL_DisplayMode stDisplayMode;
+    if (0 == SDL_GetCurrentDisplayMode(0, &stDisplayMode))
+    {
+        (*pstVideo)->s32WindowWidth  = stDisplayMode.w;
+        (*pstVideo)->s32WindowHeight = stDisplayMode.h;
+    }*/
+    #endif
 
     (*pstVideo)->pstWindow = SDL_CreateWindow(
         pacWindowTitle,

@@ -11,6 +11,7 @@
 #else
 #include <SDL2/SDL.h>
 #endif
+#include <eszfw.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -27,8 +28,8 @@ int SDL_main(int sArgC, char *pacArgV[])
     double     dTimeA       = 0.f;
     double     dTimeB       = 0.f;
     double     dDeltaTime   = 0.f;
-    bool       bMovePlayer  = false;
     bool       bOrientation = LEFT;
+    bool       bIsMoving    = false;
     SDL_Event  stEvent;
 
     (void)sArgC;
@@ -61,7 +62,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         };
 
         // Reset entity flags.
-        ResetEntity(&pstRes->pstEntity[ENT_PLAYER]);
+        ResetEntity(&pstRes->pstEntity[0]);
 
         // Handle events.
         while(SDL_PollEvent(&stEvent) != 0)
@@ -79,12 +80,12 @@ int SDL_main(int sArgC, char *pacArgV[])
                       bIsRunning = false;
                       break;
                   case SDLK_LEFT:
-                      bMovePlayer  = true;
                       bOrientation = LEFT;
+                      bIsMoving    = true;
                       break;
                   case SDLK_RIGHT:
-                      bMovePlayer  = true;
                       bOrientation = RIGHT;
+                      bIsMoving    = true;
                       break;
                 }
             }
@@ -93,10 +94,10 @@ int SDL_main(int sArgC, char *pacArgV[])
                 switch(stEvent.key.keysym.sym)
                 {
                   case SDLK_LEFT:
-                      bMovePlayer = false;
+                      bIsMoving = false;
                       break;
                   case SDLK_RIGHT:
-                      bMovePlayer  = false;
+                      bIsMoving = false;
                       break;
                 }
             }
@@ -110,25 +111,26 @@ int SDL_main(int sArgC, char *pacArgV[])
             }
             else if (SDL_FINGERDOWN == stEvent.type)
             {
-                bMovePlayer  = true;
                 s32TouchPosX = (int32_t)round(stEvent.tfinger.x * s32WindowW);
 
                 if (s32TouchPosX < (s32WindowW / 2))
                 {
                     bOrientation = LEFT;
+                    bIsMoving    = true;
                 }
                 else
                 {
                     bOrientation = RIGHT;
+                    bIsMoving    = true;
                 }
             }
             else if (SDL_FINGERUP == stEvent.type)
             {
-                bMovePlayer = false;
+                bIsMoving = false;
             }
             else if (SDL_MULTIGESTURE == stEvent.type)
             {
-                bMovePlayer = false;
+                StopEntity(&pstRes->pstEntity[0]);
                 dZoomLevel  = pstRes->pstVideo->dZoomLevel;
                 if (0.002 < fabs(stEvent.mgesture.dDist))
                 {
@@ -159,26 +161,29 @@ int SDL_main(int sArgC, char *pacArgV[])
         }
 
         // Set the player's idle animation.
-        AnimateEntity(true, &pstRes->pstEntity[ENT_PLAYER]);
-        SetFrameOffset(0, 0, &pstRes->pstEntity[ENT_PLAYER]);
-        SetAnimation(
-            0, 11,
-            pstRes->pstEntity[ENT_PLAYER]->dAnimSpeed,
-            &pstRes->pstEntity[ENT_PLAYER]);
+        if (! IsEntityMoving(&pstRes->pstEntity[0]))
+        {
+            AnimateEntity(true, &pstRes->pstEntity[0]);
+            SetFrameOffset(0, 0, &pstRes->pstEntity[0]);
+            SetAnimation(
+                0, 11,
+                pstRes->pstEntity[0]->dAnimSpeed,
+                &pstRes->pstEntity[0]);
+        }
+
+        // Move player entity.
+        if (bIsMoving)
+        {
+            AnimateEntity(true, &pstRes->pstEntity[0]);
+            MoveEntity(
+                bOrientation, 6.0, 3.0, 1, 7,
+                pstRes->pstEntity[0]->dAnimSpeed,
+                1,
+                &pstRes->pstEntity[0]);
+        }
 
         // Unlock camera.
         SetCameraLock(false, &pstRes->pstCamera);
-
-        // Move player entity.
-        if (bMovePlayer)
-        {
-            AnimateEntity(true, &pstRes->pstEntity[ENT_PLAYER]);
-            MoveEntity(
-                bOrientation, 6.0, 3.0, 1, 7,
-                pstRes->pstEntity[ENT_PLAYER]->dAnimSpeed,
-                1,
-                &pstRes->pstEntity[ENT_PLAYER]);
-        }
 
         // Update game logic.
         UpdateWorld(dDeltaTime, &pstRes);

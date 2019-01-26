@@ -14,10 +14,10 @@
 int Render(Resources **pstResources)
 {
     if (-1 == DrawBackground(
-            (*pstResources)->pstEntity[ENT_PLAYER]->bOrientation,
+            (*pstResources)->pstEntity[0]->bOrientation,
             (*pstResources)->pstVideo->s32LogicalWindowHeight,
             (*pstResources)->pstCamera->dPosY,
-            (*pstResources)->pstEntity[ENT_PLAYER]->dVelocityX,
+            (*pstResources)->pstEntity[0]->dVelocityX,
             &(*pstResources)->pstVideo->pstRenderer,
             &(*pstResources)->pstBackground))
     {
@@ -35,7 +35,7 @@ int Render(Resources **pstResources)
     }
 
     if (-1 == DrawEntity(
-            &(*pstResources)->pstEntity[ENT_PLAYER],
+            &(*pstResources)->pstEntity[0],
             &(*pstResources)->pstCamera,
             &(*pstResources)->pstSprite,
             &(*pstResources)->pstVideo->pstRenderer))

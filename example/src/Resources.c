@@ -18,9 +18,9 @@ void FreeResources(Resources **pstRes)
     FreeSprite(&(*pstRes)->pstSprite);
     FreeBackground(&(*pstRes)->pstBackground);
     FreeFont(&(*pstRes)->pstFont);
-    FreeObject(&(*pstRes)->pstObject[OBJ_PLAYER_SPAWN]);
+    FreeObject(&(*pstRes)->pstObject[0]);
     FreeMap(&(*pstRes)->pstMap);
-    FreeEntity(&(*pstRes)->pstEntity[ENT_PLAYER]);
+    FreeEntity(&(*pstRes)->pstEntity[0]);
     FreeCamera(&(*pstRes)->pstCamera);
     FreeVideo(&(*pstRes)->pstVideo);
     free(*pstRes);
@@ -29,7 +29,6 @@ void FreeResources(Resources **pstRes)
 int InitResources(Resources **pstRes)
 {
     int         sReturnValue      = 0;
-    bool        bFullscreen       = false;
     const char *pacBgFileNames[4] = {
         "res/images/sky.png",
         "res/images/clouds.png",
@@ -48,8 +47,8 @@ int InitResources(Resources **pstRes)
         return -1;
     }
 
-    (*pstRes)->pstEntity[ENT_PLAYER]       = NULL;
-    (*pstRes)->pstObject[OBJ_PLAYER_SPAWN] = NULL;;
+    (*pstRes)->pstEntity[0]       = NULL;
+    (*pstRes)->pstObject[0] = NULL;;
     (*pstRes)->pstAudio                    = NULL;
     (*pstRes)->pstBackground               = NULL;
     (*pstRes)->pstCamera                   = NULL;
@@ -59,47 +58,73 @@ int InitResources(Resources **pstRes)
     (*pstRes)->pstSprite                   = NULL;
     (*pstRes)->pstVideo                    = NULL;
 
-    #ifdef __ANDROID__
-    bFullscreen = true;
-    #endif
-
     sReturnValue = InitVideo(
         "Rainbow Joe", 640, 360, 384, 216,
-        bFullscreen, &(*pstRes)->pstVideo);
-    if (-1 == sReturnValue) { goto exit; }
+        false, &(*pstRes)->pstVideo);
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitCamera(&(*pstRes)->pstCamera);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
-    sReturnValue = InitEntity(0, 0, 24, 40, &(*pstRes)->pstEntity[ENT_PLAYER]);
-    if (-1 == sReturnValue) { goto exit; }
+    sReturnValue = InitEntity(0, 0, 24, 40, &(*pstRes)->pstEntity[0]);
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitMap("res/maps/Demo.tmx", 32, &(*pstRes)->pstMap);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
-    sReturnValue = InitObject(&(*pstRes)->pstObject[OBJ_PLAYER_SPAWN]);
-    if (-1 == sReturnValue) { goto exit; }
+    sReturnValue = InitObject(&(*pstRes)->pstObject[0]);
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitFont("res/ttf/FifteenNarrow.ttf", &(*pstRes)->pstFont);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitBackground(
         4, pacBgFileNames, (*pstRes)->pstVideo->s32WindowWidth, BOTTOM,
         &(*pstRes)->pstVideo->pstRenderer, &(*pstRes)->pstBackground);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
-    /* sReturnValue = InitSprite(
+    /*sReturnValue = InitSprite(
         "res/images/characters_7.png", 736, 128, 0, 0,
         &(*pstRes)->pstSprite, &(*pstRes)->pstVideo->pstRenderer);
-    if (-1 == sReturnValue) { goto exit; } */
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }*/
 
     sReturnValue = InitSprite(
         "res/images/player.png", 360, 80, 0, 0,
         &(*pstRes)->pstSprite, &(*pstRes)->pstVideo->pstRenderer);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitAudio(&(*pstRes)->pstAudio);
-    if (-1 == sReturnValue) { goto exit; }
+    if (-1 == sReturnValue)
+    {
+        goto exit;
+    }
 
     sReturnValue = InitMusic(
         "res/music/LeftRightExcluded.ogg", -1,
@@ -109,14 +134,14 @@ int InitResources(Resources **pstRes)
     GetSingleObjectByName(
         "Player",
         &(*pstRes)->pstMap,
-        &(*pstRes)->pstObject[OBJ_PLAYER_SPAWN]);
+        &(*pstRes)->pstObject[0]);
 
     SetPosition(
-        (*pstRes)->pstObject[OBJ_PLAYER_SPAWN]->dPosX,
-        (*pstRes)->pstObject[OBJ_PLAYER_SPAWN]->dPosY,
-        &(*pstRes)->pstEntity[ENT_PLAYER]);
+        (*pstRes)->pstObject[0]->dPosX,
+        (*pstRes)->pstObject[0]->dPosY,
+        &(*pstRes)->pstEntity[0]);
 
-    SetFrameOffset(0, 0, &(*pstRes)->pstEntity[ENT_PLAYER]);
+    SetFrameOffset(0, 0, &(*pstRes)->pstEntity[0]);
     SetFontColour(0xfe, 0x95, 0x14, &(*pstRes)->pstFont);
 
     exit:

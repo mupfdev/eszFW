@@ -256,6 +256,18 @@ bool IsCameraLocked(Camera **pstCamera)
     }
 }
 
+bool IsEntityMoving(Entity **pstEntity)
+{
+    if (IS_SET((*pstEntity)->u16Flags, IS_WALKING))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 void MoveEntity(
     const bool    bOrientation,
     const double  dAcceleration,
@@ -368,10 +380,7 @@ void SetCameraBoundariesToMapSize(
     }
 }
 
-void SetFrameOffset(
-    const uint8_t u8OffsetX,
-    const uint8_t u8OffsetY,
-    Entity      **pstEntity)
+void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity **pstEntity)
 {
     (*pstEntity)->u8FrameOffsetX = u8OffsetX;
     (*pstEntity)->u8FrameOffsetY = u8OffsetY;
@@ -389,22 +398,21 @@ void SetOrientation(const bool bOrientation, Entity **pstEntity)
     }
 }
 
-void SetPosition(
-    const double dPosX,
-    const double dPosY,
-    Entity     **pstEntity)
+void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity)
 {
     (*pstEntity)->dPosX = dPosX;
     (*pstEntity)->dPosY = dPosY;
 }
 
-void SetSpeed(
-    const double dAcceleration,
-    const double dMaxVelocityX,
-    Entity     **pstEntity)
+void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **pstEntity)
 {
     (*pstEntity)->dAcceleration = dAcceleration;
     (*pstEntity)->dMaxVelocityX = dMaxVelocityX;
+}
+
+void StopEntity(Entity **pstEntity)
+{
+    CLEAR((*pstEntity)->u16Flags, IS_WALKING);
 }
 
 void UpdateEntity(

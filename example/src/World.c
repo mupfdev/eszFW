@@ -17,32 +17,32 @@ void UpdateWorld(const double dDeltaTime, Resources **pstRes)
     // Set up collision detection.
     if (false == IsOnTileOfType(
             "Platform",
-            (*pstRes)->pstEntity[ENT_PLAYER]->dPosX,
-            (*pstRes)->pstEntity[ENT_PLAYER]->dPosY,
-            (*pstRes)->pstEntity[ENT_PLAYER]->u8Height,
+            (*pstRes)->pstEntity[0]->dPosX,
+            (*pstRes)->pstEntity[0]->dPosY,
+            (*pstRes)->pstEntity[0]->u8Height,
             &(*pstRes)->pstMap))
     {
-        AnimateEntity(false, &(*pstRes)->pstEntity[ENT_PLAYER]);
-        SetFrameOffset(0, 0, &(*pstRes)->pstEntity[ENT_PLAYER]);
+        AnimateEntity(false, &(*pstRes)->pstEntity[0]);
+        SetFrameOffset(0, 0, &(*pstRes)->pstEntity[0]);
         SetAnimation(
             13, 13,
-            (*pstRes)->pstEntity[ENT_PLAYER]->dAnimSpeed,
-            &(*pstRes)->pstEntity[ENT_PLAYER]);
-        DropEntity(&(*pstRes)->pstEntity[ENT_PLAYER]);
+            (*pstRes)->pstEntity[0]->dAnimSpeed,
+            &(*pstRes)->pstEntity[0]);
+        DropEntity(&(*pstRes)->pstEntity[0]);
     }
 
     UpdateEntity(
         dDeltaTime,
         (*pstRes)->pstMap->dGravitation,
         (*pstRes)->pstMap->u8MeterInPixel,
-        &(*pstRes)->pstEntity[ENT_PLAYER]);
+        &(*pstRes)->pstEntity[0]);
 
     // Follow player entity and set camera boudnaries to map size.
     SetCameraTargetEntity(
         (*pstRes)->pstVideo->s32LogicalWindowWidth,
         (*pstRes)->pstVideo->s32LogicalWindowHeight,
         &(*pstRes)->pstCamera,
-        &(*pstRes)->pstEntity[ENT_PLAYER]);
+        &(*pstRes)->pstEntity[0]);
 
     SetCameraBoundariesToMapSize(
         (*pstRes)->pstVideo->s32LogicalWindowWidth,
@@ -53,7 +53,7 @@ void UpdateWorld(const double dDeltaTime, Resources **pstRes)
 
     // Set zoom level dynamically in relation to vertical velocity.
     #ifndef __ANDROID__
-    if (0.0 < (*pstRes)->pstEntity[ENT_PLAYER]->dVelocityY)
+    if (0.0 < (*pstRes)->pstEntity[0]->dVelocityY)
     {
         (*pstRes)->pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
         if (1.0 > (*pstRes)->pstVideo->dZoomLevel)
@@ -75,5 +75,5 @@ void UpdateWorld(const double dDeltaTime, Resources **pstRes)
     ConnectMapEndsForEntity(
         (*pstRes)->pstMap->u16Width,
         (*pstRes)->pstMap->u16Height,
-        &(*pstRes)->pstEntity[ENT_PLAYER]);
+        &(*pstRes)->pstEntity[0]);
 }

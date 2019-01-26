@@ -6,9 +6,6 @@
 #ifndef _INIT_H_
 #define _INIT_H_
 
-#define ENT_PLAYER       0
-#define OBJ_PLAYER_SPAWN 0
-
 #include <eszfw.h>
 
 typedef struct Resources_t

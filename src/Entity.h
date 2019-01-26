@@ -99,6 +99,7 @@ int InitSprite(
     SDL_Renderer **pstRenderer);
 
 bool IsCameraLocked(Camera **pstCamera);
+bool IsEntityMoving(Entity **pstEntity);
 
 void MoveEntity(
     const bool    bOrientation,
@@ -132,22 +133,11 @@ void SetAnimation(
     const double  dAnimSpeed,
     Entity      **pstEntity);
 
-void SetFrameOffset(
-    const uint8_t u8OffsetX,
-    const uint8_t u8OffsetY,
-    Entity      **pstEntity);
-
+void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity **pstEntity);
 void SetOrientation(const bool bOrientation, Entity **pstEntity);
-
-void SetPosition(
-    const double dPosX,
-    const double dPosY,
-    Entity     **pstEntity);
-
-void SetSpeed(
-    const double dAcceleration,
-    const double dMaxVelocityX,
-    Entity     **pstEntity);
+void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity);
+void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **pstEntity);
+void StopEntity(Entity **pstEntity);
 
 void UpdateEntity(
     const double  dDeltaTime,
