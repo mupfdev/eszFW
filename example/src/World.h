@@ -9,6 +9,6 @@
 #include <stdbool.h>
 #include "Resources.h"
 
-void UpdateWorld(const double dDeltaTime, Resources **pstResources);
+void UpdateWorld(const double dDeltaTime, Resources **pstRes);
 
 #endif // _WORLD_H_

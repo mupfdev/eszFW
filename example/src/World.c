@@ -6,74 +6,74 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#include <eszFW.h>
+#include <eszfw.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "Resources.h"
 #include "World.h"
 
-void UpdateWorld(const double dDeltaTime, Resources **pstResources)
+void UpdateWorld(const double dDeltaTime, Resources **pstRes)
 {
     // Set up collision detection.
     if (false == IsOnTileOfType(
             "Platform",
-            (*pstResources)->pstEntity[ENT_PLAYER]->dPosX,
-            (*pstResources)->pstEntity[ENT_PLAYER]->dPosY,
-            (*pstResources)->pstEntity[ENT_PLAYER]->u8Height,
-            &(*pstResources)->pstMap))
+            (*pstRes)->pstEntity[ENT_PLAYER]->dPosX,
+            (*pstRes)->pstEntity[ENT_PLAYER]->dPosY,
+            (*pstRes)->pstEntity[ENT_PLAYER]->u8Height,
+            &(*pstRes)->pstMap))
     {
-        AnimateEntity(false, &(*pstResources)->pstEntity[ENT_PLAYER]);
-        SetFrameOffset(0, 0, &(*pstResources)->pstEntity[ENT_PLAYER]);
+        AnimateEntity(false, &(*pstRes)->pstEntity[ENT_PLAYER]);
+        SetFrameOffset(0, 0, &(*pstRes)->pstEntity[ENT_PLAYER]);
         SetAnimation(
             13, 13,
-            (*pstResources)->pstEntity[ENT_PLAYER]->dAnimSpeed,
-            &(*pstResources)->pstEntity[ENT_PLAYER]);
-        DropEntity(&(*pstResources)->pstEntity[ENT_PLAYER]);
+            (*pstRes)->pstEntity[ENT_PLAYER]->dAnimSpeed,
+            &(*pstRes)->pstEntity[ENT_PLAYER]);
+        DropEntity(&(*pstRes)->pstEntity[ENT_PLAYER]);
     }
 
     UpdateEntity(
         dDeltaTime,
-        (*pstResources)->pstMap->dGravitation,
-        (*pstResources)->pstMap->u8MeterInPixel,
-        &(*pstResources)->pstEntity[ENT_PLAYER]);
+        (*pstRes)->pstMap->dGravitation,
+        (*pstRes)->pstMap->u8MeterInPixel,
+        &(*pstRes)->pstEntity[ENT_PLAYER]);
 
     // Follow player entity and set camera boudnaries to map size.
     SetCameraTargetEntity(
-        (*pstResources)->pstVideo->s32LogicalWindowWidth,
-        (*pstResources)->pstVideo->s32LogicalWindowHeight,
-        &(*pstResources)->pstCamera,
-        &(*pstResources)->pstEntity[ENT_PLAYER]);
+        (*pstRes)->pstVideo->s32LogicalWindowWidth,
+        (*pstRes)->pstVideo->s32LogicalWindowHeight,
+        &(*pstRes)->pstCamera,
+        &(*pstRes)->pstEntity[ENT_PLAYER]);
 
     SetCameraBoundariesToMapSize(
-        (*pstResources)->pstVideo->s32LogicalWindowWidth,
-        (*pstResources)->pstVideo->s32LogicalWindowHeight,
-        (*pstResources)->pstMap->u16Width,
-        (*pstResources)->pstMap->u16Height,
-        &(*pstResources)->pstCamera);
+        (*pstRes)->pstVideo->s32LogicalWindowWidth,
+        (*pstRes)->pstVideo->s32LogicalWindowHeight,
+        (*pstRes)->pstMap->u16Width,
+        (*pstRes)->pstMap->u16Height,
+        &(*pstRes)->pstCamera);
 
     // Set zoom level dynamically in relation to vertical velocity.
     #ifndef __ANDROID__
-    if (0.0 < (*pstResources)->pstEntity[ENT_PLAYER]->dVelocityY)
+    if (0.0 < (*pstRes)->pstEntity[ENT_PLAYER]->dVelocityY)
     {
-        (*pstResources)->pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
-        if (1.0 > (*pstResources)->pstVideo->dZoomLevel)
+        (*pstRes)->pstVideo->dZoomLevel -= dDeltaTime / 3.5f;
+        if (1.0 > (*pstRes)->pstVideo->dZoomLevel)
         {
-            (*pstResources)->pstVideo->dZoomLevel = 1;
+            (*pstRes)->pstVideo->dZoomLevel = 1;
         }
     }
     else
     {
-        (*pstResources)->pstVideo->dZoomLevel += dDeltaTime / 1.75f;
-        if ((*pstResources)->pstVideo->dZoomLevel > (*pstResources)->pstVideo->dInitialZoomLevel)
+        (*pstRes)->pstVideo->dZoomLevel += dDeltaTime / 1.75f;
+        if ((*pstRes)->pstVideo->dZoomLevel > (*pstRes)->pstVideo->dInitialZoomLevel)
         {
-            (*pstResources)->pstVideo->dZoomLevel = (*pstResources)->pstVideo->dInitialZoomLevel;
+            (*pstRes)->pstVideo->dZoomLevel = (*pstRes)->pstVideo->dInitialZoomLevel;
         }
     }
-    SetZoomLevel((*pstResources)->pstVideo->dZoomLevel, &(*pstResources)->pstVideo);
+    SetZoomLevel((*pstRes)->pstVideo->dZoomLevel, &(*pstRes)->pstVideo);
     #endif // __ANDROID__
 
     ConnectMapEndsForEntity(
-        (*pstResources)->pstMap->u16Width,
-        (*pstResources)->pstMap->u16Height,
-        &(*pstResources)->pstEntity[ENT_PLAYER]);
+        (*pstRes)->pstMap->u16Width,
+        (*pstRes)->pstMap->u16Height,
+        &(*pstRes)->pstEntity[ENT_PLAYER]);
 }

@@ -9,7 +9,7 @@
 #define ENT_PLAYER       0
 #define OBJ_PLAYER_SPAWN 0
 
-#include <eszFW.h>
+#include <eszfw.h>
 
 typedef struct Resources_t
 {
@@ -20,14 +20,13 @@ typedef struct Resources_t
     Background *pstBackground;
     Camera     *pstCamera;
     Font       *pstFont;
-    Input      *pstInput;
     Map        *pstMap;
     Music      *pstMusic;
     Sprite     *pstSprite;
     Video      *pstVideo;
 } Resources;
 
-void FreeResources(Resources **pstResources);
-int InitResources(Resources **pstResources);
+void FreeResources(Resources **pstRes);
+int InitResources(Resources **pstRes);
 
 #endif // _RESOURCES_H_

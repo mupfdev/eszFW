@@ -6,7 +6,7 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#include <eszFW.h>
+#include <eszfw.h>
 #include <stdbool.h>
 #include "Resources.h"
 #include "Render.h"

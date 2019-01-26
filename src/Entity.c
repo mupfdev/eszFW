@@ -20,11 +20,14 @@
 #include "Entity.h"
 #include "Macros.h"
 
-#define IS_ANIMATED   0
-#define IS_DEAD       1
-#define IS_IN_MID_AIR 2
-#define IS_LOCKED     3
-#define IS_WALKING    4
+typedef enum Flags_t
+{
+    IS_ANIMATED   = 0x0,
+    IS_DEAD       = 0x1,
+    IS_IN_MID_AIR = 0x2,
+    IS_LOCKED     = 0x3,
+    IS_WALKING    = 0x4
+} eFlags;
 
 void AnimateEntity(bool bAnimate, Entity **pstEntity)
 {
@@ -414,18 +417,21 @@ void UpdateEntity(
     double dPosY = (*pstEntity)->dPosY;
 
     // Apply gravitation.
-    if (IS_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
+    if (0 != dGravitation)
     {
-        double dG                 = dGravitation * u8MeterInPixel;
-        double dDistanceY         = dG * dDeltaTime * dDeltaTime;
-        (*pstEntity)->dVelocityY += dDistanceY;
-        dPosY                    += (*pstEntity)->dVelocityY;
-    }
-    else
-    {
-        // Correct position along the y-axis.
-        (*pstEntity)->dVelocityY = 0.f;
-        dPosY = (16.f * round(dPosY / 16.f));
+        if (IS_SET((*pstEntity)->u16Flags, IS_IN_MID_AIR))
+        {
+            double dG                 = dGravitation * u8MeterInPixel;
+            double dDistanceY         = dG * dDeltaTime * dDeltaTime;
+            (*pstEntity)->dVelocityY += dDistanceY;
+            dPosY                    += (*pstEntity)->dVelocityY;
+        }
+        else
+        {
+            // Correct position along the y-axis.
+            (*pstEntity)->dVelocityY = 0.f;
+            dPosY = (16.f * round(dPosY / 16.f));
+        }
     }
 
     // Calculate horizontal velocity.

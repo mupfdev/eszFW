@@ -1,6 +1,5 @@
 /**
- * @file eszFW.h
- * @ingroup eszFW
+ * @file eszfw.h
  */
 
 #ifndef _ESZFW_H_
@@ -12,7 +11,6 @@
 #include "Entity.h"
 #include "Font.h"
 #include "FPSLimiter.h"
-#include "Input.h"
 #include "Macros.h"
 #include "Map.h"
 #include "Video.h"

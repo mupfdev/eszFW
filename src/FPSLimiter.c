@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include "FPSLimiter.h"
 
-void InitFPSLimiterTest(
+void InitFPSLimiter(
     double *dTimeA,
     double *dTimeB,
     double *dDeltaTime)
@@ -23,12 +23,6 @@ void InitFPSLimiterTest(
     *dTimeA = SDL_GetTicks();
     *dTimeB     = SDL_GetTicks();
     *dDeltaTime = (*dTimeB - *dTimeA) / 1000.f;
-}
-
-void InitFPSLimiter(double *dTimeA)
-{
-    SDL_Log("Initialise frame-rate limiter.\n");
-    *dTimeA = SDL_GetTicks();
 }
 
 void LimitFramerate(
