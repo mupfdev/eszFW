@@ -130,8 +130,8 @@ int SDL_main(int sArgC, char *pacArgV[])
             }
             else if (SDL_MULTIGESTURE == stEvent.type)
             {
-                StopEntity(&pstRes->pstEntity[0]);
-                dZoomLevel  = pstRes->pstVideo->dZoomLevel;
+                bIsMoving  = false;
+                dZoomLevel = pstRes->pstVideo->dZoomLevel;
                 if (0.002 < fabs(stEvent.mgesture.dDist))
                 {
                     if (0 < stEvent.mgesture.dDist)
