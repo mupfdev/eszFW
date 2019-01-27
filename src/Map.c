@@ -135,10 +135,7 @@ int DrawMap(
     if (0 != SDL_SetRenderTarget((*pstRenderer), (*pstMap)->pstTexture[u16Index]))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        if (pstTileset)
-        {
-            SDL_DestroyTexture(pstTileset);
-        }
+        SDL_DestroyTexture(pstTileset);
         return -1;
     }
 
@@ -208,6 +205,11 @@ int DrawMap(
 void FreeMap(Map **pstMap)
 {
     if (! pstMap)
+    {
+        return;
+    }
+
+    if (! (*pstMap)->pstTmxMap)
     {
         tmx_map_free((*pstMap)->pstTmxMap);
     }

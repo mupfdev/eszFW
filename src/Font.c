@@ -105,7 +105,7 @@ int PrintText(
     }
 
     pstTexture = SDL_CreateTextureFromSurface((*pstRenderer), pstSurface);
-    if (! pstSurface)
+    if (! pstTexture)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
