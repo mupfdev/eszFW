@@ -311,9 +311,9 @@ void SetCameraTargetEntity(
     if (IS_NOT_SET((*pstCamera)->u16Flags, IS_LOCKED))
     {
         (*pstCamera)->dPosX  = (*pstEntity)->dPosX;
-        (*pstCamera)->dPosX -= s32LogicalWindowWidth  / 2;
+        (*pstCamera)->dPosX -= s32LogicalWindowWidth  / 2.0;
         (*pstCamera)->dPosY  = (*pstEntity)->dPosY;
-        (*pstCamera)->dPosY -= s32LogicalWindowHeight / 2;
+        (*pstCamera)->dPosY -= s32LogicalWindowHeight / 2.0;
 
         if ((*pstCamera)->dPosX < 0)
         {
@@ -481,10 +481,10 @@ void UpdateEntity(
     SetPosition(dPosX, dPosY, &(*pstEntity));
 
     // Update axis-aligned bounding box.
-    (*pstEntity)->stBB.dBottom = dPosY + ((*pstEntity)->u8Height / 2);
-    (*pstEntity)->stBB.dLeft   = dPosX - ((*pstEntity)->u8Width  / 2);
-    (*pstEntity)->stBB.dRight  = dPosX + ((*pstEntity)->u8Width  / 2);
-    (*pstEntity)->stBB.dTop    = dPosY - ((*pstEntity)->u8Height / 2);
+    (*pstEntity)->stBB.dBottom = dPosY + ((*pstEntity)->u8Height / 2.0);
+    (*pstEntity)->stBB.dLeft   = dPosX - ((*pstEntity)->u8Width  / 2.0);
+    (*pstEntity)->stBB.dRight  = dPosX + ((*pstEntity)->u8Width  / 2.0);
+    (*pstEntity)->stBB.dTop    = dPosY - ((*pstEntity)->u8Height / 2.0);
 
     // Update animation frame.
     if (IS_SET((*pstEntity)->u16Flags, IS_ANIMATED))
