@@ -27,6 +27,7 @@ CFLAGS=\
 	-I../src\
 	-I../external/tmx/src\
 	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
+	-isystem /usr/$(TOOLCHAIN)/include/SDL2\
 	-O2\
 	-pedantic-errors\
 	-std=c99\

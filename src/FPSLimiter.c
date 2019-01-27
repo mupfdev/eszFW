@@ -10,10 +10,7 @@
 #include <stdint.h>
 #include "FPSLimiter.h"
 
-void InitFPSLimiter(
-    double *dTimeA,
-    double *dTimeB,
-    double *dDeltaTime)
+void InitFPSLimiter(double *dTimeA, double *dTimeB, double *dDeltaTime)
 {
     SDL_Log("Initialise frame-rate limiter.\n");
     *dTimeA = SDL_GetTicks();
@@ -21,12 +18,7 @@ void InitFPSLimiter(
     *dDeltaTime = (*dTimeB - *dTimeA) / 1000.f;
 }
 
-void LimitFramerate(
-    const uint16_t u16FPS,
-    double        *dTimeA,
-    double        *dTimeB,
-    double        *dDeltaTime
-)
+void LimitFramerate(const uint16_t u16FPS, double *dTimeA, double *dTimeB, double *dDeltaTime)
 {
     *dTimeB     = SDL_GetTicks();
     *dDeltaTime = (*dTimeB - *dTimeA) / 1000.f;

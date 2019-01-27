@@ -19,12 +19,8 @@ stops as soon as he reaches the spot that was tapped.
 ```
 Q:       quit
 LSHIFT:  hold to unlock camera
-UP:      move unlocked camera up
-DOWN:    move unlocked camera down
 LEFT:    walk left
-         move unlocked camera left
 RIGHT:   walk right
-         move unlocked camera right
 ```
 
 ## Licence and Credits

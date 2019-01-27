@@ -26,6 +26,9 @@ typedef struct Entity_t
     uint16_t u16Flags;
     double   dPosX;
     double   dPosY;
+    double   dSpawnPosX;
+    double   dSpawnPosY;
+    bool     bIsJumping;
     bool     bOrientation;
     double   dAcceleration;
     double   dVelocityX;
@@ -55,13 +58,12 @@ void AnimateEntity(bool bAnimate, Entity **pstEntity);
 void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity **pstEntity);
 void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity **pstEntity);
 void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity **pstEntity);
-int DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer);
-
+int  DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer);
 void DropEntity(Entity **pstEntity);
 void FreeCamera(Camera **pstCamera);
 void FreeEntity(Entity **pstEntity);
 void FreeSprite(Sprite **pstSprite);
-int InitCamera(Camera **pstCamera);
+int  InitCamera(Camera **pstCamera);
 
 int InitEntity(
     const double  dPosX,
@@ -81,6 +83,9 @@ int InitSprite(
 
 bool IsCameraLocked(Camera **pstCamera);
 bool IsEntityMoving(Entity **pstEntity);
+bool IsEntityRising(Entity **pstEntity);
+void JumpEntity(const double dForce, Entity **pstEntity);
+void LockCamera(Camera **pstCamera);
 
 void MoveEntity(
     const bool    bOrientation,
@@ -93,7 +98,7 @@ void MoveEntity(
     Entity      **pstEntity);
 
 void ResetEntity(Entity **pstEntity);
-void SetCameraLock(const bool bLock, Camera **pstCamera);
+void ResetEntityToSpawnPosition(Entity **pstEntity);
 
 void SetCameraBoundariesToMapSize(
     const int32_t  s32LogicalWindowWidth,
@@ -112,8 +117,10 @@ void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const doub
 void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity **pstEntity);
 void SetOrientation(const bool bOrientation, Entity **pstEntity);
 void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity);
+void SetSpawnPosition(const double dPosX, const double dPosY, Entity **pstEntity);
 void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **pstEntity);
 void StopEntity(Entity **pstEntity);
+void UnlockCamera(Camera **pstCamera);
 
 void UpdateEntity(
     const double  dDeltaTime,

@@ -16,7 +16,7 @@ typedef struct Font_t
 } Font;
 
 void FreeFont(Font **pstFont);
-int InitFont(const char *pacFileName, Font **pstFont);
+int  InitFont(const char *pacFileName, Font **pstFont);
 
 int PrintNumber(
     const int32_t  s32Number,

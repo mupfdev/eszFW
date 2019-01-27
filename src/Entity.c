@@ -182,6 +182,7 @@ int InitEntity(
     SetOrientation(RIGHT, &(*pstEntity));
     SetAnimation(0, 0, 12.5f, &(*pstEntity));
 
+    (*pstEntity)->bIsJumping     = false;
     (*pstEntity)->dVelocityX     = 0.f;
     (*pstEntity)->dVelocityY     = 0.f;
     (*pstEntity)->stBB.dBottom   = 0.f;
@@ -258,6 +259,35 @@ bool IsEntityMoving(Entity **pstEntity)
     }
 }
 
+bool IsEntityRising(Entity **pstEntity)
+{
+    if (0 > (*pstEntity)->dVelocityY)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void JumpEntity(const double dForce, Entity **pstEntity)
+{
+    if (! (*pstEntity)->bIsJumping)
+    {
+        // Initial lift-up; may need adjustment.
+        (*pstEntity)->dPosY -= (*pstEntity)->u8Height / 8;
+        // Apply force.
+        (*pstEntity)->dVelocityY = -dForce;
+        (*pstEntity)->bIsJumping = true;
+    }
+}
+
+void LockCamera(Camera **pstCamera)
+{
+    SET((*pstCamera)->u16Flags, IS_LOCKED);
+}
+
 void MoveEntity(
     const bool    bOrientation,
     const double  dAcceleration,
@@ -280,16 +310,10 @@ void ResetEntity(Entity **pstEntity)
     (*pstEntity)->u16Flags = 0;
 }
 
-void SetCameraLock(const bool bLock, Camera **pstCamera)
+void ResetEntityToSpawnPosition(Entity **pstEntity)
 {
-    if (bLock)
-    {
-        SET((*pstCamera)->u16Flags, IS_LOCKED);
-    }
-    else
-    {
-        CLEAR((*pstCamera)->u16Flags, IS_LOCKED);
-    }
+    (*pstEntity)->dPosX = (*pstEntity)->dSpawnPosX;
+    (*pstEntity)->dPosY = (*pstEntity)->dSpawnPosY;
 }
 
 void SetCameraTargetEntity(
@@ -298,7 +322,7 @@ void SetCameraTargetEntity(
     Camera      **pstCamera,
     Entity      **pstEntity)
 {
-    if (IS_NOT_SET((*pstCamera)->u16Flags, IS_LOCKED))
+    if (IS_SET((*pstCamera)->u16Flags, IS_LOCKED))
     {
         (*pstCamera)->dPosX  = (*pstEntity)->dPosX;
         (*pstCamera)->dPosX -= s32LogicalWindowWidth  / 2.0;
@@ -390,6 +414,12 @@ void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity)
     (*pstEntity)->dPosY = dPosY;
 }
 
+void SetSpawnPosition(const double dPosX, const double dPosY, Entity **pstEntity)
+{
+    (*pstEntity)->dSpawnPosX = dPosX;
+    (*pstEntity)->dSpawnPosY = dPosY;
+}
+
 void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **pstEntity)
 {
     (*pstEntity)->dAcceleration = dAcceleration;
@@ -399,6 +429,11 @@ void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **p
 void StopEntity(Entity **pstEntity)
 {
     CLEAR((*pstEntity)->u16Flags, IS_WALKING);
+}
+
+void UnlockCamera(Camera **pstCamera)
+{
+    CLEAR((*pstCamera)->u16Flags, IS_LOCKED);
 }
 
 void UpdateEntity(
@@ -422,6 +457,7 @@ void UpdateEntity(
         }
         else
         {
+            (*pstEntity)->bIsJumping = false;
             // Correct position along the y-axis.
             (*pstEntity)->dVelocityY = 0.f;
             dPosY = (16.f * round(dPosY / 16.f));

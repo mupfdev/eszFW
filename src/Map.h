@@ -43,12 +43,12 @@ int DrawMap(
     Map          **pstMap,
     SDL_Renderer **pstRenderer);
 
-void FreeMap(Map **pstMap);
-void FreeObject(Object **pstObject);
-void GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject);
+void     FreeMap(Map **pstMap);
+void     FreeObject(Object **pstObject);
+void     GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject);
 uint16_t GetObjectCount(Map **pstMap);
-int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap);
-int InitObject(Object **pstObject);
+int      InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap);
+int      InitObject(Object **pstObject);
 
 bool IsMapCoordOfType(
     const char *pacType,

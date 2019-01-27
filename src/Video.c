@@ -76,13 +76,13 @@ int InitVideo(
     }
 
     #ifdef __ANDROID__
-    u32Flags = u32Flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
-    /*SDL_DisplayMode stDisplayMode;
+    u32Flags = 0;
+    SDL_DisplayMode stDisplayMode;
     if (0 == SDL_GetCurrentDisplayMode(0, &stDisplayMode))
     {
         (*pstVideo)->s32WindowWidth  = stDisplayMode.w;
         (*pstVideo)->s32WindowHeight = stDisplayMode.h;
-    }*/
+    }
     #endif
 
     (*pstVideo)->pstWindow = SDL_CreateWindow(

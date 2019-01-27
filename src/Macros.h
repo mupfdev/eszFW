@@ -15,6 +15,8 @@
 #define SET(number, bit)        (number) |= 1 << (bit)
 #define TOGGLE(number, bit)     (number) ^= 1 << (bit)
 
+#define RETURN_ON_ERROR(value) if (-1 == value) { return value; }
+
 #define RIGHT  0
 #define LEFT   1
 #define BOTTOM 0
