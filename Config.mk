@@ -25,6 +25,7 @@ CFLAGS=\
 	-DWANT_ZLIB\
 	-Isrc\
 	-Iexternal/tmx/src\
+    -isystem /usr/$(TOOLCHAIN)/include/SDL2\
 	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
 	-O2\
 	-pedantic-errors\
