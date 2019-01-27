@@ -71,9 +71,16 @@ int InitAudio(Audio **pstAudio)
 
 int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
 {
+    if (pstMusic == NULL)
+    {
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION,
+            "InitMusic(): pstMusic == NULL.\n");
+        return -1;
+    }
     *pstMusic = NULL;
     *pstMusic = malloc(sizeof(struct Music_t));
-    if (! pstMusic)
+    if (! *pstMusic)
     {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
