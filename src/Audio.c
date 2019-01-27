@@ -25,7 +25,11 @@ void FreeAudio(Audio **pstAudio)
 
 void FreeMusic(Music **pstMusic)
 {
-    Mix_FreeMusic((*pstMusic)->pstMusic);
+    if (*pstMusic && (*pstMusic)->pstMusic)
+    {
+        Mix_FreeMusic((*pstMusic)->pstMusic);
+    }
+
     free(*pstMusic);
     SDL_Log("Unload music track.\n");
 }
