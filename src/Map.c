@@ -19,10 +19,7 @@ static uint16_t _ClearGidFlags(uint16_t u16Gid)
     return u16Gid & TMX_FLIP_BITS_REMOVAL;
 }
 
-static void _FindObjectByName(
-    const char *pacName,
-    tmx_object *pstTmxObject,
-    Object    **pstObject)
+static void _FindObjectByName(const char *pacName, tmx_object *pstTmxObject, Object **pstObject)
 {
     if (pstObject)
     {
@@ -199,29 +196,27 @@ int DrawMap(
 
 void FreeMap(Map **pstMap)
 {
-    if (! pstMap)
+    if (*pstMap)
     {
-        return;
-    }
+        if (! (*pstMap)->pstTmxMap)
+        {
+            tmx_map_free((*pstMap)->pstTmxMap);
+        }
 
-    if (! (*pstMap)->pstTmxMap)
-    {
-        tmx_map_free((*pstMap)->pstTmxMap);
+        free(*pstMap);
+        SDL_Log("Unload TMX map.\n");
     }
-    free((*pstMap));
-
-    SDL_Log("Unload TMX map.\n");
 }
 
 void FreeObject(Object **pstObject)
 {
-    free(*pstObject);
+    if (*pstObject)
+    {
+        free(*pstObject);
+    }
 }
 
-void GetSingleObjectByName(
-    const char *pacName,
-    Map       **pstMap,
-    Object    **pstObject)
+void GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject)
 {
     tmx_layer *pstLayer;
 
@@ -258,10 +253,7 @@ uint16_t GetObjectCount(Map **pstMap)
     return u16ObjectCount;
 }
 
-int InitMap(
-    const char   *pacFileName,
-    const uint8_t u8MeterInPixel,
-    Map         **pstMap)
+int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap)
 {
     *pstMap = malloc(sizeof(struct Map_t));
     if (! *pstMap)
@@ -377,10 +369,7 @@ bool IsOnTileOfType(
     return false;
 }
 
-void SetGravitation(
-    const double  dGravitation,
-    const bool    bUseTmxConstant,
-    Map         **pstMap)
+void SetGravitation(const double  dGravitation, const bool bUseTmxConstant, Map **pstMap)
 {
     if (bUseTmxConstant)
     {

@@ -23,7 +23,11 @@ void FreeResources(Resources **pstRes)
     FreeEntity(&(*pstRes)->pstEntity[0]);
     FreeCamera(&(*pstRes)->pstCamera);
     FreeVideo(&(*pstRes)->pstVideo);
-    free(*pstRes);
+
+    if (*pstRes)
+    {
+        free(*pstRes);
+    }
 }
 
 int InitResources(Resources **pstRes)

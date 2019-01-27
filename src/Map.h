@@ -45,19 +45,9 @@ int DrawMap(
 
 void FreeMap(Map **pstMap);
 void FreeObject(Object **pstObject);
-
-void GetSingleObjectByName(
-    const char *pacName,
-    Map       **pstMap,
-    Object    **pstObject);
-
+void GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject);
 uint16_t GetObjectCount(Map **pstMap);
-
-int InitMap(
-    const char   *pacFileName,
-    const uint8_t u8MeterInPixel,
-    Map         **pstMap);
-
+int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap);
 int InitObject(Object **pstObject);
 
 bool IsMapCoordOfType(
@@ -73,9 +63,6 @@ bool IsOnTileOfType(
     const uint8_t u8EntityHeight,
     Map        **pstMap);
 
-void SetGravitation(
-    const double  dGravitation,
-    const bool    bUseTmxConstant,
-    Map         **pstMap);
+void SetGravitation(const double dGravitation, const bool bUseTmxConstant, Map **pstMap);
 
 #endif // _MAP_H_

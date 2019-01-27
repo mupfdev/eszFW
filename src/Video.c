@@ -15,16 +15,19 @@
 void FreeVideo(Video **pstVideo)
 {
     IMG_Quit();
-    if ((*pstVideo)->pstRenderer)
+    if (*pstVideo)
     {
-        SDL_DestroyRenderer((*pstVideo)->pstRenderer);
+        if ((*pstVideo)->pstRenderer)
+        {
+            SDL_DestroyRenderer((*pstVideo)->pstRenderer);
+        }
+        if ((*pstVideo)->pstWindow)
+        {
+            SDL_DestroyWindow((*pstVideo)->pstWindow);
+        }
+        free(*pstVideo);
+        SDL_Log("Terminate window.\n");
     }
-    if ((*pstVideo)->pstWindow)
-    {
-        SDL_DestroyWindow((*pstVideo)->pstWindow);
-    }
-    free(*pstVideo);
-    SDL_Log("Terminate window.\n");
 }
 
 int InitVideo(

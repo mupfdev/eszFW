@@ -224,8 +224,11 @@ int DrawBackground(
 
 void FreeBackground(Background **pstBackground)
 {
-    free(*pstBackground);
-    SDL_Log("Unload parallax scrolling background.\n");
+    if (*pstBackground)
+    {
+        free(*pstBackground);
+        SDL_Log("Unload parallax scrolling background.\n");
+    }
 }
 
 int InitBackground(

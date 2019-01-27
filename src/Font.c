@@ -13,9 +13,12 @@
 
 void FreeFont(Font **pstFont)
 {
-    free(*pstFont);
     TTF_Quit();
-    SDL_Log("Close font.\n");
+    if (*pstFont)
+    {
+        free(*pstFont);
+        SDL_Log("Close font.\n");
+    }
 }
 
 int InitFont(const char *pacFileName, Font **pstFont)
@@ -141,11 +144,7 @@ int PrintText(
     return sReturnValue;
 }
 
-void SetFontColour(
-    const uint8_t u8Red,
-    const uint8_t u8Green,
-    const uint8_t u8Blue,
-    Font        **pstFont)
+void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font **pstFont)
 {
     (*pstFont)->stColour.r = u8Red;
     (*pstFont)->stColour.g = u8Green;

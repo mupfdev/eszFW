@@ -15,18 +15,24 @@ void FreeAudio(Audio **pstAudio)
 {
     Mix_CloseAudio();
     while(Mix_Init(0)) Mix_Quit();
-    free(*pstAudio);
+    if (*pstAudio)
+    {
+        free(*pstAudio);
+    }
 }
 
 void FreeMusic(Music **pstMusic)
 {
-    if (*pstMusic && (*pstMusic)->pstMusic)
+    if (*pstMusic)
     {
-        Mix_FreeMusic((*pstMusic)->pstMusic);
-    }
+        if ((*pstMusic)->pstMusic)
+        {
+            Mix_FreeMusic((*pstMusic)->pstMusic);
+        }
 
-    free(*pstMusic);
-    SDL_Log("Unload music track.\n");
+        free(*pstMusic);
+        SDL_Log("Unload music track.\n");
+    }
 }
 
 int InitAudio(Audio **pstAudio)

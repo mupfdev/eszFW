@@ -36,9 +36,7 @@ void AnimateEntity(bool bAnimate, Entity **pstEntity)
     }
 }
 
-void ConnectHorizontalMapEndsForEntity(
-    const uint16_t u16MapWidth,
-    Entity       **pstEntity)
+void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity **pstEntity)
 {
     if ((*pstEntity)->dPosX < 0)
     {
@@ -50,18 +48,13 @@ void ConnectHorizontalMapEndsForEntity(
     }
 }
 
-void ConnectMapEndsForEntity(
-    const uint16_t u16MapWidth,
-    const uint16_t u16MapHeight,
-    Entity       **pstEntity)
+void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity **pstEntity)
 {
     ConnectHorizontalMapEndsForEntity(u16MapWidth, pstEntity);
     ConnectVerticalMapEndsForEntity(u16MapHeight, pstEntity);
 }
 
-void ConnectVerticalMapEndsForEntity(
-    const uint16_t u16MapHeight,
-    Entity       **pstEntity)
+void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity **pstEntity)
 {
     if ((*pstEntity)->dPosY < 0)
     {
@@ -73,11 +66,7 @@ void ConnectVerticalMapEndsForEntity(
     }
 }
 
-int DrawEntity(
-    Entity       **pstEntity,
-    Camera       **pstCamera,
-    Sprite       **pstSprite,
-    SDL_Renderer **pstRenderer)
+int DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer)
 {
     double           dPosX  = (*pstEntity)->dPosX - (*pstCamera)->dPosX;
     double           dPosY  = (*pstEntity)->dPosY - (*pstCamera)->dPosY;
@@ -124,22 +113,28 @@ void DropEntity(Entity **pstEntity)
 
 void FreeCamera(Camera **pstCamera)
 {
-    free(*pstCamera);
+    if (*pstCamera)
+    {
+        free(*pstCamera);
+    }
 }
 
 void FreeEntity(Entity **pstEntity)
 {
-    free(*pstEntity);
+    if (*pstEntity)
+    {
+        free(*pstEntity);
+    }
 }
 
 void FreeSprite(Sprite **pstSprite)
 {
-    if ((*pstSprite))
+    if (*pstSprite)
     {
         SDL_DestroyTexture((*pstSprite)->pstTexture);
+        free(*pstSprite);
+        SDL_Log("Unload sprite image file.\n");
     }
-    free(*pstSprite);
-    SDL_Log("Unload sprite image file.\n");
 }
 
 int InitCamera(Camera **pstCamera)
@@ -317,11 +312,7 @@ void SetCameraTargetEntity(
     }
 }
 
-void SetAnimation(
-    const uint8_t u8AnimStart,
-    const uint8_t u8AnimEnd,
-    const double  dAnimSpeed,
-    Entity      **pstEntity)
+void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const double  dAnimSpeed, Entity **pstEntity)
 {
     (*pstEntity)->dAnimSpeed = dAnimSpeed;
 

@@ -71,6 +71,14 @@ cd eszFW
 make
 ```
 
+If it doesn't work, you can also use cmake instead:
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
 If you're on NixOS enter:
 ```
 nix-shell --command make

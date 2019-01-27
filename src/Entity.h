@@ -52,25 +52,10 @@ typedef struct Sprite_t
 } Sprite;
 
 void AnimateEntity(bool bAnimate, Entity **pstEntity);
-
-void ConnectHorizontalMapEndsForEntity(
-    const uint16_t u16MapWidth,
-    Entity       **pstEntity);
-
-void ConnectMapEndsForEntity(
-    const uint16_t u16MapWidth,
-    const uint16_t u16MapHeight,
-    Entity       **pstEntity);
-
-void ConnectVerticalMapEndsForEntity(
-    const uint16_t u16MapHeight,
-    Entity       **pstEntity);
-
-int DrawEntity(
-    Entity       **pstEntity,
-    Camera       **pstCamera,
-    Sprite       **pstSprite,
-    SDL_Renderer **pstRenderer);
+void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity **pstEntity);
+void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity **pstEntity);
+void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity **pstEntity);
+int DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer);
 
 void DropEntity(Entity **pstEntity);
 void FreeCamera(Camera **pstCamera);
@@ -79,11 +64,11 @@ void FreeSprite(Sprite **pstSprite);
 int InitCamera(Camera **pstCamera);
 
 int InitEntity(
-    const double dPosX,
-    const double dPosY,
+    const double  dPosX,
+    const double  dPosY,
     const uint8_t u8Width,
     const uint8_t u8Height,
-    Entity     **pstEntity);
+    Entity      **pstEntity);
 
 int InitSprite(
     const char    *pacFileName,
@@ -123,12 +108,7 @@ void SetCameraTargetEntity(
     Camera      **pstCamera,
     Entity      **pstEntity);
 
-void SetAnimation(
-    const uint8_t u8AnimStart,
-    const uint8_t u8AnimEnd,
-    const double  dAnimSpeed,
-    Entity      **pstEntity);
-
+void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const double dAnimSpeed, Entity **pstEntity);
 void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity **pstEntity);
 void SetOrientation(const bool bOrientation, Entity **pstEntity);
 void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity);

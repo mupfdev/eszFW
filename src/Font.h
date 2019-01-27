@@ -32,10 +32,6 @@ int PrintText(
     SDL_Renderer **pstRenderer,
     Font         **pstFont);
 
-void SetFontColour(
-    const uint8_t u8Red,
-    const uint8_t u8Green,
-    const uint8_t u8Blue,
-    Font        **pstFont);
+void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font **pstFont);
 
 #endif // _FONT_H_
