@@ -6,11 +6,7 @@
 #ifndef _VIDEO_H_
 #define _VIDEO_H_
 
-#ifdef __ANDROID__
 #include <SDL.h>
-#else
-#include <SDL2/SDL.h>
-#endif
 #include <stdint.h>
 
 typedef struct Video_t

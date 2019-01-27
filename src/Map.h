@@ -6,11 +6,7 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#ifdef __ANDROID__
 #include <SDL.h>
-#else
-#include <SDL2/SDL.h>
-#endif
 #include <stdbool.h>
 #include <stdint.h>
 #include <tmx.h>
