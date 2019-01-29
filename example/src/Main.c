@@ -83,7 +83,7 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstBg);
 
         sReturnValue = DrawMap(
-            0, "res/images/tileset.png", true, "BG",
+            0, true, "BG",
             pstCamera->dPosX,
             pstCamera->dPosY,
             pstMap,
@@ -96,7 +96,7 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstVideo->pstRenderer);
 
         sReturnValue = DrawMap(
-            1, "res/images/tileset.png", false, "FG",
+            1, false, "FG",
             pstCamera->dPosX,
             pstCamera->dPosY,
             pstMap,
@@ -341,10 +341,10 @@ static int Init()
     int sReturnValue = 0;
 
     const char *pacBgFileNames[4] = {
-        "res/images/sky.png",
-        "res/images/clouds.png",
-        "res/images/sea.png",
-        "res/images/far-grounds.png",
+        "res/backgrounds/sky.png",
+        "res/backgrounds/clouds.png",
+        "res/backgrounds/sea.png",
+        "res/backgrounds/far-grounds.png",
     };
 
     sReturnValue = InitVideo(
@@ -358,7 +358,7 @@ static int Init()
     sReturnValue = InitEntity(0, 0, 24, 40, &pstEntity[0]);
     RETURN_ON_ERROR(sReturnValue);
 
-    sReturnValue = InitMap("res/maps/Demo.tmx", 32, &pstMap);
+    sReturnValue = InitMap("res/maps/Demo.tmx", "res/tilesets/tileset.png", 32, &pstMap);
     RETURN_ON_ERROR(sReturnValue);
 
     sReturnValue = InitObject(&pstObject[0]);
@@ -373,12 +373,12 @@ static int Init()
     RETURN_ON_ERROR(sReturnValue);
 
     /*sReturnValue = InitSprite(
-        "res/images/characters_7.png", 736, 128, 0, 0,
+        "res/sprites/characters_7.png", 736, 128, 0, 0,
         &pstSprite, &pstVideo->pstRenderer);
     RETURN_ON_ERROR(sReturnValue);*/
 
     sReturnValue = InitSprite(
-        "res/images/player.png", 360, 80, 0, 0,
+        "res/sprites/player.png", 360, 80, 0, 0,
         &pstSprite, pstVideo->pstRenderer);
     RETURN_ON_ERROR(sReturnValue);
 

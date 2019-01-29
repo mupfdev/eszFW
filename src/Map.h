@@ -11,9 +11,11 @@
 #include <stdint.h>
 #include <tmx.h>
 
-#ifndef MAP_TEXTURES
-#define MAP_TEXTURES 3
-#endif
+typedef enum MapConstants_t
+{
+    MAP_TEXTURES    = 4,
+    TS_IMG_PATH_LEN = 50
+} MapConstants;
 
 typedef struct Map_t
 {
@@ -25,6 +27,7 @@ typedef struct Map_t
     double       dPosY;
     double       dGravitation;
     uint8_t      u8MeterInPixel;
+    char         acTilesetImage[TS_IMG_PATH_LEN];
 } Map;
 
 typedef struct Object_t
@@ -35,7 +38,6 @@ typedef struct Object_t
 
 int DrawMap(
     const uint16_t u16Index,
-    const char    *pacTilesetImageFileName,
     const bool     bRenderBgColour,
     const char    *pacLayerName,
     const double   dCameraPosX,
@@ -47,7 +49,7 @@ void     FreeMap(Map *pstMap);
 void     FreeObject(Object *pstObject);
 void     GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstObject);
 uint16_t GetObjectCount(const Map *pstMap);
-int      InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap);
+int      InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t u8MeterInPixel, Map **pstMap);
 int      InitObject(Object **pstObject);
 
 bool IsMapCoordOfType(

@@ -61,7 +61,6 @@ static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
 
 int DrawMap(
     const uint16_t u16Index,
-    const char    *pacTilesetImageFileName,
     const bool     bRenderBgColour,
     const char    *pacLayerName,
     const double   dCameraPosX,
@@ -114,10 +113,7 @@ int DrawMap(
         return -1;
     }
 
-    pstTileset = IMG_LoadTexture(
-        pstRenderer,
-        pacTilesetImageFileName);
-
+    pstTileset = IMG_LoadTexture(pstRenderer, pstMap->acTilesetImage);
     if (! pstTileset)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
@@ -143,6 +139,7 @@ int DrawMap(
 
     while(pstLayer)
     {
+        bool         bRenderLayer = true;;
         uint16_t     u16Gid;
         SDL_Rect     stDst;
         SDL_Rect     stSrc;
@@ -150,7 +147,15 @@ int DrawMap(
 
         if (L_LAYER == pstLayer->type)
         {
-            if ((pstLayer->visible) && (strstr(pstLayer->name, pacLayerName)))
+            if (pacLayerName)
+            {
+                if (! strstr(pstLayer->name, pacLayerName))
+                {
+                    bRenderLayer = false;
+                }
+            }
+
+            if (pstLayer->visible && bRenderLayer)
             {
                 for (uint16_t u16IndexH = 0; u16IndexH < pstMap->pstTmxMap->height; u16IndexH++)
                 {
@@ -250,9 +255,9 @@ uint16_t GetObjectCount(const Map *pstMap)
     return u16ObjectCount;
 }
 
-int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap)
+int InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t u8MeterInPixel, Map **pstMap)
 {
-    *pstMap = malloc(sizeof(struct Map_t));
+    *pstMap = malloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN);
     if (! *pstMap)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error allocating memory.\n");
@@ -266,12 +271,15 @@ int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap)
         return -1;
     }
 
-    (*pstMap)->u16Height      = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
-    (*pstMap)->u16Width       = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
-    (*pstMap)->dPosX          = 0.f;
-    (*pstMap)->dPosY          = 0.f;
-    (*pstMap)->dGravitation   = 0.f;
-    (*pstMap)->u8MeterInPixel = u8MeterInPixel;
+    (*pstMap)->u16Height         = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
+    (*pstMap)->u16Width          = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
+    (*pstMap)->dPosX             = 0.f;
+    (*pstMap)->dPosY             = 0.f;
+    (*pstMap)->dGravitation      = 0.f;
+    (*pstMap)->u8MeterInPixel    = u8MeterInPixel;
+    (*pstMap)->acTilesetImage[0] = '\0';
+
+    strncat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
 
     for (uint16_t u16Index = 0; u16Index < MAP_TEXTURES; u16Index++)
     {
