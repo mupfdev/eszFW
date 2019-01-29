@@ -28,20 +28,9 @@ static void Quit();
 
 #ifndef __ANDROID__
 int main(int sArgC, char *pacArgV[])
-{
-    int sReturnValue = EXIT_SUCCESS;
-
-    if (-1 == SDL_main(sArgC, pacArgV))
-    {
-        sReturnValue = EXIT_FAILURE;
-    }
-
-    Quit();
-    return sReturnValue;;
-}
-#endif
-
+#else
 int SDL_main(int sArgC, char *pacArgV[])
+#endif
 {
     int        sReturnValue = 0;
     bool       bIsRunning   = true;
@@ -119,7 +108,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         {
             bIsRunning = false;
             continue;
-        };
+        }
 
         // Reset entity flags.
         ResetEntity(&pstEntity[0]);
@@ -127,7 +116,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         // Handle events.
         while(SDL_PollEvent(&stEvent) != 0)
         {
-            if (stEvent.type == SDL_QUIT )
+            if (stEvent.type == SDL_QUIT)
             {
                 bIsRunning = false;
             }
@@ -335,10 +324,16 @@ int SDL_main(int sArgC, char *pacArgV[])
         }
     }
 
-    #ifdef __ANDROID__
     Quit();
-    #endif
-    return sReturnValue;
+
+    if (-1 == sReturnValue)
+    {
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        return EXIT_SUCCESS;
+    }
 }
 
 static int Init()
