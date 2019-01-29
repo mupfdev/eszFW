@@ -11,19 +11,16 @@
 #include <string.h>
 #include "Font.h"
 
-void FreeFont(Font **pstFont)
+void FreeFont(Font *pstFont)
 {
     TTF_Quit();
-    if (*pstFont)
-    {
-        free(*pstFont);
-        SDL_Log("Close font.\n");
-    }
+
+    free(pstFont);
+    SDL_Log("Close font.\n");
 }
 
 int InitFont(const char *pacFileName, Font **pstFont)
 {
-    *pstFont = NULL;
     *pstFont = malloc(sizeof(struct Font_t));
     if (! *pstFont)
     {
@@ -57,8 +54,8 @@ int PrintNumber(
     const int32_t  s32Number,
     const int      sPosX,
     const int      sPosY,
-    SDL_Renderer **pstRenderer,
-    Font         **pstFont)
+    SDL_Renderer  *pstRenderer,
+    Font          *pstFont)
 {
     char acNumber[12] = { 0 }; // Signed 10 digit number + \0.
     char acOutput[12] = { 0 };
@@ -85,8 +82,8 @@ int PrintText(
     const char    *pacText,
     const int      sPosX,
     const int      sPosY,
-    SDL_Renderer **pstRenderer,
-    Font         **pstFont)
+    SDL_Renderer  *pstRenderer,
+    const Font    *pstFont)
 {
     int          sReturnValue = 0;
     SDL_Surface *pstSurface   = NULL;
@@ -94,7 +91,7 @@ int PrintText(
     SDL_Rect     stDst;
     SDL_Rect     stSrc;
 
-    pstSurface = TTF_RenderText_Solid((*pstFont)->pstTTF, pacText, (*pstFont)->stColour);
+    pstSurface = TTF_RenderText_Solid(pstFont->pstTTF, pacText, pstFont->stColour);
     if (! pstSurface)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
@@ -102,7 +99,7 @@ int PrintText(
         goto exit;
     }
 
-    pstTexture = SDL_CreateTextureFromSurface((*pstRenderer), pstSurface);
+    pstTexture = SDL_CreateTextureFromSurface(pstRenderer, pstSurface);
     if (! pstTexture)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -124,7 +121,7 @@ int PrintText(
     stDst.w = stSrc.w;
     stDst.h = stSrc.h;
 
-    if (0 > SDL_RenderCopy((*pstRenderer), pstTexture, &stSrc, &stDst))
+    if (0 > SDL_RenderCopy(pstRenderer, pstTexture, &stSrc, &stDst))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
@@ -144,9 +141,9 @@ int PrintText(
     return sReturnValue;
 }
 
-void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font **pstFont)
+void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font *pstFont)
 {
-    (*pstFont)->stColour.r = u8Red;
-    (*pstFont)->stColour.g = u8Green;
-    (*pstFont)->stColour.b = u8Blue;
+    pstFont->stColour.r = u8Red;
+    pstFont->stColour.g = u8Green;
+    pstFont->stColour.b = u8Blue;
 }

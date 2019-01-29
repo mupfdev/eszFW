@@ -28,20 +28,9 @@ static void Quit();
 
 #ifndef __ANDROID__
 int main(int sArgC, char *pacArgV[])
-{
-    int sReturnValue = EXIT_SUCCESS;
-
-    if (-1 == SDL_main(sArgC, pacArgV))
-    {
-        sReturnValue = EXIT_FAILURE;
-    }
-
-    Quit();
-    return sReturnValue;;
-}
-#endif
-
+#else
 int SDL_main(int sArgC, char *pacArgV[])
+#endif
 {
     int        sReturnValue = 0;
     bool       bIsRunning   = true;
@@ -90,44 +79,44 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstVideo->s32LogicalWindowHeight,
             pstCamera->dPosY,
             pstEntity[0]->dVelocityX,
-            &pstVideo->pstRenderer,
-            &pstBg);
+            pstVideo->pstRenderer,
+            pstBg);
 
         sReturnValue = DrawMap(
             0, "res/images/tileset.png", true, "BG",
             pstCamera->dPosX,
             pstCamera->dPosY,
-            &pstMap,
-            &pstVideo->pstRenderer);
+            pstMap,
+            pstVideo->pstRenderer);
 
         sReturnValue = DrawEntity(
-            &pstEntity[0],
-            &pstCamera,
-            &pstSprite,
-            &pstVideo->pstRenderer);
+            pstEntity[0],
+            pstCamera,
+            pstSprite,
+            pstVideo->pstRenderer);
 
         sReturnValue = DrawMap(
             1, "res/images/tileset.png", false, "FG",
             pstCamera->dPosX,
             pstCamera->dPosY,
-            &pstMap,
-            &pstVideo->pstRenderer);
+            pstMap,
+            pstVideo->pstRenderer);
 
-        RenderScene(&pstVideo->pstRenderer);
+        RenderScene(pstVideo->pstRenderer);
 
         if (-1 == sReturnValue)
         {
             bIsRunning = false;
             continue;
-        };
+        }
 
         // Reset entity flags.
-        ResetEntity(&pstEntity[0]);
+        ResetEntity(pstEntity[0]);
 
         // Handle events.
         while(SDL_PollEvent(&stEvent) != 0)
         {
-            if (stEvent.type == SDL_QUIT )
+            if (stEvent.type == SDL_QUIT)
             {
                 bIsRunning = false;
             }
@@ -148,10 +137,10 @@ int SDL_main(int sArgC, char *pacArgV[])
                       bIsMoving    = true;
                       break;
                   case SDLK_SPACE:
-                      JumpEntity(2.5f + (0.75f * (*pstEntity)->dVelocityX), &pstEntity[0]);
+                      JumpEntity(2.5f + (0.75f * (*pstEntity)->dVelocityX), pstEntity[0]);
                       break;
                   case SDLK_LSHIFT:
-                      UnlockCamera(&pstCamera);
+                      UnlockCamera(pstCamera);
                       break;
                 }
             }
@@ -166,7 +155,7 @@ int SDL_main(int sArgC, char *pacArgV[])
                       bIsMoving = false;
                       break;
                   case SDLK_LSHIFT:
-                      LockCamera(&pstCamera);
+                      LockCamera(pstCamera);
                       break;
                 }
             }
@@ -237,25 +226,25 @@ int SDL_main(int sArgC, char *pacArgV[])
         }
 
         // Set the player's idle animation.
-        if (! IsEntityMoving(&pstEntity[0]))
+        if (! IsEntityMoving(pstEntity[0]))
         {
-            AnimateEntity(true, &pstEntity[0]);
-            SetFrameOffset(0, 0, &pstEntity[0]);
+            AnimateEntity(true, pstEntity[0]);
+            SetFrameOffset(0, 0, pstEntity[0]);
             SetAnimation(
                 0, 11,
                 pstEntity[0]->dAnimSpeed,
-                &pstEntity[0]);
+                pstEntity[0]);
         }
 
         // Move player entity.
         if (bIsMoving)
         {
-            AnimateEntity(true, &pstEntity[0]);
+            AnimateEntity(true, pstEntity[0]);
             MoveEntity(
                 bOrientation, 6.0, 3.0, 1, 7,
                 pstEntity[0]->dAnimSpeed,
                 1,
-                &pstEntity[0]);
+                pstEntity[0]);
         }
 
         // Update game logic.
@@ -265,44 +254,44 @@ int SDL_main(int sArgC, char *pacArgV[])
                 pstEntity[0]->dPosX,
                 pstEntity[0]->dPosY,
                 pstEntity[0]->u8Height,
-                &pstMap))
+                pstMap))
         {
-            AnimateEntity(false, &pstEntity[0]);
-            if (IsEntityRising(&pstEntity[0]))
+            AnimateEntity(false, pstEntity[0]);
+            if (IsEntityRising(pstEntity[0]))
             {
-                SetFrameOffset(0, 0, &pstEntity[0]);
+                SetFrameOffset(0, 0, pstEntity[0]);
             }
             else
             {
-                SetFrameOffset(0, 1, &pstEntity[0]);
+                SetFrameOffset(0, 1, pstEntity[0]);
             }
             SetAnimation(
                 14, 14,
                 pstEntity[0]->dAnimSpeed,
-                &pstEntity[0]);
+                pstEntity[0]);
 
-            DropEntity(&pstEntity[0]);
+            DropEntity(pstEntity[0]);
         }
 
         UpdateEntity(
             dDeltaTime,
             pstMap->dGravitation,
             pstMap->u8MeterInPixel,
-            &pstEntity[0]);
+            pstEntity[0]);
 
         // Follow player entity and set camera boudnaries to map size.
         SetCameraTargetEntity(
             pstVideo->s32LogicalWindowWidth,
             pstVideo->s32LogicalWindowHeight,
-            &pstCamera,
-            &pstEntity[0]);
+            pstCamera,
+            pstEntity[0]);
 
         SetCameraBoundariesToMapSize(
             pstVideo->s32LogicalWindowWidth,
             pstVideo->s32LogicalWindowHeight,
             pstMap->u16Width,
             pstMap->u16Height,
-            &pstCamera);
+            pstCamera);
 
         // Set zoom level dynamically in relation to vertical velocity.
         #ifndef __ANDROID__
@@ -322,23 +311,29 @@ int SDL_main(int sArgC, char *pacArgV[])
                 pstVideo->dZoomLevel = pstVideo->dInitialZoomLevel;
             }
         }
-        SetZoomLevel(pstVideo->dZoomLevel, &pstVideo);
+        SetZoomLevel(pstVideo->dZoomLevel, pstVideo);
         #endif // __ANDROID__
 
         ConnectHorizontalMapEndsForEntity(
             pstMap->u16Width,
-            &pstEntity[0]);
+            pstEntity[0]);
 
         if (pstEntity[0]->dPosY > (pstMap->u16Height + pstEntity[0]->u8Height))
         {
-            ResetEntityToSpawnPosition(&pstEntity[0]);
+            ResetEntityToSpawnPosition(pstEntity[0]);
         }
     }
 
-    #ifdef __ANDROID__
     Quit();
-    #endif
-    return sReturnValue;
+
+    if (-1 == sReturnValue)
+    {
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        return EXIT_SUCCESS;
+    }
 }
 
 static int Init()
@@ -374,7 +369,7 @@ static int Init()
 
     sReturnValue = InitBackground(
         4, pacBgFileNames, pstVideo->s32WindowWidth, BOTTOM,
-        &pstVideo->pstRenderer, &pstBg);
+        pstVideo->pstRenderer, &pstBg);
     RETURN_ON_ERROR(sReturnValue);
 
     /*sReturnValue = InitSprite(
@@ -384,7 +379,7 @@ static int Init()
 
     sReturnValue = InitSprite(
         "res/images/player.png", 360, 80, 0, 0,
-        &pstSprite, &pstVideo->pstRenderer);
+        &pstSprite, pstVideo->pstRenderer);
     RETURN_ON_ERROR(sReturnValue);
 
     sReturnValue = InitAudio(&pstAudio);
@@ -395,29 +390,29 @@ static int Init()
         &pstMusic);
     RETURN_ON_ERROR(sReturnValue);
 
-    LockCamera(&pstCamera);
-    PlayMusic(3000, &pstMusic);
+    LockCamera(pstCamera);
+    PlayMusic(3000, pstMusic);
 
-    GetSingleObjectByName("Player", &pstMap, &pstObject[0]);
-    SetPosition(pstObject[0]->dPosX, pstObject[0]->dPosY, &pstEntity[0]);
-    SetSpawnPosition(pstObject[0]->dPosX, pstObject[0]->dPosY, &pstEntity[0]);
-    SetFrameOffset(0, 0, &pstEntity[0]);
-    SetFontColour(0xfe, 0x95, 0x14, &pstFont);
+    GetSingleObjectByName("Player", pstMap, &pstObject[0]);
+    SetPosition(pstObject[0]->dPosX, pstObject[0]->dPosY, pstEntity[0]);
+    SetSpawnPosition(pstObject[0]->dPosX, pstObject[0]->dPosY, pstEntity[0]);
+    SetFrameOffset(0, 0, pstEntity[0]);
+    SetFontColour(0xfe, 0x95, 0x14, pstFont);
 
     return sReturnValue;
 }
 
 static void Quit()
 {
-    FreeMusic(&pstMusic);
-    FreeAudio(&pstAudio);
-    FreeSprite(&pstSprite);
-    FreeBackground(&pstBg);
-    FreeFont(&pstFont);
-    FreeObject(&pstObject[0]);
-    FreeMap(&pstMap);
-    FreeEntity(&pstEntity[0]);
-    FreeCamera(&pstCamera);
-    FreeVideo(&pstVideo);
+    FreeMusic(pstMusic);
+    FreeAudio(pstAudio);
+    FreeSprite(pstSprite);
+    FreeBackground(pstBg);
+    FreeFont(pstFont);
+    FreeObject(pstObject[0]);
+    FreeMap(pstMap);
+    FreeEntity(pstEntity[0]);
+    FreeCamera(pstCamera);
+    FreeVideo(pstVideo);
     SDL_Quit();
 }

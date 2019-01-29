@@ -11,33 +11,30 @@
 #include <stdint.h>
 #include "Audio.h"
 
-void FreeAudio(Audio **pstAudio)
+void FreeAudio(Audio *pstAudio)
 {
     Mix_CloseAudio();
     while(Mix_Init(0)) Mix_Quit();
-    if (*pstAudio)
-    {
-        free(*pstAudio);
-    }
+
+    free(pstAudio);
 }
 
-void FreeMusic(Music **pstMusic)
+void FreeMusic(Music *pstMusic)
 {
-    if (*pstMusic)
+    if (pstMusic)
     {
-        if ((*pstMusic)->pstMusic)
+        if (pstMusic->pstMusic)
         {
-            Mix_FreeMusic((*pstMusic)->pstMusic);
+            Mix_FreeMusic(pstMusic->pstMusic);
         }
 
-        free(*pstMusic);
+        free(pstMusic);
         SDL_Log("Unload music track.\n");
     }
 }
 
 int InitAudio(Audio **pstAudio)
 {
-    *pstAudio = NULL;
     *pstAudio = malloc(sizeof(struct Audio_t));
     if (! *pstAudio)
     {
@@ -83,7 +80,6 @@ int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
             "InitMusic(): pstMusic == NULL.\n");
         return -1;
     }
-    *pstMusic = NULL;
     *pstMusic = malloc(sizeof(struct Music_t));
     if (! *pstMusic)
     {
@@ -106,11 +102,11 @@ int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
     return 0;
 }
 
-int PlayMusic(const uint16_t u16FadeInMs, Music **pstMusic)
+int PlayMusic(const uint16_t u16FadeInMs, const Music *pstMusic)
 {
     if (0 != u16FadeInMs)
     {
-        if (-1 == Mix_FadeInMusic((*pstMusic)->pstMusic, (*pstMusic)->s8Loops, u16FadeInMs))
+        if (-1 == Mix_FadeInMusic(pstMusic->pstMusic, pstMusic->s8Loops, u16FadeInMs))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
             return -1;
@@ -120,7 +116,7 @@ int PlayMusic(const uint16_t u16FadeInMs, Music **pstMusic)
     }
     else
     {
-        if (-1 == Mix_PlayMusic((*pstMusic)->pstMusic, (*pstMusic)->s8Loops))
+        if (-1 == Mix_PlayMusic(pstMusic->pstMusic, pstMusic->s8Loops))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
             return -1;

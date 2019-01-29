@@ -21,7 +21,7 @@ typedef struct Video_t
     double        dInitialZoomLevel;
 } Video;
 
-void FreeVideo(Video **pstVideo);
+void FreeVideo(Video *pstVideo);
 
 int InitVideo(
     const char   *pacWindowTitle,
@@ -32,8 +32,8 @@ int InitVideo(
     const bool    bFullscreen,
     Video       **pstVideo);
 
-void RenderScene(SDL_Renderer **pstRenderer);
-int  SetFullscreen(const bool dFullscreen, Video **pstVideo);
-int  SetZoomLevel(const double dZoomLevel, Video **pstVideo);
+void RenderScene(SDL_Renderer *pstRenderer);
+int  SetFullscreen(const bool dFullscreen, Video *pstVideo);
+int  SetZoomLevel(const double dZoomLevel, Video *pstVideo);
 
 #endif // _VIDEO_H_

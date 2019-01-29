@@ -20,15 +20,21 @@ include_directories(
         src
 )
 
-add_definitions(-DWANT_ZLIB -D_REENTRANT)
-FILE(GLOB TMX_SRCS ${CMAKE_SOURCE_DIR}/external/tmx/src/*.c)
-add_library(tmx SHARED ${TMX_SRCS})
-target_link_libraries(tmx ${LIBXML2_LIBRARIES})
+add_subdirectory(external/tmx)
+set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 FILE(GLOB eszFW_SRCS src/*.c)
 add_library(eszFW SHARED ${eszFW_SRCS})
 
-target_link_libraries(eszFW tmx ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARY})
+target_link_libraries(
+        eszFW
+        tmx
+        ${LIBXML2_LIBRARIES}
+        ${SDL2_LIBRARIES}
+        ${SDL2_IMAGE_LIBRARIES}
+        ${SDL2_MIXER_LIBRARIES}
+        ${SDL2_TTF_LIBRARY}
+)
 
 if (UNIX)
     target_link_libraries(eszFW m)

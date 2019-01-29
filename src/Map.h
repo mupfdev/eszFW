@@ -40,13 +40,13 @@ int DrawMap(
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,
-    Map          **pstMap,
-    SDL_Renderer **pstRenderer);
+    Map           *pstMap,
+    SDL_Renderer  *pstRenderer);
 
-void     FreeMap(Map **pstMap);
-void     FreeObject(Object **pstObject);
-void     GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject);
-uint16_t GetObjectCount(Map **pstMap);
+void     FreeMap(Map *pstMap);
+void     FreeObject(Object *pstObject);
+void     GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstObject);
+uint16_t GetObjectCount(const Map *pstMap);
 int      InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap);
 int      InitObject(Object **pstObject);
 
@@ -54,15 +54,15 @@ bool IsMapCoordOfType(
     const char *pacType,
     double      dPosX,
     double      dPosY,
-    Map       **pstMap);
+    const Map  *pstMap);
 
 bool IsOnTileOfType(
     const char   *pacType,
     const double  dPosX,
     const double  dPosY,
     const uint8_t u8EntityHeight,
-    Map        **pstMap);
+    const Map    *pstMap);
 
-void SetGravitation(const double dGravitation, const bool bUseTmxConstant, Map **pstMap);
+void SetGravitation(const double dGravitation, const bool bUseTmxConstant, Map *pstMap);
 
 #endif // _MAP_H_

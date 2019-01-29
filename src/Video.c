@@ -12,20 +12,20 @@
 #include <stdint.h>
 #include "Video.h"
 
-void FreeVideo(Video **pstVideo)
+void FreeVideo(Video *pstVideo)
 {
     IMG_Quit();
-    if (*pstVideo)
+    if (pstVideo)
     {
-        if ((*pstVideo)->pstRenderer)
+        if (pstVideo->pstRenderer)
         {
-            SDL_DestroyRenderer((*pstVideo)->pstRenderer);
+            SDL_DestroyRenderer(pstVideo->pstRenderer);
         }
-        if ((*pstVideo)->pstWindow)
+        if (pstVideo->pstWindow)
         {
-            SDL_DestroyWindow((*pstVideo)->pstWindow);
+            SDL_DestroyWindow(pstVideo->pstWindow);
         }
-        free(*pstVideo);
+        free(pstVideo);
         SDL_Log("Terminate window.\n");
     }
 }
@@ -41,7 +41,6 @@ int InitVideo(
 {
     uint32_t u32Flags = 0;
 
-    *pstVideo = NULL;
     *pstVideo = malloc(sizeof(struct Video_t));
     if (! *pstVideo)
     {
@@ -129,28 +128,28 @@ int InitVideo(
         "Setting up window at resolution %dx%d.\n",
         (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
 
-    SetZoomLevel((*pstVideo)->dZoomLevel, &(*pstVideo));
+    SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
 
     return 0;
 }
 
-void RenderScene(SDL_Renderer **pstRenderer)
+void RenderScene(SDL_Renderer *pstRenderer)
 {
-    SDL_RenderPresent(*pstRenderer);
-    SDL_RenderClear(*pstRenderer);
+    SDL_RenderPresent(pstRenderer);
+    SDL_RenderClear(pstRenderer);
 }
 
-int SetZoomLevel(const double dZoomLevel, Video **pstVideo)
+int SetZoomLevel(const double dZoomLevel, Video *pstVideo)
 {
-    (*pstVideo)->dZoomLevel             = dZoomLevel;
-    (*pstVideo)->s32LogicalWindowWidth  = (*pstVideo)->s32WindowWidth  / dZoomLevel;
-    (*pstVideo)->s32LogicalWindowHeight = (*pstVideo)->s32WindowHeight / dZoomLevel;
+    pstVideo->dZoomLevel             = dZoomLevel;
+    pstVideo->s32LogicalWindowWidth  = pstVideo->s32WindowWidth  / dZoomLevel;
+    pstVideo->s32LogicalWindowHeight = pstVideo->s32WindowHeight / dZoomLevel;
 
     if (0 != SDL_RenderSetLogicalSize(
-            (*pstVideo)->pstRenderer,
-            (*pstVideo)->s32LogicalWindowWidth,
-            (*pstVideo)->s32LogicalWindowHeight))
+            pstVideo->pstRenderer,
+            pstVideo->s32LogicalWindowWidth,
+            pstVideo->s32LogicalWindowHeight))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
