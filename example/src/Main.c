@@ -404,15 +404,15 @@ static int Init()
 
 static void Quit()
 {
-    FreeMusic(&pstMusic);
-    FreeAudio(&pstAudio);
-    FreeSprite(&pstSprite);
-    FreeBackground(&pstBg);
-    FreeFont(&pstFont);
-    FreeObject(&pstObject[0]);
-    FreeMap(&pstMap);
-    FreeEntity(&pstEntity[0]);
-    FreeCamera(&pstCamera);
-    FreeVideo(&pstVideo);
+    FreeMusic(pstMusic);
+    FreeAudio(pstAudio);
+    FreeSprite(pstSprite);
+    FreeBackground(pstBg);
+    FreeFont(pstFont);
+    FreeObject(pstObject[0]);
+    FreeMap(pstMap);
+    FreeEntity(pstEntity[0]);
+    FreeCamera(pstCamera);
+    FreeVideo(pstVideo);
     SDL_Quit();
 }

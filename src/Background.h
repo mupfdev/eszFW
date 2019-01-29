@@ -36,7 +36,7 @@ int DrawBackground(
     SDL_Renderer **pstRenderer,
     Background   **pstBackground);
 
-void FreeBackground(Background **Background);
+void FreeBackground(Background *Background);
 
 int InitBackground(
     const uint8_t  u8BgNum,

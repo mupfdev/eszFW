@@ -194,26 +194,23 @@ int DrawMap(
     return 0;
 }
 
-void FreeMap(Map **pstMap)
+void FreeMap(Map *pstMap)
 {
-    if (*pstMap)
+    if (pstMap)
     {
-        if (! (*pstMap)->pstTmxMap)
+        if (! pstMap->pstTmxMap)
         {
-            tmx_map_free((*pstMap)->pstTmxMap);
+            tmx_map_free(pstMap->pstTmxMap);
         }
 
-        free(*pstMap);
+        free(pstMap);
         SDL_Log("Unload TMX map.\n");
     }
 }
 
-void FreeObject(Object **pstObject)
+void FreeObject(Object *pstObject)
 {
-    if (*pstObject)
-    {
-        free(*pstObject);
-    }
+    free(pstObject);
 }
 
 void GetSingleObjectByName(const char *pacName, Map **pstMap, Object **pstObject)

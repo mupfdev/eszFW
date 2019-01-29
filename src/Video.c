@@ -12,20 +12,20 @@
 #include <stdint.h>
 #include "Video.h"
 
-void FreeVideo(Video **pstVideo)
+void FreeVideo(Video *pstVideo)
 {
     IMG_Quit();
-    if (*pstVideo)
+    if (pstVideo)
     {
-        if ((*pstVideo)->pstRenderer)
+        if (pstVideo->pstRenderer)
         {
-            SDL_DestroyRenderer((*pstVideo)->pstRenderer);
+            SDL_DestroyRenderer(pstVideo->pstRenderer);
         }
-        if ((*pstVideo)->pstWindow)
+        if (pstVideo->pstWindow)
         {
-            SDL_DestroyWindow((*pstVideo)->pstWindow);
+            SDL_DestroyWindow(pstVideo->pstWindow);
         }
-        free(*pstVideo);
+        free(pstVideo);
         SDL_Log("Terminate window.\n");
     }
 }

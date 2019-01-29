@@ -11,14 +11,12 @@
 #include <string.h>
 #include "Font.h"
 
-void FreeFont(Font **pstFont)
+void FreeFont(Font *pstFont)
 {
     TTF_Quit();
-    if (*pstFont)
-    {
-        free(*pstFont);
-        SDL_Log("Close font.\n");
-    }
+
+    free(pstFont);
+    SDL_Log("Close font.\n");
 }
 
 int InitFont(const char *pacFileName, Font **pstFont)

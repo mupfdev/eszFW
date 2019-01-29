@@ -11,26 +11,24 @@
 #include <stdint.h>
 #include "Audio.h"
 
-void FreeAudio(Audio **pstAudio)
+void FreeAudio(Audio *pstAudio)
 {
     Mix_CloseAudio();
     while(Mix_Init(0)) Mix_Quit();
-    if (*pstAudio)
-    {
-        free(*pstAudio);
-    }
+
+    free(pstAudio);
 }
 
-void FreeMusic(Music **pstMusic)
+void FreeMusic(Music *pstMusic)
 {
-    if (*pstMusic)
+    if (pstMusic)
     {
-        if ((*pstMusic)->pstMusic)
+        if (pstMusic->pstMusic)
         {
-            Mix_FreeMusic((*pstMusic)->pstMusic);
+            Mix_FreeMusic(pstMusic->pstMusic);
         }
 
-        free(*pstMusic);
+        free(pstMusic);
         SDL_Log("Unload music track.\n");
     }
 }

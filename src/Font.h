@@ -15,7 +15,7 @@ typedef struct Font_t
     SDL_Colour stColour;
 } Font;
 
-void FreeFont(Font **pstFont);
+void FreeFont(Font *pstFont);
 int  InitFont(const char *pacFileName, Font **pstFont);
 
 int PrintNumber(

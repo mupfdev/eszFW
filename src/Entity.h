@@ -60,9 +60,9 @@ void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHe
 void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity **pstEntity);
 int  DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer);
 void DropEntity(Entity **pstEntity);
-void FreeCamera(Camera **pstCamera);
-void FreeEntity(Entity **pstEntity);
-void FreeSprite(Sprite **pstSprite);
+void FreeCamera(Camera *pstCamera);
+void FreeEntity(Entity *pstEntity);
+void FreeSprite(Sprite *pstSprite);
 int  InitCamera(Camera **pstCamera);
 
 int InitEntity(

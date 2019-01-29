@@ -222,13 +222,10 @@ int DrawBackground(
     return 0;
 }
 
-void FreeBackground(Background **pstBackground)
+void FreeBackground(Background *pstBackground)
 {
-    if (*pstBackground)
-    {
-        free(*pstBackground);
-        SDL_Log("Unload parallax scrolling background.\n");
-    }
+    free(pstBackground);
+    SDL_Log("Unload parallax scrolling background.\n");
 }
 
 int InitBackground(

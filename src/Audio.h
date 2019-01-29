@@ -21,8 +21,8 @@ typedef struct Music_t
     int8_t     s8Loops;
 } Music;
 
-void FreeAudio(Audio **pstAudio);
-void FreeMusic(Music **pstMusic);
+void FreeAudio(Audio *pstAudio);
+void FreeMusic(Music *pstMusic);
 int  InitAudio(Audio **pstAudio);
 int  InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic);
 int  PlayMusic(const uint16_t u16FadeInMs, Music **pstMusic);

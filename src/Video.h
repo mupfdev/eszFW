@@ -21,7 +21,7 @@ typedef struct Video_t
     double        dInitialZoomLevel;
 } Video;
 
-void FreeVideo(Video **pstVideo);
+void FreeVideo(Video *pstVideo);
 
 int InitVideo(
     const char   *pacWindowTitle,

@@ -111,28 +111,22 @@ void DropEntity(Entity **pstEntity)
     SET((*pstEntity)->u16Flags, IS_IN_MID_AIR);
 }
 
-void FreeCamera(Camera **pstCamera)
+void FreeCamera(Camera *pstCamera)
 {
-    if (*pstCamera)
-    {
-        free(*pstCamera);
-    }
+    free(pstCamera);
 }
 
-void FreeEntity(Entity **pstEntity)
+void FreeEntity(Entity *pstEntity)
 {
-    if (*pstEntity)
-    {
-        free(*pstEntity);
-    }
+    free(pstEntity);
 }
 
-void FreeSprite(Sprite **pstSprite)
+void FreeSprite(Sprite *pstSprite)
 {
-    if (*pstSprite)
+    if (pstSprite)
     {
-        SDL_DestroyTexture((*pstSprite)->pstTexture);
-        free(*pstSprite);
+        SDL_DestroyTexture(pstSprite->pstTexture);
+        free(pstSprite);
         SDL_Log("Unload sprite image file.\n");
     }
 }
