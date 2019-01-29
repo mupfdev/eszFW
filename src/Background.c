@@ -240,9 +240,7 @@ int InitBackground(
         + (u8Num * sizeof(struct BGLayer_t)));
     if (! *pstBackground)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitBackground(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitBackground(): error allocating memory.\n");
         return -1;
     }
 

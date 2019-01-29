@@ -38,9 +38,7 @@ int InitAudio(Audio **pstAudio)
     *pstAudio = malloc(sizeof(struct Audio_t));
     if (! *pstAudio)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitAudio(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitAudio(): error allocating memory.\n");
         return -1;
     }
 
@@ -73,19 +71,10 @@ int InitAudio(Audio **pstAudio)
 
 int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
 {
-    if (pstMusic == NULL)
-    {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitMusic(): pstMusic == NULL.\n");
-        return -1;
-    }
     *pstMusic = malloc(sizeof(struct Music_t));
     if (! *pstMusic)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitMusic(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMusic(): error allocating memory.\n");
         return -1;
     }
 

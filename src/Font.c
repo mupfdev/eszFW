@@ -24,7 +24,7 @@ int InitFont(const char *pacFileName, Font **pstFont)
     *pstFont = malloc(sizeof(struct Font_t));
     if (! *pstFont)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitCamera(): error allocating memory.\n");
         return -1;
     }
 

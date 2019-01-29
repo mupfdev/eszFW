@@ -136,9 +136,7 @@ int InitCamera(Camera **pstCamera)
     *pstCamera = malloc(sizeof(struct Camera_t));
     if (! *pstCamera)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitCamera(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitCamera(): error allocating memory.\n");
         return -1;
     }
 
@@ -163,9 +161,7 @@ int InitEntity(
     *pstEntity = malloc(sizeof(struct Entity_t));
     if (! *pstEntity)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitEntity(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitEntity(): error allocating memory.\n");
         return -1;
     }
 
@@ -203,9 +199,7 @@ int InitSprite(
     *pstSprite = malloc(sizeof(struct Sprite_t));
     if (! *pstSprite)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitSprite(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitSprite(): error allocating memory.\n");
         return -1;
     }
 

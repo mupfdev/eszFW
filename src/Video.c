@@ -44,9 +44,7 @@ int InitVideo(
     *pstVideo = malloc(sizeof(struct Video_t));
     if (! *pstVideo)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitVideo(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitVideo(): error allocating memory.\n");
         return -1;
     }
 

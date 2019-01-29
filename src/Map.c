@@ -255,9 +255,7 @@ int InitMap(const char *pacFileName, const uint8_t u8MeterInPixel, Map **pstMap)
     *pstMap = malloc(sizeof(struct Map_t));
     if (! *pstMap)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitMap(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error allocating memory.\n");
         return -1;
     }
 
@@ -291,9 +289,7 @@ int InitObject(Object **pstObject)
     *pstObject = malloc(sizeof(struct Object_t));
     if (! *pstObject)
     {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION,
-            "InitObject(): error allocating memory.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitObject(): error allocating memory.\n");
         return -1;
     }
 
