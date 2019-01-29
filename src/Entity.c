@@ -276,7 +276,7 @@ void JumpEntity(const double dForce, Entity **pstEntity)
     if (! (*pstEntity)->bIsJumping)
     {
         // Initial lift-up; may need adjustment.
-        (*pstEntity)->dPosY -= (*pstEntity)->u8Height / 8;
+        (*pstEntity)->dPosY -= (*pstEntity)->u8Height / 8.0;
         // Apply force.
         (*pstEntity)->dVelocityY = -dForce;
         (*pstEntity)->bIsJumping = true;
