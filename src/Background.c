@@ -132,7 +132,6 @@ static int _RenderLayer(
     u8WidthFactor  = ceil((double)s32WindowWidth / (double)s32ImageWidth);
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
-    (*pstLayer)    = NULL;
     (*pstLayer)    = SDL_CreateTexture(
         (*pstRenderer),
         SDL_PIXELFORMAT_ARGB8888,
