@@ -236,7 +236,6 @@ int InitBackground(
     SDL_Renderer **pstRenderer,
     Background   **pstBackground)
 {
-    *pstBackground = NULL;
     *pstBackground = malloc(
         sizeof(struct Background_t)
         + (u8Num * sizeof(struct BGLayer_t)));

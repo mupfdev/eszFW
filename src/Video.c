@@ -41,7 +41,6 @@ int InitVideo(
 {
     uint32_t u32Flags = 0;
 
-    *pstVideo = NULL;
     *pstVideo = malloc(sizeof(struct Video_t));
     if (! *pstVideo)
     {

@@ -35,7 +35,6 @@ void FreeMusic(Music *pstMusic)
 
 int InitAudio(Audio **pstAudio)
 {
-    *pstAudio = NULL;
     *pstAudio = malloc(sizeof(struct Audio_t));
     if (! *pstAudio)
     {
@@ -81,7 +80,6 @@ int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
             "InitMusic(): pstMusic == NULL.\n");
         return -1;
     }
-    *pstMusic = NULL;
     *pstMusic = malloc(sizeof(struct Music_t));
     if (! *pstMusic)
     {

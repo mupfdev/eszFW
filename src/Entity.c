@@ -133,7 +133,6 @@ void FreeSprite(Sprite *pstSprite)
 
 int InitCamera(Camera **pstCamera)
 {
-    *pstCamera = NULL;
     *pstCamera = malloc(sizeof(struct Camera_t));
     if (! *pstCamera)
     {
@@ -161,7 +160,6 @@ int InitEntity(
     const uint8_t u8Height,
     Entity     **pstEntity)
 {
-    *pstEntity = NULL;
     *pstEntity = malloc(sizeof(struct Entity_t));
     if (! *pstEntity)
     {
@@ -202,7 +200,6 @@ int InitSprite(
     Sprite       **pstSprite,
     SDL_Renderer **pstRenderer)
 {
-    *pstSprite = NULL;
     *pstSprite = malloc(sizeof(struct Sprite_t));
     if (! *pstSprite)
     {

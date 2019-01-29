@@ -21,7 +21,6 @@ void FreeFont(Font *pstFont)
 
 int InitFont(const char *pacFileName, Font **pstFont)
 {
-    *pstFont = NULL;
     *pstFont = malloc(sizeof(struct Font_t));
     if (! *pstFont)
     {
