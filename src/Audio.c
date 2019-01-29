@@ -102,11 +102,11 @@ int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
     return 0;
 }
 
-int PlayMusic(const uint16_t u16FadeInMs, Music **pstMusic)
+int PlayMusic(const uint16_t u16FadeInMs, const Music *pstMusic)
 {
     if (0 != u16FadeInMs)
     {
-        if (-1 == Mix_FadeInMusic((*pstMusic)->pstMusic, (*pstMusic)->s8Loops, u16FadeInMs))
+        if (-1 == Mix_FadeInMusic(pstMusic->pstMusic, pstMusic->s8Loops, u16FadeInMs))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
             return -1;
@@ -116,7 +116,7 @@ int PlayMusic(const uint16_t u16FadeInMs, Music **pstMusic)
     }
     else
     {
-        if (-1 == Mix_PlayMusic((*pstMusic)->pstMusic, (*pstMusic)->s8Loops))
+        if (-1 == Mix_PlayMusic(pstMusic->pstMusic, pstMusic->s8Loops))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
             return -1;

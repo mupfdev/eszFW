@@ -33,8 +33,8 @@ int DrawBackground(
     const int32_t  s32LogicalWindowHeight,
     const double   dCameraPosY,
     const double   dVelocity,
-    SDL_Renderer **pstRenderer,
-    Background   **pstBackground);
+    SDL_Renderer  *pstRenderer,
+    Background    *pstBackground);
 
 void FreeBackground(Background *Background);
 
@@ -43,7 +43,7 @@ int InitBackground(
     const char    *pacFilenames[static u8BgNum],
     const int32_t  s32WindowWidth,
     const bool     bAlignment,
-    SDL_Renderer **pstRenderer,
+    SDL_Renderer *pstRenderer,
     Background   **pstBackground);
 
 #endif // _BACKGROUND_H_

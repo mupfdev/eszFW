@@ -18,31 +18,31 @@ static int _DrawLayer(
     const uint8_t  u8Index,
     const int32_t  s32LogicalWindowHeight,
     const double   dCameraPosY,
-    SDL_Renderer **pstRenderer,
-    Background   **pstBackground)
+    SDL_Renderer  *pstRenderer,
+    Background    *pstBackground)
 {
     int32_t  s32Width = 0;
     double   dPosXa;
     double   dPosXb;
     SDL_Rect stDst;
 
-    if (0 != SDL_QueryTexture((*pstBackground)->acLayer[u8Index].pstLayer, NULL, NULL, &s32Width, NULL))
+    if (0 != SDL_QueryTexture(pstBackground->acLayer[u8Index].pstLayer, NULL, NULL, &s32Width, NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
     }
 
-    if ((*pstBackground)->acLayer[u8Index].dPosX < -s32Width)
+    if (pstBackground->acLayer[u8Index].dPosX < -s32Width)
     {
-        (*pstBackground)->acLayer[u8Index].dPosX = +s32Width;
+        pstBackground->acLayer[u8Index].dPosX = +s32Width;
     }
 
-    if ((*pstBackground)->acLayer[u8Index].dPosX > +s32Width)
+    if (pstBackground->acLayer[u8Index].dPosX > +s32Width)
     {
-        (*pstBackground)->acLayer[u8Index].dPosX = -s32Width;
+        pstBackground->acLayer[u8Index].dPosX = -s32Width;
     }
 
-    dPosXa = (*pstBackground)->acLayer[u8Index].dPosX;
+    dPosXa = pstBackground->acLayer[u8Index].dPosX;
     if (dPosXa > 0)
     {
         dPosXb = dPosXa - s32Width;
@@ -52,35 +52,35 @@ static int _DrawLayer(
         dPosXb = dPosXa + s32Width;
     }
 
-    if (0 < (*pstBackground)->acLayer[u8Index].dVelocity)
+    if (0 < pstBackground->acLayer[u8Index].dVelocity)
     {
-        if (RIGHT == (*pstBackground)->bOrientation)
+        if (RIGHT == pstBackground->bOrientation)
         {
-            (*pstBackground)->acLayer[u8Index].dPosX -= (*pstBackground)->acLayer[u8Index].dVelocity;
+            pstBackground->acLayer[u8Index].dPosX -= pstBackground->acLayer[u8Index].dVelocity;
         }
         else
         {
-            (*pstBackground)->acLayer[u8Index].dPosX += (*pstBackground)->acLayer[u8Index].dVelocity;
+            pstBackground->acLayer[u8Index].dPosX += pstBackground->acLayer[u8Index].dVelocity;
         }
     }
 
-    if (TOP == (*pstBackground)->bAlignment)
+    if (TOP == pstBackground->bAlignment)
     {
-        stDst.y = (*pstBackground)->acLayer[u8Index].dPosY - dCameraPosY;
+        stDst.y = pstBackground->acLayer[u8Index].dPosY - dCameraPosY;
     }
     else
     {
-        stDst.y = (*pstBackground)->acLayer[u8Index].dPosY
-            + (s32LogicalWindowHeight - (*pstBackground)->acLayer[u8Index].s32Height);
+        stDst.y = pstBackground->acLayer[u8Index].dPosY
+            + (s32LogicalWindowHeight - pstBackground->acLayer[u8Index].s32Height);
     }
 
     stDst.x = dPosXa;
     stDst.w = s32Width;
-    stDst.h = (*pstBackground)->acLayer[u8Index].s32Height;
+    stDst.h = pstBackground->acLayer[u8Index].s32Height;
 
     if (-1 == SDL_RenderCopyEx(
-            (*pstRenderer),
-            (*pstBackground)->acLayer[u8Index].pstLayer,
+            pstRenderer,
+            pstBackground->acLayer[u8Index].pstLayer,
             NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -89,8 +89,8 @@ static int _DrawLayer(
 
     stDst.x = dPosXb;
     if (-1 == SDL_RenderCopyEx(
-            (*pstRenderer),
-            (*pstBackground)->acLayer[u8Index].pstLayer,
+            pstRenderer,
+            pstBackground->acLayer[u8Index].pstLayer,
             NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -103,7 +103,7 @@ static int _DrawLayer(
 static int _RenderLayer(
     const char    *pacFileName,
     const int32_t  s32WindowWidth,
-    SDL_Renderer **pstRenderer,
+    SDL_Renderer *pstRenderer,
     SDL_Texture  **pstLayer)
 {
     int          sReturnValue   = 0;
@@ -114,7 +114,7 @@ static int _RenderLayer(
     int32_t      s32LayerWidth  = 0;
     uint8_t      u8WidthFactor  = 0;
 
-    pstImage = IMG_LoadTexture((*pstRenderer), pacFileName);
+    pstImage = IMG_LoadTexture(pstRenderer, pacFileName);
     if (! pstImage)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
@@ -133,7 +133,7 @@ static int _RenderLayer(
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
     (*pstLayer)    = SDL_CreateTexture(
-        (*pstRenderer),
+        pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
         s32LayerWidth,
@@ -146,7 +146,7 @@ static int _RenderLayer(
         goto exit;
     }
 
-    if (0 != SDL_SetRenderTarget((*pstRenderer), (*pstLayer)))
+    if (0 != SDL_SetRenderTarget(pstRenderer, (*pstLayer)))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
@@ -160,7 +160,7 @@ static int _RenderLayer(
         stDst.y  = 0;
         stDst.w  = s32ImageWidth;
         stDst.h  = s32ImageHeight;
-        SDL_RenderCopy((*pstRenderer), pstImage, NULL, &stDst);
+        SDL_RenderCopy(pstRenderer, pstImage, NULL, &stDst);
         stDst.x += s32ImageWidth;
     }
 
@@ -171,7 +171,7 @@ static int _RenderLayer(
         goto exit;
     }
 
-    if (0 != SDL_SetRenderTarget((*pstRenderer), NULL))
+    if (0 != SDL_SetRenderTarget(pstRenderer, NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         sReturnValue = -1;
@@ -199,23 +199,23 @@ int DrawBackground(
     const int32_t  s32LogicalWindowHeight,
     const double   dCameraPosY,
     const double   dVelocity,
-    SDL_Renderer **pstRenderer,
-    Background   **pstBackground)
+    SDL_Renderer  *pstRenderer,
+    Background    *pstBackground)
 {
-    (*pstBackground)->bOrientation = bOrientation;
+    pstBackground->bOrientation = bOrientation;
 
-    double dFactor = (*pstBackground)->u8Num + 1;
-    for (uint8_t u8Index = 0; u8Index < (*pstBackground)->u8Num; u8Index++)
+    double dFactor = pstBackground->u8Num + 1;
+    for (uint8_t u8Index = 0; u8Index < pstBackground->u8Num; u8Index++)
     {
-        (*pstBackground)->acLayer[u8Index].dVelocity = dVelocity / dFactor;
+        pstBackground->acLayer[u8Index].dVelocity = dVelocity / dFactor;
         dFactor--;
 
         _DrawLayer(
             u8Index,
             s32LogicalWindowHeight,
             dCameraPosY,
-            &(*pstRenderer),
-            &(*pstBackground));
+            pstRenderer,
+            pstBackground);
     }
 
     return 0;
@@ -232,7 +232,7 @@ int InitBackground(
     const char    *pacFileNames[static u8Num],
     const int32_t  s32WindowWidth,
     const bool     bAlignment,
-    SDL_Renderer **pstRenderer,
+    SDL_Renderer  *pstRenderer,
     Background   **pstBackground)
 {
     *pstBackground = malloc(
@@ -255,7 +255,7 @@ int InitBackground(
         if (-1 == _RenderLayer(
                 pacFileNames[u8Index],
                 s32WindowWidth,
-                &(*pstRenderer),
+                pstRenderer,
                 &(*pstBackground)->acLayer[u8Index].pstLayer))
         {
             return -1;

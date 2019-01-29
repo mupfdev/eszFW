@@ -54,12 +54,12 @@ typedef struct Sprite_t
     uint16_t     u16ImageOffsetY;
 } Sprite;
 
-void AnimateEntity(bool bAnimate, Entity **pstEntity);
-void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity **pstEntity);
-void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity **pstEntity);
-void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity **pstEntity);
-int  DrawEntity(Entity **pstEntity, Camera **pstCamera, Sprite **pstSprite, SDL_Renderer **pstRenderer);
-void DropEntity(Entity **pstEntity);
+void AnimateEntity(bool bAnimate, Entity *pstEntity);
+void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity *pstEntity);
+void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity *pstEntity);
+void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity *pstEntity);
+int  DrawEntity(const Entity *pstEntity, const Camera *pstCamera, const Sprite *pstSprite, SDL_Renderer *pstRenderer);
+void DropEntity(Entity *pstEntity);
 void FreeCamera(Camera *pstCamera);
 void FreeEntity(Entity *pstEntity);
 void FreeSprite(Sprite *pstSprite);
@@ -79,13 +79,13 @@ int InitSprite(
     const uint16_t u16ImageOffsetX,
     const uint16_t u16ImageOffsetY,
     Sprite       **pstSprite,
-    SDL_Renderer **pstRenderer);
+    SDL_Renderer *pstRenderer);
 
-bool IsCameraLocked(Camera **pstCamera);
-bool IsEntityMoving(Entity **pstEntity);
-bool IsEntityRising(Entity **pstEntity);
-void JumpEntity(const double dForce, Entity **pstEntity);
-void LockCamera(Camera **pstCamera);
+bool IsCameraLocked(const Camera *pstCamera);
+bool IsEntityMoving(const Entity *pstEntity);
+bool IsEntityRising(const Entity *pstEntity);
+void JumpEntity(const double dForce, Entity *pstEntity);
+void LockCamera(Camera *pstCamera);
 
 void MoveEntity(
     const bool    bOrientation,
@@ -95,37 +95,37 @@ void MoveEntity(
     const uint8_t u8AnimEnd,
     const double  dAnimSpeed,
     const uint8_t u8FrameOffsetY,
-    Entity      **pstEntity);
+    Entity       *pstEntity);
 
-void ResetEntity(Entity **pstEntity);
-void ResetEntityToSpawnPosition(Entity **pstEntity);
+void ResetEntity(Entity *pstEntity);
+void ResetEntityToSpawnPosition(Entity *pstEntity);
 
 void SetCameraBoundariesToMapSize(
     const int32_t  s32LogicalWindowWidth,
     const int32_t  s32LogicalWindowHeight,
     const uint16_t u16MapWidth,
     const uint16_t u16MapHeight,
-    Camera       **pstCamera);
+    Camera        *pstCamera);
 
 void SetCameraTargetEntity(
     const int32_t s32LogicalWindowWidth,
     const int32_t s32LogicalWindowHeight,
-    Camera      **pstCamera,
-    Entity      **pstEntity);
+    Camera       *pstCamera,
+    const Entity *pstEntity);
 
-void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const double dAnimSpeed, Entity **pstEntity);
-void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity **pstEntity);
-void SetOrientation(const bool bOrientation, Entity **pstEntity);
-void SetPosition(const double dPosX, const double dPosY, Entity **pstEntity);
-void SetSpawnPosition(const double dPosX, const double dPosY, Entity **pstEntity);
-void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity **pstEntity);
-void StopEntity(Entity **pstEntity);
-void UnlockCamera(Camera **pstCamera);
+void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const double dAnimSpeed, Entity *pstEntity);
+void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity *pstEntity);
+void SetOrientation(const bool bOrientation, Entity *pstEntity);
+void SetPosition(const double dPosX, const double dPosY, Entity *pstEntity);
+void SetSpawnPosition(const double dPosX, const double dPosY, Entity *pstEntity);
+void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *pstEntity);
+void StopEntity(Entity *pstEntity);
+void UnlockCamera(Camera *pstCamera);
 
 void UpdateEntity(
     const double  dDeltaTime,
     const double  dGravitation,
     const uint8_t u8MeterInPixel,
-    Entity      **pstEntity);
+    Entity       *pstEntity);
 
 #endif // _ENTITY_H_

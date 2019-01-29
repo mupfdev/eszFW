@@ -13,7 +13,7 @@
 void InitFPSLimiter(double *dTimeA, double *dTimeB, double *dDeltaTime)
 {
     SDL_Log("Initialise frame-rate limiter.\n");
-    *dTimeA = SDL_GetTicks();
+    *dTimeA     = SDL_GetTicks();
     *dTimeB     = SDL_GetTicks();
     *dDeltaTime = (*dTimeB - *dTimeA) / 1000.f;
 }
