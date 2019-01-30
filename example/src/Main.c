@@ -24,6 +24,7 @@ static Sprite     *pstSprite;
 static Video      *pstVideo;
 
 static int  Init();
+static int  Render();
 static void Quit();
 
 #ifndef __ANDROID__
@@ -45,6 +46,7 @@ int SDL_main(int sArgC, char *pacArgV[])
     (void)pacArgV;
 
     sReturnValue = Init();
+    sReturnValue = Render();
     if (-1 == sReturnValue)
     {
         bIsRunning = false;
@@ -74,34 +76,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         LimitFramerate(60, &dTimeA, &dTimeB, &dDeltaTime);
 
         // Render scene.
-        sReturnValue = DrawBackground(
-            pstEntity[0]->bOrientation,
-            pstVideo->s32LogicalWindowHeight,
-            pstCamera->dPosY,
-            pstEntity[0]->dVelocityX,
-            pstVideo->pstRenderer,
-            pstBg);
-
-        sReturnValue = DrawMap(
-            0, true, "BG",
-            pstCamera->dPosX,
-            pstCamera->dPosY,
-            pstMap,
-            pstVideo->pstRenderer);
-
-        sReturnValue = DrawEntity(
-            pstEntity[0],
-            pstCamera,
-            pstSprite,
-            pstVideo->pstRenderer);
-
-        sReturnValue = DrawMap(
-            1, false, "FG",
-            pstCamera->dPosX,
-            pstCamera->dPosY,
-            pstMap,
-            pstVideo->pstRenderer);
-
+        sReturnValue = Render();
         RenderScene(pstVideo->pstRenderer);
 
         if (-1 == sReturnValue)
@@ -398,6 +373,41 @@ static int Init()
     SetSpawnPosition(pstObject[0]->dPosX, pstObject[0]->dPosY, pstEntity[0]);
     SetFrameOffset(0, 0, pstEntity[0]);
     SetFontColour(0xfe, 0x95, 0x14, pstFont);
+
+    return sReturnValue;
+}
+
+static int Render()
+{
+    int sReturnValue = 0;
+
+    sReturnValue = DrawBackground(
+        pstEntity[0]->bOrientation,
+        pstVideo->s32LogicalWindowHeight,
+        pstCamera->dPosY,
+        pstEntity[0]->dVelocityX,
+        pstVideo->pstRenderer,
+        pstBg);
+
+    sReturnValue = DrawMap(
+        0, true, "BG",
+        pstCamera->dPosX,
+        pstCamera->dPosY,
+        pstMap,
+        pstVideo->pstRenderer);
+
+    sReturnValue = DrawEntity(
+        pstEntity[0],
+        pstCamera,
+        pstSprite,
+        pstVideo->pstRenderer);
+
+    sReturnValue = DrawMap(
+        1, false, "FG",
+        pstCamera->dPosX,
+        pstCamera->dPosY,
+        pstMap,
+        pstVideo->pstRenderer);
 
     return sReturnValue;
 }
