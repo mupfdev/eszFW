@@ -130,6 +130,7 @@ int DrawMap(
         {
             for (uint16_t u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
             {
+                uint16_t     u16TsTileCount = pstMap->pstTmxMap->tiles[1]->tileset->tilecount;
                 uint16_t     u16Gid;
                 uint16_t     u16TileId;
                 SDL_Rect     stDst;
@@ -142,6 +143,12 @@ int DrawMap(
                     {
                         u16Gid    = pstMap->acAnimTile[u16Index].u16Gid;
                         u16TileId = pstMap->acAnimTile[u16Index].u16TileId + 1;
+
+                        // Temporary bug fix to prevent segfault.
+                        if (u16TileId > u16TsTileCount)
+                        {
+                            continue;
+                        }
 
                         if (pstMap->pstTmxMap->tiles[u16Gid] && pstMap->pstTmxMap->tiles[u16TileId])
                         {

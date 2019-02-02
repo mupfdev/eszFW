@@ -15,7 +15,7 @@ typedef enum MapConstants_t
 {
     NORMAL_LAYER    = 0,
     ANIM_LAYER      = 1,
-    ANIM_TILE_MAX   = 250,
+    ANIM_TILE_MAX   = 500,
     MAP_TEXTURES    = 4,
     TS_IMG_PATH_LEN = 64
 } MapConstants;
