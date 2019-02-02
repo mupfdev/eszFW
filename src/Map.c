@@ -100,7 +100,7 @@ int DrawMap(
     // Update and render animated tiles.
     pstMap->dAnimDelay += dDeltaTime;
 
-    if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed)// && bRenderAnimTiles)
+    if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {
         if (pstMap->pstTexture[ANIM_LAYER][u16Index])
         {
