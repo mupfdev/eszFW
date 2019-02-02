@@ -13,14 +13,28 @@
 
 typedef enum MapConstants_t
 {
+    NORMAL_LAYER    = 0,
+    ANIM_LAYER      = 1,
+    ANIM_TILE_MAX   = 250,
     MAP_TEXTURES    = 4,
-    TS_IMG_PATH_LEN = 50
+    TS_IMG_PATH_LEN = 64
 } MapConstants;
+
+typedef struct AnimTile_t
+{
+    uint16_t u16Gid;
+    uint16_t u16TileId;
+    int16_t  s16DstX;
+    int16_t  s16DstY;
+    uint8_t  u8FrameCount;
+    uint8_t  u8AnimLen;
+} AnimTile;
 
 typedef struct Map_t
 {
     tmx_map     *pstTmxMap;
-    SDL_Texture *pstTexture[MAP_TEXTURES];
+    SDL_Texture *pstTexture[2][MAP_TEXTURES];
+    SDL_Texture *pstTileset;
     uint16_t     u16Height;
     uint16_t     u16Width;
     double       dPosX;
@@ -28,6 +42,10 @@ typedef struct Map_t
     double       dGravitation;
     uint8_t      u8MeterInPixel;
     char         acTilesetImage[TS_IMG_PATH_LEN];
+    uint16_t     u16AnimTileSize;
+    double       dAnimDelay;
+    double       dAnimSpeed;
+    AnimTile     acAnimTile[ANIM_TILE_MAX];
 } Map;
 
 typedef struct Object_t
@@ -38,10 +56,12 @@ typedef struct Object_t
 
 int DrawMap(
     const uint16_t u16Index,
+    const bool     bRenderAnimTiles,
     const bool     bRenderBgColour,
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,
+    const double   dDeltaTime,
     Map           *pstMap,
     SDL_Renderer  *pstRenderer);
 
@@ -66,5 +86,6 @@ bool IsOnTileOfType(
     const Map    *pstMap);
 
 void SetGravitation(const double dGravitation, const bool bUseTmxConstant, Map *pstMap);
+void SetTileAnimationSpeed(const double dAnimSpeed, Map *pstMap);
 
 #endif // _MAP_H_

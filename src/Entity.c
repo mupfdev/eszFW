@@ -136,7 +136,6 @@ int InitCamera(Camera **pstCamera)
     *pstCamera = malloc(sizeof(struct Camera_t));
     if (! *pstCamera)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitCamera(): error allocating memory.\n");
         return -1;
     }
 
@@ -165,13 +164,13 @@ int InitEntity(
         return -1;
     }
 
-    SetPosition(dPosX, dPosY, *pstEntity);
-    SetSpeed(8.0f, 4.5f, *pstEntity);
-    SetOrientation(RIGHT, *pstEntity);
-    SetAnimation(0, 0, 12.5f, *pstEntity);
-
+    (*pstEntity)->dPosX          = dPosX;
+    (*pstEntity)->dPosY          = dPosY;
     (*pstEntity)->bIsJumping     = false;
+    (*pstEntity)->bOrientation   = RIGHT;
+    (*pstEntity)->dAcceleration  = 8.f;
     (*pstEntity)->dVelocityX     = 0.f;
+    (*pstEntity)->dMaxVelocityX  = 4.5f;
     (*pstEntity)->dVelocityY     = 0.f;
     (*pstEntity)->stBB.dBottom   = 0.f;
     (*pstEntity)->stBB.dLeft     = 0.f;
@@ -182,7 +181,10 @@ int InitEntity(
     (*pstEntity)->u8Height       = u8Height;
     (*pstEntity)->u8FrameOffsetX = 0;
     (*pstEntity)->u8AnimFrame    = 0;
+    (*pstEntity)->u8AnimStart    = 0;
+    (*pstEntity)->u8AnimEnd      = 0;
     (*pstEntity)->dAnimDelay     = 0.f;
+    (*pstEntity)->dAnimSpeed     = 12.f;
 
     return 0;
 }
@@ -337,13 +339,14 @@ void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const doub
     }
 }
 
-void SetCameraBoundariesToMapSize(
+int SetCameraBoundariesToMapSize(
     const int32_t  s32LogicalWindowWidth,
     const int32_t  s32LogicalWindowHeight,
     const uint16_t u16MapWidth,
     const uint16_t u16MapHeight,
     Camera        *pstCamera)
 {
+    bool bReturnValue = 0;
     pstCamera->s32MaxPosX = u16MapWidth  - s32LogicalWindowWidth;
     pstCamera->s32MaxPosY = u16MapHeight - s32LogicalWindowHeight;
 
@@ -354,12 +357,13 @@ void SetCameraBoundariesToMapSize(
         pstCamera->s32MaxPosY);
     #endif
 
-    if (pstCamera->dPosX < 0)
+    if (pstCamera->dPosX <= 0)
     {
         pstCamera->dPosX = 0;
+        bReturnValue = 1;
     }
 
-    if (pstCamera->dPosY < 0)
+    if (pstCamera->dPosY <= 0)
     {
         pstCamera->dPosY = 0;
     }
@@ -367,12 +371,15 @@ void SetCameraBoundariesToMapSize(
     if (pstCamera->dPosX > pstCamera->s32MaxPosX)
     {
         pstCamera->dPosX = pstCamera->s32MaxPosX;
+        bReturnValue = 1;
     }
 
     if (pstCamera->dPosY > pstCamera->s32MaxPosY)
     {
         pstCamera->dPosY = pstCamera->s32MaxPosY;
     }
+
+    return bReturnValue;
 }
 
 void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity *pstEntity)
@@ -503,10 +510,10 @@ void UpdateEntity(
             pstEntity->u8AnimFrame = pstEntity->u8AnimStart;
         }
 
-        if (pstEntity->dAnimDelay > 1.0 / pstEntity->dAnimSpeed)
+        if (pstEntity->dAnimDelay > 1.f / pstEntity->dAnimSpeed)
         {
             pstEntity->u8AnimFrame++;
-            pstEntity->dAnimDelay = 0.0;
+            pstEntity->dAnimDelay = 0.f;
         }
         // Loop animation.
         if (pstEntity->u8AnimFrame >= pstEntity->u8AnimEnd)

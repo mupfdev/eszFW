@@ -208,7 +208,7 @@ int DrawBackground(
     for (uint8_t u8Index = 0; u8Index < pstBackground->u8Num; u8Index++)
     {
         pstBackground->acLayer[u8Index].dVelocity = dVelocity / dFactor;
-        dFactor--;
+        dFactor -= 0.5f;
 
         _DrawLayer(
             u8Index,

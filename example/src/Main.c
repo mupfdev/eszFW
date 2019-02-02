@@ -23,6 +23,9 @@ static Music      *pstMusic;
 static Sprite     *pstSprite;
 static Video      *pstVideo;
 
+static double dBgVelocityX;
+static double dDeltaTime = 0.f;
+
 static int  Init();
 static int  Render();
 static void Quit();
@@ -37,7 +40,6 @@ int SDL_main(int sArgC, char *pacArgV[])
     bool       bIsRunning   = true;
     double     dTimeA       = 0.f;
     double     dTimeB       = 0.f;
-    double     dDeltaTime   = 0.f;
     bool       bOrientation = LEFT;
     bool       bIsMoving    = false;
     SDL_Event  stEvent;
@@ -165,7 +167,7 @@ int SDL_main(int sArgC, char *pacArgV[])
             {
                 if (0.05 < fabs(stEvent.tfinger.dy))
                 {
-                    JumpEntity(2.5f + (0.5f * (*pstEntity)->dVelocityX), &pstEntity[0]);
+                    JumpEntity(2.5f + (0.75f * (*pstEntity)->dVelocityX), pstEntity[0]);
                 }
             }
             else if (SDL_MULTIGESTURE == stEvent.type)
@@ -194,7 +196,7 @@ int SDL_main(int sArgC, char *pacArgV[])
                         dZoomLevel = dZoomLevelMax;
                     }
 
-                    SetZoomLevel(dZoomLevel, &pstVideo);
+                    SetZoomLevel(dZoomLevel, pstVideo);
                 }
             }
             #endif // __ANDROID__
@@ -224,7 +226,7 @@ int SDL_main(int sArgC, char *pacArgV[])
 
         // Update game logic.
         // Set up collision detection.
-        if (false == IsOnTileOfType(
+        if (! IsOnTileOfType(
                 "Platform",
                 pstEntity[0]->dPosX,
                 pstEntity[0]->dPosY,
@@ -261,12 +263,20 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstCamera,
             pstEntity[0]);
 
-        SetCameraBoundariesToMapSize(
+        if (1 == SetCameraBoundariesToMapSize(
             pstVideo->s32LogicalWindowWidth,
             pstVideo->s32LogicalWindowHeight,
             pstMap->u16Width,
             pstMap->u16Height,
-            pstCamera);
+            pstCamera))
+        {
+            // Do not move background when camera hits boundaries.
+            dBgVelocityX = 0.f;
+        }
+        else
+        {
+            dBgVelocityX = pstEntity[0]->dVelocityX;
+        }
 
         // Set zoom level dynamically in relation to vertical velocity.
         #ifndef __ANDROID__
@@ -385,14 +395,15 @@ static int Render()
         pstEntity[0]->bOrientation,
         pstVideo->s32LogicalWindowHeight,
         pstCamera->dPosY,
-        pstEntity[0]->dVelocityX,
+        dBgVelocityX,
         pstVideo->pstRenderer,
         pstBg);
 
     sReturnValue = DrawMap(
-        0, true, "BG",
+        0, false, true, "BG",
         pstCamera->dPosX,
         pstCamera->dPosY,
+        dDeltaTime,
         pstMap,
         pstVideo->pstRenderer);
 
@@ -403,9 +414,10 @@ static int Render()
         pstVideo->pstRenderer);
 
     sReturnValue = DrawMap(
-        1, false, "FG",
+        1, false, false, "FG",
         pstCamera->dPosX,
         pstCamera->dPosY,
+        dDeltaTime,
         pstMap,
         pstVideo->pstRenderer);
 

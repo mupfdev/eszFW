@@ -100,7 +100,7 @@ void MoveEntity(
 void ResetEntity(Entity *pstEntity);
 void ResetEntityToSpawnPosition(Entity *pstEntity);
 
-void SetCameraBoundariesToMapSize(
+int SetCameraBoundariesToMapSize(
     const int32_t  s32LogicalWindowWidth,
     const int32_t  s32LogicalWindowHeight,
     const uint16_t u16MapWidth,
