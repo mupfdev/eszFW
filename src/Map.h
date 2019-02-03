@@ -42,9 +42,9 @@ typedef struct Map_t
     double       dGravitation;
     uint8_t      u8MeterInPixel;
     char         acTilesetImage[TS_IMG_PATH_LEN];
-    uint16_t     u16AnimTileSize;
     double       dAnimDelay;
     double       dAnimSpeed;
+    uint16_t     u16AnimTileSize;
     AnimTile     acAnimTile[ANIM_TILE_MAX];
 } Map;
 

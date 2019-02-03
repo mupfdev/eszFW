@@ -102,11 +102,6 @@ int DrawMap(
 
     if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {
-        if (pstMap->pstTexture[ANIM_LAYER][u16Index])
-        {
-            SDL_DestroyTexture(pstMap->pstTexture[ANIM_LAYER][u16Index]);
-        }
-
         pstMap->pstTexture[ANIM_LAYER][u16Index] = SDL_CreateTexture(
             pstRenderer,
             SDL_PIXELFORMAT_ARGB8888,
@@ -130,47 +125,33 @@ int DrawMap(
         {
             for (uint16_t u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
             {
-                uint16_t     u16TsTileCount = pstMap->pstTmxMap->tiles[1]->tileset->tilecount;
-                uint16_t     u16Gid;
-                uint16_t     u16TileId;
+                uint16_t     u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
+                uint16_t     u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
+                uint8_t      u8FrameCount  = pstMap->acAnimTile[u16Index].u8FrameCount;
+                uint8_t      u8AnimLen     = pstMap->acAnimTile[u16Index].u8AnimLen;
+                uint16_t     u16NextTileId;
                 SDL_Rect     stDst;
                 SDL_Rect     stSrc;
                 tmx_tileset *pstTS;
 
-                if (L_LAYER == pstLayer->type)
+                if (u8FrameCount >= u8AnimLen)
                 {
-                    if (pstLayer->visible)
-                    {
-                        u16Gid    = pstMap->acAnimTile[u16Index].u16Gid;
-                        u16TileId = pstMap->acAnimTile[u16Index].u16TileId + 1;
-
-                        // Temporary bug fix to prevent segfault.
-                        if (u16TileId > u16TsTileCount)
-                        {
-                            continue;
-                        }
-
-                        if (pstMap->pstTmxMap->tiles[u16Gid] && pstMap->pstTmxMap->tiles[u16TileId])
-                        {
-                            pstTS    = pstMap->pstTmxMap->tiles[u16TileId]->tileset;
-                            stSrc.x  = pstMap->pstTmxMap->tiles[u16TileId]->ul_x;
-                            stSrc.y  = pstMap->pstTmxMap->tiles[u16TileId]->ul_y;
-                            stSrc.w  = stDst.w = pstTS->tile_width;
-                            stSrc.h  = stDst.h = pstTS->tile_height;
-                            stDst.x  = pstMap->acAnimTile[u16Index].s16DstX;
-                            stDst.y  = pstMap->acAnimTile[u16Index].s16DstY;
-                            SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
-
-                            pstMap->acAnimTile[u16Index].u8FrameCount++;
-                            if (pstMap->acAnimTile[u16Index].u8FrameCount > pstMap->acAnimTile[u16Index].u8AnimLen)
-                            {
-                                pstMap->acAnimTile[u16Index].u8FrameCount = 0;
-                            }
-
-                            pstMap->acAnimTile[u16Index].u16TileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[pstMap->acAnimTile[u16Index].u8FrameCount].tile_id;
-                        }
-                    }
+                    pstMap->acAnimTile[u16Index].u8FrameCount = 0;
+                    u8FrameCount                              = 0;
                 }
+
+                pstTS    = pstMap->pstTmxMap->tiles[1]->tileset;
+                stSrc.x  = pstMap->pstTmxMap->tiles[u16TileId]->ul_x;
+                stSrc.y  = pstMap->pstTmxMap->tiles[u16TileId]->ul_y;
+                stSrc.w  = stDst.w = pstTS->tile_width;
+                stSrc.h  = stDst.h = pstTS->tile_height;
+                stDst.x  = pstMap->acAnimTile[u16Index].s16DstX;
+                stDst.y  = pstMap->acAnimTile[u16Index].s16DstY;
+
+                u16NextTileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[u8FrameCount].tile_id;
+                pstMap->acAnimTile[u16Index].u8FrameCount++;
+                pstMap->acAnimTile[u16Index].u16TileId = u16NextTileId;
+                SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
             }
             pstLayer = pstLayer->next;
         }
@@ -215,7 +196,7 @@ int DrawMap(
             return -1;
         }
 
-        if (pstMap->pstTexture[ANIM_LAYER][u16Index])
+        if (bRenderAnimTiles)
         {
             if (pstMap->pstTexture[ANIM_LAYER][u16Index])
             {
@@ -262,6 +243,7 @@ int DrawMap(
             255);
     }
 
+    pstLayer = pstMap->pstTmxMap->ly_head;
     while(pstLayer)
     {
         bool         bRenderLayer = true;
@@ -288,15 +270,16 @@ int DrawMap(
                         u16Gid = _ClearGidFlags(pstLayer->content.gids[(u16IndexH * pstMap->pstTmxMap->width) + u16IndexW]);
                         if (pstMap->pstTmxMap->tiles[u16Gid])
                         {
-                            pstTS    = pstMap->pstTmxMap->tiles[u16Gid]->tileset;
+                            pstTS    = pstMap->pstTmxMap->tiles[1]->tileset;
                             stSrc.x  = pstMap->pstTmxMap->tiles[u16Gid]->ul_x;
                             stSrc.y  = pstMap->pstTmxMap->tiles[u16Gid]->ul_y;
                             stSrc.w  = stDst.w   = pstTS->tile_width;
                             stSrc.h  = stDst.h   = pstTS->tile_height;
                             stDst.x  = u16IndexW * pstTS->tile_width;
                             stDst.y  = u16IndexH * pstTS->tile_height;
+                            SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
 
-                            if (pstMap->pstTmxMap->tiles[u16Gid]->animation)
+                            if (bRenderAnimTiles && pstMap->pstTmxMap->tiles[u16Gid]->animation)
                             {
                                 uint8_t  u8AnimLen;
                                 uint16_t u16TileId;
@@ -309,17 +292,13 @@ int DrawMap(
                                 pstMap->acAnimTile[pstMap->u16AnimTileSize].u8FrameCount = 0;
                                 pstMap->acAnimTile[pstMap->u16AnimTileSize].u8AnimLen    = u8AnimLen;
                                 pstMap->u16AnimTileSize++;
+
                                 // Prevent buffer overflow.
                                 if (pstMap->u16AnimTileSize >= ANIM_TILE_MAX)
                                 {
                                     pstMap->u16AnimTileSize = ANIM_TILE_MAX;
                                 }
-                                if (! bRenderAnimTiles)
-                                {
-                                    continue;
-                                }
                             }
-                            SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
                         }
                     }
                 }
