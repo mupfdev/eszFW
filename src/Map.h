@@ -13,9 +13,8 @@
 
 typedef enum MapConstants_t
 {
-    NORMAL_LAYER    = 0,
-    ANIM_LAYER      = 1,
     ANIM_TILE_MAX   = 500,
+    // Max textures per map (not to be confused with map layers)
     MAP_TEXTURES    = 4,
     TS_IMG_PATH_LEN = 64
 } MapConstants;
@@ -33,7 +32,8 @@ typedef struct AnimTile_t
 typedef struct Map_t
 {
     tmx_map     *pstTmxMap;
-    SDL_Texture *pstTexture[2][MAP_TEXTURES];
+    SDL_Texture *pstAnimTexture;
+    SDL_Texture *pstTexture[MAP_TEXTURES];
     SDL_Texture *pstTileset;
     uint16_t     u16Height;
     uint16_t     u16Width;

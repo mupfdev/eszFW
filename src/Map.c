@@ -102,58 +102,51 @@ int DrawMap(
 
     if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {
-        pstMap->pstTexture[ANIM_LAYER][u16Index] = SDL_CreateTexture(
+        pstMap->pstAnimTexture = SDL_CreateTexture(
             pstRenderer,
             SDL_PIXELFORMAT_ARGB8888,
             SDL_TEXTUREACCESS_TARGET,
             pstMap->pstTmxMap->width  * pstMap->pstTmxMap->tile_width,
             pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height);
 
-        if (! pstMap->pstTexture[ANIM_LAYER][u16Index])
+        if (! pstMap->pstAnimTexture)
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
             return -1;
         }
 
-        if (0 != SDL_SetRenderTarget(pstRenderer, pstMap->pstTexture[ANIM_LAYER][u16Index]))
+        if (0 != SDL_SetRenderTarget(pstRenderer, pstMap->pstAnimTexture))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
             return -1;
         }
 
-        while(pstLayer)
+        for (uint16_t u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
         {
-            for (uint16_t u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
+            uint16_t     u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
+            uint16_t     u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
+            uint16_t     u16NextTileId = 0;
+            SDL_Rect     stDst;
+            SDL_Rect     stSrc;
+            tmx_tileset *pstTS;
+
+            pstTS    = pstMap->pstTmxMap->tiles[1]->tileset;
+            stSrc.x  = pstMap->pstTmxMap->tiles[u16TileId]->ul_x;
+            stSrc.y  = pstMap->pstTmxMap->tiles[u16TileId]->ul_y;
+            stSrc.w  = stDst.w = pstTS->tile_width;
+            stSrc.h  = stDst.h = pstTS->tile_height;
+            stDst.x  = pstMap->acAnimTile[u16Index].s16DstX;
+            stDst.y  = pstMap->acAnimTile[u16Index].s16DstY;
+            SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
+
+            pstMap->acAnimTile[u16Index].u8FrameCount++;
+            if (pstMap->acAnimTile[u16Index].u8FrameCount >= pstMap->acAnimTile[u16Index].u8AnimLen)
             {
-                uint16_t     u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
-                uint16_t     u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
-                uint8_t      u8FrameCount  = pstMap->acAnimTile[u16Index].u8FrameCount;
-                uint8_t      u8AnimLen     = pstMap->acAnimTile[u16Index].u8AnimLen;
-                uint16_t     u16NextTileId;
-                SDL_Rect     stDst;
-                SDL_Rect     stSrc;
-                tmx_tileset *pstTS;
-
-                if (u8FrameCount >= u8AnimLen)
-                {
-                    pstMap->acAnimTile[u16Index].u8FrameCount = 0;
-                    u8FrameCount                              = 0;
-                }
-
-                pstTS    = pstMap->pstTmxMap->tiles[1]->tileset;
-                stSrc.x  = pstMap->pstTmxMap->tiles[u16TileId]->ul_x;
-                stSrc.y  = pstMap->pstTmxMap->tiles[u16TileId]->ul_y;
-                stSrc.w  = stDst.w = pstTS->tile_width;
-                stSrc.h  = stDst.h = pstTS->tile_height;
-                stDst.x  = pstMap->acAnimTile[u16Index].s16DstX;
-                stDst.y  = pstMap->acAnimTile[u16Index].s16DstY;
-
-                u16NextTileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[u8FrameCount].tile_id;
-                pstMap->acAnimTile[u16Index].u8FrameCount++;
-                pstMap->acAnimTile[u16Index].u16TileId = u16NextTileId;
-                SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
+                pstMap->acAnimTile[u16Index].u8FrameCount = 0;
             }
-            pstLayer = pstLayer->next;
+
+            u16NextTileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[pstMap->acAnimTile[u16Index].u8FrameCount].tile_id;
+            pstMap->acAnimTile[u16Index].u16TileId = u16NextTileId;
         }
 
         if (pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed)
@@ -168,7 +161,7 @@ int DrawMap(
         return -1;
         }
 
-        if (0 != SDL_SetTextureBlendMode(pstMap->pstTexture[ANIM_LAYER][u16Index], SDL_BLENDMODE_BLEND))
+        if (0 != SDL_SetTextureBlendMode(pstMap->pstAnimTexture, SDL_BLENDMODE_BLEND))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
             return -1;
@@ -176,7 +169,7 @@ int DrawMap(
     }
 
     // The texture has already been rendered and can be drawn.
-    if (pstMap->pstTexture[NORMAL_LAYER][u16Index])
+    if (pstMap->pstTexture[u16Index])
     {
         double   dRenderPosX = pstMap->dPosX - dCameraPosX;
         double   dRenderPosY = pstMap->dPosY - dCameraPosY;
@@ -189,7 +182,7 @@ int DrawMap(
         };
 
         if (-1 == SDL_RenderCopyEx(
-                pstRenderer, pstMap->pstTexture[NORMAL_LAYER][u16Index],
+                pstRenderer, pstMap->pstTexture[u16Index],
                 NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -198,10 +191,10 @@ int DrawMap(
 
         if (bRenderAnimTiles)
         {
-            if (pstMap->pstTexture[ANIM_LAYER][u16Index])
+            if (pstMap->pstAnimTexture)
             {
                 if (-1 == SDL_RenderCopyEx(
-                        pstRenderer, pstMap->pstTexture[ANIM_LAYER][u16Index],
+                        pstRenderer, pstMap->pstAnimTexture,
                         NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
                 {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
@@ -214,20 +207,20 @@ int DrawMap(
     }
 
     // Otherwise render the texture once.
-    pstMap->pstTexture[NORMAL_LAYER][u16Index] = SDL_CreateTexture(
+    pstMap->pstTexture[u16Index] = SDL_CreateTexture(
         pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
         pstMap->pstTmxMap->width  * pstMap->pstTmxMap->tile_width,
         pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height);
 
-    if (! pstMap->pstTexture[NORMAL_LAYER][u16Index])
+    if (! pstMap->pstTexture[u16Index])
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
     }
 
-    if (0 != SDL_SetRenderTarget(pstRenderer, pstMap->pstTexture[NORMAL_LAYER][u16Index]))
+    if (0 != SDL_SetRenderTarget(pstRenderer, pstMap->pstTexture[u16Index]))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -314,7 +307,7 @@ int DrawMap(
         return -1;
     }
 
-    if (0 != SDL_SetTextureBlendMode(pstMap->pstTexture[NORMAL_LAYER][u16Index], SDL_BLENDMODE_BLEND))
+    if (0 != SDL_SetTextureBlendMode(pstMap->pstTexture[u16Index], SDL_BLENDMODE_BLEND))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -337,15 +330,17 @@ void FreeMap(Map *pstMap)
             SDL_DestroyTexture(pstMap->pstTileset);
         }
 
-        for (uint8_t u8IndexA = 0; u8IndexA <= 1; u8IndexA++)
+        for (uint8_t u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
         {
-            for (uint8_t u8IndexB = 0; u8IndexB < MAP_TEXTURES; u8IndexB++)
+            if (pstMap->pstTexture[u8Index])
             {
-                if (pstMap->pstTexture[u8IndexA][u8IndexB])
-                {
-                    SDL_DestroyTexture(pstMap->pstTexture[u8IndexA][u8IndexB]);
-                }
+                SDL_DestroyTexture(pstMap->pstTexture[u8Index]);
             }
+        }
+
+        if (pstMap->pstAnimTexture)
+        {
+            SDL_DestroyTexture(pstMap->pstAnimTexture);
         }
 
         free(pstMap);
@@ -424,11 +419,12 @@ int InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t 
 
     strncat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
 
-    for (uint16_t u16Index = 0; u16Index < MAP_TEXTURES; u16Index++)
+    for (uint8_t u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
     {
-        (*pstMap)->pstTexture[NORMAL_LAYER][u16Index] = NULL;
+        (*pstMap)->pstTexture[u8Index] = NULL;
     }
-    (*pstMap)->pstTileset = NULL;
+    (*pstMap)->pstAnimTexture = NULL;
+    (*pstMap)->pstTileset     = NULL;
 
     SDL_Log("Load TMX map file: %s.\n", pacFileName);
     SetGravitation(0, true, *pstMap);

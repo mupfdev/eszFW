@@ -21,7 +21,7 @@ typedef enum Flags_t
     IS_DEAD       = 0x1,
     IS_IN_MID_AIR = 0x2,
     IS_LOCKED     = 0x3,
-    IS_WALKING    = 0x4
+    IS_MOVING     = 0x4
 } eFlags;
 
 void AnimateEntity(bool bAnimate, Entity *pstEntity)
@@ -80,16 +80,16 @@ int DrawEntity(const Entity *pstEntity, const Camera *pstCamera, const Sprite *p
     }
 
     stSrc.x  = pstSprite->u16ImageOffsetX;
-    stSrc.x += pstEntity->u8FrameOffsetX * pstEntity->u8Width;
-    stSrc.x += pstEntity->u8AnimFrame * pstEntity->u8Width;
+    stSrc.x += pstEntity->u8FrameOffsetX * pstEntity->u16Width;
+    stSrc.x += pstEntity->u8AnimFrame * pstEntity->u16Width;
     stSrc.y  = pstSprite->u16ImageOffsetY;
-    stSrc.y += pstEntity->u8FrameOffsetY * pstEntity->u8Height;
-    stSrc.w  = pstEntity->u8Width;
-    stSrc.h  = pstEntity->u8Height;
-    stDst.x  = dPosX - (pstEntity->u8Width  / 2);
-    stDst.y  = dPosY - (pstEntity->u8Height / 2);
-    stDst.w  = pstEntity->u8Width;
-    stDst.h  = pstEntity->u8Height;
+    stSrc.y += pstEntity->u8FrameOffsetY * pstEntity->u16Height;
+    stSrc.w  = pstEntity->u16Width;
+    stSrc.h  = pstEntity->u16Height;
+    stDst.x  = dPosX - (pstEntity->u16Width  / 2);
+    stDst.y  = dPosY - (pstEntity->u16Height / 2);
+    stDst.w  = pstEntity->u16Width;
+    stDst.h  = pstEntity->u16Height;
 
     if (0 != SDL_RenderCopyEx(
             pstRenderer,
@@ -151,11 +151,11 @@ int InitCamera(Camera **pstCamera)
 }
 
 int InitEntity(
-    const double  dPosX,
-    const double  dPosY,
-    const uint8_t u8Width,
-    const uint8_t u8Height,
-    Entity     **pstEntity)
+    const double   dPosX,
+    const double   dPosY,
+    const uint16_t u16Width,
+    const uint16_t u16Height,
+    Entity       **pstEntity)
 {
     *pstEntity = malloc(sizeof(struct Entity_t));
     if (! *pstEntity)
@@ -177,8 +177,8 @@ int InitEntity(
     (*pstEntity)->stBB.dRight    = 0.f;
     (*pstEntity)->stBB.dTop      = 0.f;
     (*pstEntity)->u16Flags       = 0;
-    (*pstEntity)->u8Width        = u8Width;
-    (*pstEntity)->u8Height       = u8Height;
+    (*pstEntity)->u16Width       = u16Width;
+    (*pstEntity)->u16Height      = u16Height;
     (*pstEntity)->u8FrameOffsetX = 0;
     (*pstEntity)->u8AnimFrame    = 0;
     (*pstEntity)->u8AnimStart    = 0;
@@ -236,7 +236,7 @@ bool IsCameraLocked(const Camera *pstCamera)
 
 bool IsEntityMoving(const Entity *pstEntity)
 {
-    if (IS_SET(pstEntity->u16Flags, IS_WALKING))
+    if (IS_SET(pstEntity->u16Flags, IS_MOVING))
     {
         return true;
     }
@@ -263,7 +263,7 @@ void JumpEntity(const double dForce, Entity *pstEntity)
     if (! pstEntity->bIsJumping)
     {
         // Initial lift-up; may need adjustment.
-        pstEntity->dPosY -= pstEntity->u8Height / 8.0;
+        pstEntity->dPosY -= pstEntity->u16Height / 8.0;
         // Apply force.
         pstEntity->dVelocityY = -dForce;
         pstEntity->bIsJumping = true;
@@ -275,7 +275,12 @@ void LockCamera(Camera *pstCamera)
     SET(pstCamera->u16Flags, IS_LOCKED);
 }
 
-void MoveEntity(
+void MoveEntity(Entity *pstEntity)
+{
+    SET(pstEntity->u16Flags, IS_MOVING);
+}
+
+void MoveEntityFull(
     const bool    bOrientation,
     const double  dAcceleration,
     const double  dMaxVelocityX,
@@ -285,7 +290,7 @@ void MoveEntity(
     const uint8_t u8FrameOffsetY,
     Entity       *pstEntity)
 {
-    SET(pstEntity->u16Flags, IS_WALKING);
+    SET(pstEntity->u16Flags, IS_MOVING);
     SetFrameOffset(0, u8FrameOffsetY, pstEntity);
     SetSpeed(dAcceleration, dMaxVelocityX, pstEntity);
     SetOrientation(bOrientation, pstEntity);
@@ -420,7 +425,7 @@ void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *ps
 
 void StopEntity(Entity *pstEntity)
 {
-    CLEAR(pstEntity->u16Flags, IS_WALKING);
+    CLEAR(pstEntity->u16Flags, IS_MOVING);
 }
 
 void UnlockCamera(Camera *pstCamera)
@@ -457,7 +462,7 @@ void UpdateEntity(
     }
 
     // Calculate horizontal velocity.
-    if (IS_SET(pstEntity->u16Flags, IS_WALKING))
+    if (IS_SET(pstEntity->u16Flags, IS_MOVING))
     {
         double dAccel             = pstEntity->dAcceleration * (double)u8MeterInPixel;
         double dDistanceX         = dAccel * dDeltaTime * dDeltaTime;
@@ -495,10 +500,10 @@ void UpdateEntity(
     SetPosition(dPosX, dPosY, pstEntity);
 
     // Update axis-aligned bounding box.
-    pstEntity->stBB.dBottom = dPosY + (pstEntity->u8Height / 2.0);
-    pstEntity->stBB.dLeft   = dPosX - (pstEntity->u8Width  / 2.0);
-    pstEntity->stBB.dRight  = dPosX + (pstEntity->u8Width  / 2.0);
-    pstEntity->stBB.dTop    = dPosY - (pstEntity->u8Height / 2.0);
+    pstEntity->stBB.dBottom = dPosY + (pstEntity->u16Height / 2.0);
+    pstEntity->stBB.dLeft   = dPosX - (pstEntity->u16Width  / 2.0);
+    pstEntity->stBB.dRight  = dPosX + (pstEntity->u16Width  / 2.0);
+    pstEntity->stBB.dTop    = dPosY - (pstEntity->u16Height / 2.0);
 
     // Update animation frame.
     if (IS_SET(pstEntity->u16Flags, IS_ANIMATED))

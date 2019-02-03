@@ -34,8 +34,8 @@ typedef struct Entity_t
     double   dVelocityX;
     double   dMaxVelocityX;
     double   dVelocityY;
-    uint8_t  u8Width;
-    uint8_t  u8Height;
+    uint16_t u16Width;
+    uint16_t u16Height;
     uint8_t  u8FrameOffsetX;
     uint8_t  u8FrameOffsetY;
     uint8_t  u8AnimFrame;
@@ -66,11 +66,11 @@ void FreeSprite(Sprite *pstSprite);
 int  InitCamera(Camera **pstCamera);
 
 int InitEntity(
-    const double  dPosX,
-    const double  dPosY,
-    const uint8_t u8Width,
-    const uint8_t u8Height,
-    Entity      **pstEntity);
+    const double   dPosX,
+    const double   dPosY,
+    const uint16_t u16Width,
+    const uint16_t u16Height,
+    Entity       **pstEntity);
 
 int InitSprite(
     const char    *pacFileName,
@@ -86,8 +86,9 @@ bool IsEntityMoving(const Entity *pstEntity);
 bool IsEntityRising(const Entity *pstEntity);
 void JumpEntity(const double dForce, Entity *pstEntity);
 void LockCamera(Camera *pstCamera);
+void MoveEntity(Entity *pstEntity);
 
-void MoveEntity(
+void MoveEntityFull(
     const bool    bOrientation,
     const double  dAcceleration,
     const double  dMaxVelocityX,

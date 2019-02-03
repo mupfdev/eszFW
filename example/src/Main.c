@@ -217,7 +217,7 @@ int SDL_main(int sArgC, char *pacArgV[])
         if (bIsMoving)
         {
             AnimateEntity(true, pstEntity[0]);
-            MoveEntity(
+            MoveEntityFull(
                 bOrientation, 6.0, 3.0, 1, 7,
                 pstEntity[0]->dAnimSpeed,
                 1,
@@ -230,7 +230,7 @@ int SDL_main(int sArgC, char *pacArgV[])
                 "Platform",
                 pstEntity[0]->dPosX,
                 pstEntity[0]->dPosY,
-                pstEntity[0]->u8Height,
+                pstEntity[0]->u16Height,
                 pstMap))
         {
             AnimateEntity(false, pstEntity[0]);
@@ -303,7 +303,7 @@ int SDL_main(int sArgC, char *pacArgV[])
             pstMap->u16Width,
             pstEntity[0]);
 
-        if (pstEntity[0]->dPosY > (pstMap->u16Height + pstEntity[0]->u8Height))
+        if (pstEntity[0]->dPosY > (pstMap->u16Height + pstEntity[0]->u16Height))
         {
             ResetEntityToSpawnPosition(pstEntity[0]);
         }
