@@ -36,12 +36,13 @@ int main(int sArgC, char *pacArgV[])
 int SDL_main(int sArgC, char *pacArgV[])
 #endif
 {
-    int        sReturnValue = 0;
-    bool       bIsRunning   = true;
-    double     dTimeA       = 0.f;
-    double     dTimeB       = 0.f;
-    bool       bOrientation = LEFT;
-    bool       bIsMoving    = false;
+    int        sReturnValue  = 0;
+    bool       bIsRunning    = true;
+    double     dTimeA        = 0.f;
+    double     dTimeB        = 0.f;
+    bool       bIsOnPlatform = true;
+    bool       bOrientation  = LEFT;
+    bool       bIsMoving     = false;
     SDL_Event  stEvent;
 
     (void)sArgC;
@@ -226,12 +227,23 @@ int SDL_main(int sArgC, char *pacArgV[])
 
         // Update game logic.
         // Set up collision detection.
-        if (! IsOnTileOfType(
-                "Platform",
-                pstEntity[0]->dPosX,
-                pstEntity[0]->dPosY,
-                pstEntity[0]->u16Height,
-                pstMap))
+        if (IsOnTileOfType(
+                "Platform", pstEntity[0]->dPosX, pstEntity[0]->dPosY,
+                pstEntity[0]->u16Height, pstMap))
+        {
+            bIsOnPlatform = true;
+        }
+        else
+        {
+            bIsOnPlatform = false;
+        }
+
+        if (pstEntity[0]->dPosX < 0.f || pstEntity[0]->dPosX > pstMap->u16Width)
+        {
+            bIsOnPlatform = true;
+        }
+
+        if (! bIsOnPlatform)
         {
             AnimateEntity(false, pstEntity[0]);
             if (IsEntityRising(pstEntity[0]))
@@ -242,19 +254,11 @@ int SDL_main(int sArgC, char *pacArgV[])
             {
                 SetFrameOffset(0, 1, pstEntity[0]);
             }
-            SetAnimation(
-                14, 14,
-                pstEntity[0]->dAnimSpeed,
-                pstEntity[0]);
-
+            SetAnimation(14, 14, pstEntity[0]->dAnimSpeed, pstEntity[0]);
             DropEntity(pstEntity[0]);
         }
 
-        UpdateEntity(
-            dDeltaTime,
-            pstMap->dGravitation,
-            pstMap->u8MeterInPixel,
-            pstEntity[0]);
+        UpdateEntity(dDeltaTime, pstMap->dGravitation, pstMap->u8MeterInPixel, pstEntity[0]);
 
         // Follow player entity and set camera boudnaries to map size.
         SetCameraTargetEntity(

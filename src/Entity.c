@@ -38,13 +38,15 @@ void AnimateEntity(bool bAnimate, Entity *pstEntity)
 
 void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity *pstEntity)
 {
-    if (pstEntity->dPosX < 0)
+    double dWidth = (double)pstEntity->u16Width;
+
+    if (pstEntity->dPosX < 0.f - dWidth)
     {
-        pstEntity->dPosX = u16MapWidth;
+        pstEntity->dPosX = u16MapWidth + dWidth;
     }
-    else if (pstEntity->dPosX > u16MapWidth)
+    else if (pstEntity->dPosX > u16MapWidth + dWidth)
     {
-        pstEntity->dPosX = 0;
+        pstEntity->dPosX = 0 - dWidth;
     }
 }
 
@@ -56,13 +58,15 @@ void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHe
 
 void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity *pstEntity)
 {
-    if (pstEntity->dPosY < 0)
+    double dHeight = (double)pstEntity->u16Height;
+
+    if (pstEntity->dPosY < 0 - dHeight)
     {
-        pstEntity->dPosY = u16MapHeight;
+        pstEntity->dPosY = u16MapHeight + dHeight;
     }
-    else if (pstEntity->dPosY > u16MapHeight)
+    else if (pstEntity->dPosY > u16MapHeight + dHeight)
     {
-        pstEntity->dPosY = 0;
+        pstEntity->dPosY = 0 - dHeight;
     }
 }
 
