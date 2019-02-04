@@ -39,5 +39,3 @@ target_link_libraries(
 if (UNIX)
     target_link_libraries(eszFW m)
 endif (UNIX)
-
-add_subdirectory(example)
