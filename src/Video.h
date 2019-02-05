@@ -35,5 +35,6 @@ int InitVideo(
 void RenderScene(SDL_Renderer *pstRenderer);
 int  SetFullscreen(const bool dFullscreen, Video *pstVideo);
 int  SetZoomLevel(const double dZoomLevel, Video *pstVideo);
+int  ToggleFullscreen(Video *pstVideo);
 
 #endif // _VIDEO_H_

@@ -162,3 +162,30 @@ int SetZoomLevel(const double dZoomLevel, Video *pstVideo)
 
     return 0;
 }
+
+int ToggleFullscreen(Video *pstVideo)
+{
+    int      sReturnValue;
+    uint32_t u32WindowFlags;
+
+    u32WindowFlags = SDL_GetWindowFlags(pstVideo->pstWindow);
+
+    if (u32WindowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+    {
+        SDL_SetWindowPosition(pstVideo->pstWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        sReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, 0);
+        SDL_Log("Set window to windowed mode.\n");
+    }
+    else
+    {
+        sReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_Log("Set window to fullscreen mode.\n");
+    }
+
+    if (0 != sReturnValue)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+    }
+
+    return sReturnValue;
+}

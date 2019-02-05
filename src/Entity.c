@@ -266,11 +266,14 @@ void JumpEntity(const double dForce, Entity *pstEntity)
 {
     if (! pstEntity->bIsJumping)
     {
-        // Initial lift-up; may need adjustment.
-        pstEntity->dPosY -= pstEntity->u16Height / 8.0;
-        // Apply force.
-        pstEntity->dVelocityY = -dForce;
-        pstEntity->bIsJumping = true;
+        // Prevent jumping while falling down.
+        if (0 >= pstEntity->dVelocityY)
+        {
+            // Initial lift-up; may need adjustment (estimated value).
+            pstEntity->dPosY -= pstEntity->u16Height / 8.0;
+            pstEntity->dVelocityY = -dForce; // Apply force.
+            pstEntity->bIsJumping = true;
+        }
     }
 }
 
@@ -449,12 +452,17 @@ void UpdateEntity(
     // Apply gravitation.
     if (0 != dGravitation)
     {
+        if (IsEntityRising(pstEntity))
+        {
+            SET(pstEntity->u16Flags, IS_IN_MID_AIR);
+        }
+
         if (IS_SET(pstEntity->u16Flags, IS_IN_MID_AIR))
         {
-            double dG                 = dGravitation * u8MeterInPixel;
-            double dDistanceY         = dG * dDeltaTime * dDeltaTime;
+            double dG              = dGravitation * u8MeterInPixel;
+            double dDistanceY      = dG * dDeltaTime * dDeltaTime;
             pstEntity->dVelocityY += dDistanceY;
-            dPosY                    += pstEntity->dVelocityY;
+            dPosY                 += pstEntity->dVelocityY;
         }
         else
         {
