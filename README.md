@@ -15,9 +15,10 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 ### Status
 
-The framework is in a very early stage of development.  I will enhance
-it gradually and hope that one day it will be suitable for productive
-use.  Until then, have fun with it.
+This project is in a very early stage of development.  I will enhance it
+gradually, mainly as a tool to my own use.  To see it in action, take a
+look at [Tau Ceti](https://github.com/mupfelofen-de/TauCeti): a 2D
+sci-fi platformer game which I develop using the framework.
 
 ### Trivia
 
@@ -82,12 +83,6 @@ make
 If you're on NixOS enter:
 ```
 nix-shell --command make
-```
-
-To compile the example applications:
-```
-cd example
-make
 ```
 
 ## Licence and Credits
