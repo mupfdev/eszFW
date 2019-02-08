@@ -11,7 +11,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <tmx.h>
 #include "Map.h"
 
 static uint16_t _ClearGidFlags(uint16_t u16Gid)

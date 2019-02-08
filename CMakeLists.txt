@@ -3,7 +3,7 @@ project(eszFW C)
 
 set(CMAKE_C_STANDARD 99)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
 find_package(LibXml2 REQUIRED)
 find_package(SDL2 REQUIRED)

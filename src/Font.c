@@ -51,11 +51,11 @@ int InitFont(const char *pacFileName, Font **pstFont)
 }
 
 int PrintNumber(
-    const int32_t  s32Number,
-    const int      sPosX,
-    const int      sPosY,
-    SDL_Renderer  *pstRenderer,
-    Font          *pstFont)
+    const int32_t s32Number,
+    const int     sPosX,
+    const int     sPosY,
+    const Font   *pstFont,
+    SDL_Renderer *pstRenderer)
 {
     char acNumber[12] = { 0 }; // Signed 10 digit number + \0.
     char acOutput[12] = { 0 };
@@ -71,7 +71,7 @@ int PrintNumber(
         }
     }
 
-    if (-1 == PrintText(acOutput, sPosX, sPosY, pstRenderer, pstFont))
+    if (-1 == PrintText(acOutput, sPosX, sPosY, pstFont, pstRenderer))
     {
         return -1;
     }
@@ -82,8 +82,8 @@ int PrintText(
     const char    *pacText,
     const int      sPosX,
     const int      sPosY,
-    SDL_Renderer  *pstRenderer,
-    const Font    *pstFont)
+    const Font    *pstFont,
+    SDL_Renderer  *pstRenderer)
 {
     int          sReturnValue = 0;
     SDL_Surface *pstSurface   = NULL;

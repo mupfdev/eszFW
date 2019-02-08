@@ -11,6 +11,16 @@
 #include <stdint.h>
 #include "AABB.h"
 
+typedef struct Bullet_t
+{
+    AABB    stBB;
+    double  dPosX;
+    double  dPosY;
+    uint8_t u8Size;
+    bool    bOrientation;
+    double  dVelocity;
+} Bullet;
+
 typedef struct Camera_t
 {
     uint16_t u16Flags;

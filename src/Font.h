@@ -19,18 +19,18 @@ void FreeFont(Font *pstFont);
 int  InitFont(const char *pacFileName, Font **pstFont);
 
 int PrintNumber(
-    const int32_t  s32Number,
-    const int      sPosX,
-    const int      sPosY,
-    SDL_Renderer *pstRenderer,
-    Font         *pstFont);
+    const int32_t s32Number,
+    const int     sPosX,
+    const int     sPosY,
+    const Font   *pstFont,
+    SDL_Renderer *pstRenderer);
 
 int PrintText(
-    const char    *pacText,
-    const int      sPosX,
-    const int      sPosY,
-    SDL_Renderer *pstRenderer,
-    const Font   *pstFont);
+    const char   *pacText,
+    const int     sPosX,
+    const int     sPosY,
+    const Font   *pstFont,
+    SDL_Renderer *pstRenderer);
 
 void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font *pstFont);
 

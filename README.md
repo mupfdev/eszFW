@@ -1,10 +1,13 @@
 # eszFW
 
+![eszFW](.media/logo.png "eszFW")
+
 ## About
 
-eszFW is a portable framework with the intention to simplify 2D game
-development in C.  Furthermore, this project is the logical continuation
-of my older projects [Rainbow
+eszFW is a cross-platform game development framework written in C.  It's
+mainly aimed at platformer games but it can probably used for anything
+else too.  Furthermore, this project is the logical continuation of my
+older projects [Rainbow
 Joe](https://github.com/mupfelofen-de/rainbow-joe) and [Boondock
 Sam](https://github.com/mupfelofen-de/boondock-sam), which I wrote to
 familiarise myself with the basics of game programming.
@@ -17,8 +20,9 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 This project is in a very early stage of development.  I will enhance it
 gradually, mainly as a tool to my own use.  To see it in action, take a
-look at [Tau Ceti](https://github.com/mupfelofen-de/TauCeti): a 2D
-sci-fi platformer game which I develop using the framework.
+look at [Tau Ceti](https://github.com/mupfelofen-de/TauCeti): a
+cross-platform 2D sci-fi platformer game which I develop using the
+framework.
 
 ### Trivia
 
@@ -69,14 +73,14 @@ To compile _eszFW_ under Linux simply enter:
 ```
 git clone --recurse-submodules -j2 https://github.com/mupfelofen-de/eszFW.git
 cd eszFW
-make
-```
-
-If it doesn't work, you can also use cmake instead:
-```
 mkdir build
 cd build
 cmake ..
+make
+```
+
+If it doesn't work, you can also use a plain make instead:
+```
 make
 ```
 

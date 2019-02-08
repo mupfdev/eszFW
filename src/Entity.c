@@ -12,8 +12,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "AABB.h"
+#include "Constants.h"
 #include "Entity.h"
-#include "Macros.h"
+#include "Utils.h"
 
 typedef enum Flags_t
 {
@@ -28,11 +29,11 @@ void AnimateEntity(bool bAnimate, Entity *pstEntity)
 {
     if (bAnimate)
     {
-        SET(pstEntity->u16Flags, IS_ANIMATED);
+        SetFlag(IS_ANIMATED, &pstEntity->u16Flags);
     }
     else
     {
-        CLEAR(pstEntity->u16Flags, IS_ANIMATED);
+        ClearFlag(IS_ANIMATED, &pstEntity->u16Flags);
     }
 }
 
@@ -68,6 +69,15 @@ void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity *pstEnt
     {
         pstEntity->dPosY = 0 - dHeight;
     }
+}
+
+int CreateBullet(const double dPosX, const double dPosY, Bullet *pstBullet)
+{
+    (void)dPosX;
+    (void)dPosY;
+    (void)pstBullet;
+
+    return 0;
 }
 
 int DrawEntity(const Entity *pstEntity, const Camera *pstCamera, const Sprite *pstSprite, SDL_Renderer *pstRenderer)
@@ -112,7 +122,7 @@ int DrawEntity(const Entity *pstEntity, const Camera *pstCamera, const Sprite *p
 
 void DropEntity(Entity *pstEntity)
 {
-    SET(pstEntity->u16Flags, IS_IN_MID_AIR);
+    SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
 }
 
 void FreeCamera(Camera *pstCamera)
@@ -228,7 +238,7 @@ int InitSprite(
 
 bool IsCameraLocked(const Camera *pstCamera)
 {
-    if (IS_SET(pstCamera->u16Flags, IS_LOCKED))
+    if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
         return true;
     }
@@ -240,7 +250,7 @@ bool IsCameraLocked(const Camera *pstCamera)
 
 bool IsEntityMoving(const Entity *pstEntity)
 {
-    if (IS_SET(pstEntity->u16Flags, IS_MOVING))
+    if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         return true;
     }
@@ -279,12 +289,12 @@ void JumpEntity(const double dForce, Entity *pstEntity)
 
 void LockCamera(Camera *pstCamera)
 {
-    SET(pstCamera->u16Flags, IS_LOCKED);
+    SetFlag(IS_LOCKED, &pstCamera->u16Flags);
 }
 
 void MoveEntity(Entity *pstEntity)
 {
-    SET(pstEntity->u16Flags, IS_MOVING);
+    SetFlag(IS_MOVING, &pstEntity->u16Flags);
 }
 
 void MoveEntityFull(
@@ -297,7 +307,7 @@ void MoveEntityFull(
     const uint8_t u8FrameOffsetY,
     Entity       *pstEntity)
 {
-    SET(pstEntity->u16Flags, IS_MOVING);
+    SetFlag(IS_MOVING, &pstEntity->u16Flags);
     SetFrameOffset(0, u8FrameOffsetY, pstEntity);
     SetSpeed(dAcceleration, dMaxVelocityX, pstEntity);
     SetOrientation(bOrientation, pstEntity);
@@ -321,7 +331,7 @@ void SetCameraTargetEntity(
     Camera       *pstCamera,
     const Entity *pstEntity)
 {
-    if (IS_SET(pstCamera->u16Flags, IS_LOCKED))
+    if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
         pstCamera->dPosX  = pstEntity->dPosX;
         pstCamera->dPosX -= s32LogicalWindowWidth  / 2.0;
@@ -432,12 +442,12 @@ void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *ps
 
 void StopEntity(Entity *pstEntity)
 {
-    CLEAR(pstEntity->u16Flags, IS_MOVING);
+    ClearFlag(IS_MOVING, &pstEntity->u16Flags);
 }
 
 void UnlockCamera(Camera *pstCamera)
 {
-    CLEAR(pstCamera->u16Flags, IS_LOCKED);
+    ClearFlag(IS_LOCKED, &pstCamera->u16Flags);
 }
 
 void UpdateEntity(
@@ -454,10 +464,10 @@ void UpdateEntity(
     {
         if (IsEntityRising(pstEntity))
         {
-            SET(pstEntity->u16Flags, IS_IN_MID_AIR);
+            SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
         }
 
-        if (IS_SET(pstEntity->u16Flags, IS_IN_MID_AIR))
+        if (IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
         {
             double dG              = dGravitation * u8MeterInPixel;
             double dDistanceY      = dG * dDeltaTime * dDeltaTime;
@@ -474,10 +484,10 @@ void UpdateEntity(
     }
 
     // Calculate horizontal velocity.
-    if (IS_SET(pstEntity->u16Flags, IS_MOVING))
+    if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
-        double dAccel             = pstEntity->dAcceleration * (double)u8MeterInPixel;
-        double dDistanceX         = dAccel * dDeltaTime * dDeltaTime;
+        double dAccel          = pstEntity->dAcceleration * (double)u8MeterInPixel;
+        double dDistanceX      = dAccel * dDeltaTime * dDeltaTime;
         pstEntity->dVelocityX += dDistanceX;
     }
     else
@@ -518,7 +528,7 @@ void UpdateEntity(
     pstEntity->stBB.dTop    = dPosY - (pstEntity->u16Height / 2.0);
 
     // Update animation frame.
-    if (IS_SET(pstEntity->u16Flags, IS_ANIMATED))
+    if (IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))
     {
         pstEntity->dAnimDelay += dDeltaTime;
 
