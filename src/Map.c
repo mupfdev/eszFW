@@ -8,6 +8,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include "Constants.h"
 #include "Map.h"
 
 static Uint16 _ClearGidFlags(Uint16 u16Gid)
@@ -63,7 +64,6 @@ static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
  * @param pacLayerName     substring of the layer(s) to render.
  * @param dCameraPosX      camera position along the x-axis.
  * @param dCameraPosY      camera position along the y-axis.
- * @param dDeltaTime       time since last frame in seconds.
  * @param pstMap           pointer to Map structure.
  * @param pstRenderer      pointer to SDL rendering context.
  * @return  0 on success, -1 on failure.
@@ -76,10 +76,10 @@ Sint8 DrawMap(
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,
-    const double   dDeltaTime,
     Map           *pstMap,
     SDL_Renderer  *pstRenderer)
 {
+    double     dTime    = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
     tmx_layer *pstLayer = pstMap->pstTmxMap->ly_head;
 
     // Load tileset image once.
@@ -94,7 +94,7 @@ Sint8 DrawMap(
     }
 
     // Update and render animated tiles.
-    pstMap->dAnimDelay += dDeltaTime;
+    pstMap->dAnimDelay += dTime;
 
     if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {

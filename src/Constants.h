@@ -9,9 +9,22 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
-#define RIGHT  0x00
-#define LEFT   0x01
-#define BOTTOM 0x00
-#define TOP    0x01
+typedef enum Alignment_t
+{
+    BOTTOM = 0,
+    TOP    = 1
+} Alignment;
+
+typedef enum Direction_t
+{
+    RIGHT  = 0,
+    LEFT   = 1
+} Direction;
+
+typedef enum TimeConstant_t
+{
+    APPROX_TIME_PER_FRAME = 17,
+    TIME_FACTOR           = 1000
+} TimeConstant;
 
 #endif // _CONSTANTS_H_

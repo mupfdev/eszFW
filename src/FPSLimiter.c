@@ -23,5 +23,8 @@ void LimitFramerate(const Uint16 u16FPS, double *dTimeA, double *dTimeB, double 
     *dDeltaTime = (*dTimeB - *dTimeA) / 1000.f;
     *dTimeA     = *dTimeB;
 
-    SDL_Delay(1000.0f / (double)u16FPS - *dDeltaTime);
+    if (u16FPS > 0)
+    {
+        SDL_Delay(1000.0f / (double)u16FPS - *dDeltaTime);
+    }
 }

@@ -67,7 +67,7 @@ Sint8 InitVideo(
 
     if (bFullscreen)
     {
-        u32Flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+        u32Flags = u32Flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 
     #ifdef __ANDROID__

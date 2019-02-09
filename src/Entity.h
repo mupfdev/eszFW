@@ -8,6 +8,7 @@
 
 #include <SDL.h>
 #include "AABB.h"
+#include "Constants.h"
 
 typedef struct Bullet_t
 {
@@ -30,27 +31,27 @@ typedef struct Camera_t
 
 typedef struct Entity_t
 {
-    AABB     stBB;
-    Uint16   u16Flags;
-    double   dPosX;
-    double   dPosY;
-    double   dSpawnPosX;
-    double   dSpawnPosY;
-    SDL_bool bIsJumping;
-    SDL_bool bOrientation;
-    double   dAcceleration;
-    double   dVelocityX;
-    double   dMaxVelocityX;
-    double   dVelocityY;
-    Uint16   u16Width;
-    Uint16   u16Height;
-    Uint8    u8FrameOffsetX;
-    Uint8    u8FrameOffsetY;
-    Uint8    u8AnimFrame;
-    Uint8    u8AnimStart;
-    Uint8    u8AnimEnd;
-    double   dAnimDelay;
-    double   dAnimSpeed;
+    AABB      stBB;
+    Uint16    u16Flags;
+    double    dPosX;
+    double    dPosY;
+    double    dSpawnPosX;
+    double    dSpawnPosY;
+    SDL_bool  bIsJumping;
+    Direction eDirection;
+    double    dAcceleration;
+    double    dVelocityX;
+    double    dMaxVelocityX;
+    double    dVelocityY;
+    Uint16    u16Width;
+    Uint16    u16Height;
+    Uint8     u8FrameOffsetX;
+    Uint8     u8FrameOffsetY;
+    Uint8     u8AnimFrame;
+    Uint8     u8AnimStart;
+    Uint8     u8AnimEnd;
+    double    dAnimDelay;
+    double    dAnimSpeed;
 } Entity;
 
 typedef struct Sprite_t
@@ -97,14 +98,14 @@ void LockCamera(Camera *pstCamera);
 void MoveEntity(Entity *pstEntity);
 
 void MoveEntityFull(
-    const SDL_bool bOrientation,
-    const double   dAcceleration,
-    const double   dMaxVelocityX,
-    const Uint8    u8AnimStart,
-    const Uint8    u8AnimEnd,
-    const double   dAnimSpeed,
-    const Uint8    u8FrameOffsetY,
-    Entity        *pstEntity);
+    const Direction bOrientation,
+    const double    dAcceleration,
+    const double    dMaxVelocityX,
+    const Uint8     u8AnimStart,
+    const Uint8     u8AnimEnd,
+    const double    dAnimSpeed,
+    const Uint8     u8FrameOffsetY,
+    Entity         *pstEntity);
 
 void ResetEntity(Entity *pstEntity);
 void ResetEntityToSpawnPosition(Entity *pstEntity);
@@ -123,8 +124,8 @@ void SetCameraTargetEntity(
     Camera       *pstCamera);
 
 void SetAnimation(const Uint8 u8AnimStart, const Uint8 u8AnimEnd, const double dAnimSpeed, Entity *pstEntity);
+void SetDirection(const Direction eDirection, Entity *pstEntity);
 void SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity *pstEntity);
-void SetOrientation(const SDL_bool bOrientation, Entity *pstEntity);
 void SetPosition(const double dPosX, const double dPosY, Entity *pstEntity);
 void SetSpawnPosition(const double dPosX, const double dPosY, Entity *pstEntity);
 void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *pstEntity);
@@ -132,7 +133,6 @@ void StopEntity(Entity *pstEntity);
 void UnlockCamera(Camera *pstCamera);
 
 void UpdateEntity(
-    const double dDeltaTime,
     const double dGravitation,
     const Uint8  u8MeterInPixel,
     Entity      *pstEntity);

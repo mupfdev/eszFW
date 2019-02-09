@@ -51,7 +51,7 @@ static Sint8 _DrawLayer(
 
     if (0 < pstBackground->acLayer[u8Index].dVelocity)
     {
-        if (RIGHT == pstBackground->bOrientation)
+        if (RIGHT == pstBackground->eDirection)
         {
             pstBackground->acLayer[u8Index].dPosX -= pstBackground->acLayer[u8Index].dVelocity;
         }
@@ -61,7 +61,7 @@ static Sint8 _DrawLayer(
         }
     }
 
-    if (TOP == pstBackground->bAlignment)
+    if (TOP == pstBackground->eAlignment)
     {
         stDst.y = pstBackground->acLayer[u8Index].dPosY - dCameraPosY;
     }
@@ -192,14 +192,14 @@ exit:
 }
 
 Sint8 DrawBackground(
-    const SDL_bool bOrientation,
-    const Sint32   s32LogicalWindowHeight,
-    const double   dCameraPosY,
-    const double   dVelocity,
-    SDL_Renderer  *pstRenderer,
-    Background    *pstBackground)
+    const Direction eDirection,
+    const Sint32    s32LogicalWindowHeight,
+    const double    dCameraPosY,
+    const double    dVelocity,
+    SDL_Renderer   *pstRenderer,
+    Background     *pstBackground)
 {
-    pstBackground->bOrientation = bOrientation;
+    pstBackground->eDirection = eDirection;
 
     double dFactor = pstBackground->u8Num + 1;
     for (Uint8 u8Index = 0; u8Index < pstBackground->u8Num; u8Index++)
@@ -225,12 +225,12 @@ void FreeBackground(Background *pstBackground)
 }
 
 Sint8 InitBackground(
-    const Uint8    u8Num,
-    const char    *pacFileNames[static u8Num],
-    const Sint32   s32WindowWidth,
-    const SDL_bool bAlignment,
-    SDL_Renderer  *pstRenderer,
-    Background   **pstBackground)
+    const Uint8     u8Num,
+    const char     *pacFileNames[static u8Num],
+    const Sint32    s32WindowWidth,
+    const Alignment eAlignment,
+    SDL_Renderer   *pstRenderer,
+    Background    **pstBackground)
 {
     *pstBackground = SDL_malloc(
         sizeof(struct Background_t)
@@ -242,7 +242,7 @@ Sint8 InitBackground(
     }
 
     (*pstBackground)->u8Num      = u8Num;
-    (*pstBackground)->bAlignment = bAlignment;
+    (*pstBackground)->eAlignment = eAlignment;
 
     SDL_Log("Initialise parallax scrolling background with %d layers:\n", u8Num);
     for (Uint8 u8Index = 0; u8Index < u8Num; u8Index++)

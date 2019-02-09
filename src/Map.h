@@ -59,7 +59,6 @@ Sint8 DrawMap(
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,
-    const double   dDeltaTime,
     Map           *pstMap,
     SDL_Renderer  *pstRenderer);
 

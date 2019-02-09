@@ -20,7 +20,7 @@ typedef enum Flags_t
     IS_IN_MID_AIR = 0x2,
     IS_LOCKED     = 0x3,
     IS_MOVING     = 0x4
-} eFlags;
+} Flags;
 
 void AnimateEntity(SDL_bool bAnimate, Entity *pstEntity)
 {
@@ -85,7 +85,7 @@ int DrawEntity(const Entity *pstEntity, const Camera *pstCamera, const Sprite *p
     SDL_Rect         stDst;
     SDL_Rect         stSrc;
 
-    if (LEFT == pstEntity->bOrientation)
+    if (LEFT == pstEntity->eDirection)
     {
         s8Flip = SDL_FLIP_HORIZONTAL;
     }
@@ -178,7 +178,7 @@ int InitEntity(
     (*pstEntity)->dPosX          = dPosX;
     (*pstEntity)->dPosY          = dPosY;
     (*pstEntity)->bIsJumping     = 0;
-    (*pstEntity)->bOrientation   = RIGHT;
+    (*pstEntity)->eDirection   = RIGHT;
     (*pstEntity)->dAcceleration  = 8.f;
     (*pstEntity)->dVelocityX     = 0.f;
     (*pstEntity)->dMaxVelocityX  = 4.5f;
@@ -295,19 +295,19 @@ void MoveEntity(Entity *pstEntity)
 }
 
 void MoveEntityFull(
-    const SDL_bool bOrientation,
-    const double   dAcceleration,
-    const double   dMaxVelocityX,
-    const Uint8    u8AnimStart,
-    const Uint8    u8AnimEnd,
-    const double   dAnimSpeed,
-    const Uint8    u8FrameOffsetY,
-    Entity        *pstEntity)
+    const Direction eDirection,
+    const double    dAcceleration,
+    const double    dMaxVelocityX,
+    const Uint8     u8AnimStart,
+    const Uint8     u8AnimEnd,
+    const double    dAnimSpeed,
+    const Uint8     u8FrameOffsetY,
+    Entity         *pstEntity)
 {
     SetFlag(IS_MOVING, &pstEntity->u16Flags);
     SetFrameOffset(0, u8FrameOffsetY, pstEntity);
     SetSpeed(dAcceleration, dMaxVelocityX, pstEntity);
-    SetOrientation(bOrientation, pstEntity);
+    SetDirection(eDirection, pstEntity);
     SetAnimation(u8AnimStart, u8AnimEnd, dAnimSpeed, pstEntity);
 }
 
@@ -401,22 +401,22 @@ int SetCameraBoundariesToMapSize(
     return bReturnValue;
 }
 
+void SetDirection(const Direction eDirection, Entity *pstEntity)
+{
+    if (RIGHT == eDirection)
+    {
+        pstEntity->eDirection = RIGHT;
+    }
+    else
+    {
+        pstEntity->eDirection = LEFT;
+    }
+}
+
 void SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity *pstEntity)
 {
     pstEntity->u8FrameOffsetX = u8OffsetX;
     pstEntity->u8FrameOffsetY = u8OffsetY;
-}
-
-void SetOrientation(const SDL_bool bOrientation, Entity *pstEntity)
-{
-    if (RIGHT == bOrientation)
-    {
-        pstEntity->bOrientation = RIGHT;
-    }
-    else
-    {
-        pstEntity->bOrientation = LEFT;
-    }
 }
 
 void SetPosition(const double dPosX, const double dPosY, Entity *pstEntity)
@@ -448,11 +448,11 @@ void UnlockCamera(Camera *pstCamera)
 }
 
 void UpdateEntity(
-    const double  dDeltaTime,
-    const double  dGravitation,
-    const Uint8 u8MeterInPixel,
-    Entity       *pstEntity)
+    const double dGravitation,
+    const Uint8  u8MeterInPixel,
+    Entity      *pstEntity)
 {
+    double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
     double dPosX = pstEntity->dPosX;
     double dPosY = pstEntity->dPosY;
 
@@ -467,7 +467,7 @@ void UpdateEntity(
         if (IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
         {
             double dG              = dGravitation * u8MeterInPixel;
-            double dDistanceY      = dG * dDeltaTime * dDeltaTime;
+            double dDistanceY      = dG * dTime * dTime;//dDeltaTime * dDeltaTime;
             pstEntity->dVelocityY += dDistanceY;
             dPosY                 += pstEntity->dVelocityY;
         }
@@ -484,12 +484,12 @@ void UpdateEntity(
     if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         double dAccel          = pstEntity->dAcceleration * (double)u8MeterInPixel;
-        double dDistanceX      = dAccel * dDeltaTime * dDeltaTime;
+        double dDistanceX      = dAccel * dTime * dTime;//* dDeltaTime * dDeltaTime;
         pstEntity->dVelocityX += dDistanceX;
     }
     else
     {
-        pstEntity->dVelocityX -= pstEntity->dAcceleration * dDeltaTime;
+        pstEntity->dVelocityX -= pstEntity->dAcceleration * dTime;//dDeltaTime;
     }
 
     // Set horizontal velocity limits.
@@ -505,7 +505,7 @@ void UpdateEntity(
     // Set horizontal position.
     if (pstEntity->dVelocityX > 0)
     {
-        if (RIGHT == pstEntity->bOrientation)
+        if (RIGHT == pstEntity->eDirection)
         {
             dPosX += pstEntity->dVelocityX;
         }
@@ -527,7 +527,7 @@ void UpdateEntity(
     // Update animation frame.
     if (IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))
     {
-        pstEntity->dAnimDelay += dDeltaTime;
+        pstEntity->dAnimDelay += dTime;//dDeltaTime;
 
         if (pstEntity->u8AnimFrame < pstEntity->u8AnimStart)
         {
