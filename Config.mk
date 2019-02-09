@@ -18,7 +18,7 @@ LIBS=\
 	-lSDL2_image\
 	-lSDL2_mixer\
 	-lSDL2_ttf\
-	-lxml2 -lz -llzma -lm
+	-lxml2 -lz -llzma
 
 CFLAGS=\
 	-D_REENTRANT\

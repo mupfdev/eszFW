@@ -1,6 +1,7 @@
 ![eszFW](.media/logo.png "eszFW")
 
 # eszFW
+
 ## About
 
 eszFW is a cross-platform game development framework written in C.  It's

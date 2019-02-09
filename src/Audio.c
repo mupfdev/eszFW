@@ -8,7 +8,6 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <stdint.h>
 #include "Audio.h"
 
 void FreeAudio(Audio *pstAudio)
@@ -16,7 +15,7 @@ void FreeAudio(Audio *pstAudio)
     Mix_CloseAudio();
     while(Mix_Init(0)) Mix_Quit();
 
-    free(pstAudio);
+    SDL_free(pstAudio);
 }
 
 void FreeMusic(Music *pstMusic)
@@ -28,14 +27,14 @@ void FreeMusic(Music *pstMusic)
             Mix_FreeMusic(pstMusic->pstMusic);
         }
 
-        free(pstMusic);
+        SDL_free(pstMusic);
         SDL_Log("Unload music track.\n");
     }
 }
 
-int InitAudio(Audio **pstAudio)
+Sint8 InitAudio(Audio **pstAudio)
 {
-    *pstAudio = malloc(sizeof(struct Audio_t));
+    *pstAudio = SDL_malloc(sizeof(struct Audio_t));
     if (! *pstAudio)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitAudio(): error allocating memory.\n");
@@ -48,16 +47,16 @@ int InitAudio(Audio **pstAudio)
         return -1;
     }
 
-    (*pstAudio)->sSamplingFrequency = 44100;
-    (*pstAudio)->u16AudioFormat     = MIX_DEFAULT_FORMAT;
-    (*pstAudio)->sChannels          = 2;
-    (*pstAudio)->sChunkSize         = 4096;
+    (*pstAudio)->s32SamplingFrequency = 44100;
+    (*pstAudio)->u16AudioFormat       = MIX_DEFAULT_FORMAT;
+    (*pstAudio)->s16Channels          = 2;
+    (*pstAudio)->s16ChunkSize         = 4096;
 
     if (-1 == Mix_OpenAudio(
-            (*pstAudio)->sSamplingFrequency,
+            (*pstAudio)->s32SamplingFrequency,
             (*pstAudio)->u16AudioFormat,
-            (*pstAudio)->sChannels,
-            (*pstAudio)->sChunkSize))
+            (*pstAudio)->s16Channels,
+            (*pstAudio)->s16ChunkSize))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
         return -1;
@@ -69,9 +68,9 @@ int InitAudio(Audio **pstAudio)
     return 0;
 }
 
-int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
+Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic)
 {
-    *pstMusic = malloc(sizeof(struct Music_t));
+    *pstMusic = SDL_malloc(sizeof(struct Music_t));
     if (! *pstMusic)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMusic(): error allocating memory.\n");
@@ -91,7 +90,7 @@ int InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic)
     return 0;
 }
 
-int PlayMusic(const uint16_t u16FadeInMs, const Music *pstMusic)
+Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music *pstMusic)
 {
     if (0 != u16FadeInMs)
     {

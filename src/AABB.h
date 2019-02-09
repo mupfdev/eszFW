@@ -6,8 +6,7 @@
 #ifndef _AABB_H_
 #define _AABB_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <SDL.h>
 
 typedef struct AABB_t {
     double dBottom;
@@ -16,6 +15,6 @@ typedef struct AABB_t {
     double dTop;
 } AABB;
 
-bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);
+SDL_bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);
 
 #endif // _AABB_H_

@@ -8,20 +8,19 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <string.h>
 #include "Font.h"
 
 void FreeFont(Font *pstFont)
 {
     TTF_Quit();
 
-    free(pstFont);
+    SDL_free(pstFont);
     SDL_Log("Close font.\n");
 }
 
-int InitFont(const char *pacFileName, Font **pstFont)
+Sint8 InitFont(const char *pacFileName, Font **pstFont)
 {
-    *pstFont = malloc(sizeof(struct Font_t));
+    *pstFont = SDL_malloc(sizeof(struct Font_t));
     if (! *pstFont)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitCamera(): error allocating memory.\n");
@@ -50,42 +49,42 @@ int InitFont(const char *pacFileName, Font **pstFont)
     return 0;
 }
 
-int PrintNumber(
-    const int32_t s32Number,
-    const int     sPosX,
-    const int     sPosY,
+Sint8 PrintNumber(
+    const Sint32  s32Number,
+    const Sint32  s32PosX,
+    const Sint32  s32PosY,
     const Font   *pstFont,
     SDL_Renderer *pstRenderer)
 {
     char acNumber[12] = { 0 }; // Signed 10 digit number + \0.
     char acOutput[12] = { 0 };
-    snprintf(acNumber, 12, "%11d", s32Number);
+    SDL_snprintf(acNumber, 12, "%11d", s32Number);
 
-    int sIdx2 = 0;
-    for (int sIdx1 = 0; '\0' != acNumber[sIdx1]; sIdx1++)
+    Uint8 u8Idx2 = 0;
+    for (Uint8 u8Idx1 = 0; '\0' != acNumber[u8Idx1]; u8Idx1++)
     {
-        if (' ' != acNumber[sIdx1])
+        if (' ' != acNumber[u8Idx1])
         {
-            acOutput[sIdx2] = acNumber[sIdx1];
-            sIdx2++;
+            acOutput[u8Idx2] = acNumber[u8Idx1];
+            u8Idx2++;
         }
     }
 
-    if (-1 == PrintText(acOutput, sPosX, sPosY, pstFont, pstRenderer))
+    if (-1 == PrintText(acOutput, s32PosX, s32PosY, pstFont, pstRenderer))
     {
         return -1;
     }
     return 0;
 }
 
-int PrintText(
-    const char    *pacText,
-    const int      sPosX,
-    const int      sPosY,
-    const Font    *pstFont,
-    SDL_Renderer  *pstRenderer)
+Sint8 PrintText(
+    const char   *pacText,
+    const Sint32  s32PosX,
+    const Sint32  s32PosY,
+    const Font   *pstFont,
+    SDL_Renderer *pstRenderer)
 {
-    int          sReturnValue = 0;
+    Sint8        s8ReturnValue = 0;
     SDL_Surface *pstSurface   = NULL;
     SDL_Texture *pstTexture   = NULL;
     SDL_Rect     stDst;
@@ -95,7 +94,7 @@ int PrintText(
     if (! pstSurface)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
@@ -103,28 +102,28 @@ int PrintText(
     if (! pstTexture)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     if (0 > SDL_QueryTexture(pstTexture, NULL, NULL, &stSrc.w, &stSrc.h))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     stSrc.x = 0;
     stSrc.y = 0;
-    stDst.x = sPosX;
-    stDst.y = sPosY;
+    stDst.x = s32PosX;
+    stDst.y = s32PosY;
     stDst.w = stSrc.w;
     stDst.h = stSrc.h;
 
     if (0 > SDL_RenderCopy(pstRenderer, pstTexture, &stSrc, &stDst))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
@@ -138,10 +137,10 @@ int PrintText(
         SDL_FreeSurface(pstSurface);
     }
 
-    return sReturnValue;
+    return s8ReturnValue;
 }
 
-void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font *pstFont)
+void SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font *pstFont)
 {
     pstFont->stColour.r = u8Red;
     pstFont->stColour.g = u8Green;

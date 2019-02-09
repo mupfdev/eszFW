@@ -8,9 +8,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include "AABB.h"
 #include "Constants.h"
 #include "Entity.h"
@@ -25,7 +22,7 @@ typedef enum Flags_t
     IS_MOVING     = 0x4
 } eFlags;
 
-void AnimateEntity(bool bAnimate, Entity *pstEntity)
+void AnimateEntity(SDL_bool bAnimate, Entity *pstEntity)
 {
     if (bAnimate)
     {
@@ -37,7 +34,7 @@ void AnimateEntity(bool bAnimate, Entity *pstEntity)
     }
 }
 
-void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity *pstEntity)
+void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity *pstEntity)
 {
     double dWidth = (double)pstEntity->u16Width;
 
@@ -51,13 +48,13 @@ void ConnectHorizontalMapEndsForEntity(const uint16_t u16MapWidth, Entity *pstEn
     }
 }
 
-void ConnectMapEndsForEntity(const uint16_t u16MapWidth, const uint16_t u16MapHeight, Entity *pstEntity)
+void ConnectMapEndsForEntity(const Uint16 u16MapWidth, const Uint16 u16MapHeight, Entity *pstEntity)
 {
     ConnectHorizontalMapEndsForEntity(u16MapWidth, pstEntity);
     ConnectVerticalMapEndsForEntity(u16MapHeight, pstEntity);
 }
 
-void ConnectVerticalMapEndsForEntity(const uint16_t u16MapHeight, Entity *pstEntity)
+void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity *pstEntity)
 {
     double dHeight = (double)pstEntity->u16Height;
 
@@ -127,12 +124,12 @@ void DropEntity(Entity *pstEntity)
 
 void FreeCamera(Camera *pstCamera)
 {
-    free(pstCamera);
+    SDL_free(pstCamera);
 }
 
 void FreeEntity(Entity *pstEntity)
 {
-    free(pstEntity);
+    SDL_free(pstEntity);
 }
 
 void FreeSprite(Sprite *pstSprite)
@@ -140,14 +137,14 @@ void FreeSprite(Sprite *pstSprite)
     if (pstSprite)
     {
         SDL_DestroyTexture(pstSprite->pstTexture);
-        free(pstSprite);
+        SDL_free(pstSprite);
         SDL_Log("Unload sprite image file.\n");
     }
 }
 
 int InitCamera(Camera **pstCamera)
 {
-    *pstCamera = malloc(sizeof(struct Camera_t));
+    *pstCamera = SDL_malloc(sizeof(struct Camera_t));
     if (! *pstCamera)
     {
         return -1;
@@ -165,13 +162,13 @@ int InitCamera(Camera **pstCamera)
 }
 
 int InitEntity(
-    const double   dPosX,
-    const double   dPosY,
-    const uint16_t u16Width,
-    const uint16_t u16Height,
-    Entity       **pstEntity)
+    const double dPosX,
+    const double dPosY,
+    const Uint16 u16Width,
+    const Uint16 u16Height,
+    Entity     **pstEntity)
 {
-    *pstEntity = malloc(sizeof(struct Entity_t));
+    *pstEntity = SDL_malloc(sizeof(struct Entity_t));
     if (! *pstEntity)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitEntity(): error allocating memory.\n");
@@ -180,7 +177,7 @@ int InitEntity(
 
     (*pstEntity)->dPosX          = dPosX;
     (*pstEntity)->dPosY          = dPosY;
-    (*pstEntity)->bIsJumping     = false;
+    (*pstEntity)->bIsJumping     = 0;
     (*pstEntity)->bOrientation   = RIGHT;
     (*pstEntity)->dAcceleration  = 8.f;
     (*pstEntity)->dVelocityX     = 0.f;
@@ -204,15 +201,15 @@ int InitEntity(
 }
 
 int InitSprite(
-    const char    *pacFileName,
-    const uint16_t u16Width,
-    const uint16_t u16Height,
-    const uint16_t u16ImageOffsetX,
-    const uint16_t u16ImageOffsetY,
-    Sprite       **pstSprite,
+    const char   *pacFileName,
+    const Uint16  u16Width,
+    const Uint16  u16Height,
+    const Uint16  u16ImageOffsetX,
+    const Uint16  u16ImageOffsetY,
+    Sprite      **pstSprite,
     SDL_Renderer *pstRenderer)
 {
-    *pstSprite = malloc(sizeof(struct Sprite_t));
+    *pstSprite = SDL_malloc(sizeof(struct Sprite_t));
     if (! *pstSprite)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitSprite(): error allocating memory.\n");
@@ -236,39 +233,39 @@ int InitSprite(
     return 0;
 }
 
-bool IsCameraLocked(const Camera *pstCamera)
+SDL_bool IsCameraLocked(const Camera *pstCamera)
 {
     if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
-        return true;
+        return SDL_TRUE;
     }
     else
     {
-        return false;
+        return SDL_FALSE;
     }
 }
 
-bool IsEntityMoving(const Entity *pstEntity)
+SDL_bool IsEntityMoving(const Entity *pstEntity)
 {
     if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
-        return true;
+        return SDL_TRUE;
     }
     else
     {
-        return false;
+        return SDL_FALSE;
     }
 }
 
-bool IsEntityRising(const Entity *pstEntity)
+SDL_bool IsEntityRising(const Entity *pstEntity)
 {
     if (0 > pstEntity->dVelocityY)
     {
-        return true;
+        return SDL_TRUE;
     }
     else
     {
-        return false;
+        return SDL_FALSE;
     }
 }
 
@@ -282,7 +279,7 @@ void JumpEntity(const double dForce, Entity *pstEntity)
             // Initial lift-up; may need adjustment (estimated value).
             pstEntity->dPosY -= pstEntity->u16Height / 8.0;
             pstEntity->dVelocityY = -dForce; // Apply force.
-            pstEntity->bIsJumping = true;
+            pstEntity->bIsJumping = 1;
         }
     }
 }
@@ -298,14 +295,14 @@ void MoveEntity(Entity *pstEntity)
 }
 
 void MoveEntityFull(
-    const bool    bOrientation,
-    const double  dAcceleration,
-    const double  dMaxVelocityX,
-    const uint8_t u8AnimStart,
-    const uint8_t u8AnimEnd,
-    const double  dAnimSpeed,
-    const uint8_t u8FrameOffsetY,
-    Entity       *pstEntity)
+    const SDL_bool bOrientation,
+    const double   dAcceleration,
+    const double   dMaxVelocityX,
+    const Uint8    u8AnimStart,
+    const Uint8    u8AnimEnd,
+    const double   dAnimSpeed,
+    const Uint8    u8FrameOffsetY,
+    Entity        *pstEntity)
 {
     SetFlag(IS_MOVING, &pstEntity->u16Flags);
     SetFrameOffset(0, u8FrameOffsetY, pstEntity);
@@ -326,10 +323,10 @@ void ResetEntityToSpawnPosition(Entity *pstEntity)
 }
 
 void SetCameraTargetEntity(
-    const int32_t s32LogicalWindowWidth,
-    const int32_t s32LogicalWindowHeight,
-    Camera       *pstCamera,
-    const Entity *pstEntity)
+    const Sint32  s32LogicalWindowWidth,
+    const Sint32  s32LogicalWindowHeight,
+    const Entity *pstEntity,
+    Camera       *pstCamera)
 {
     if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
@@ -345,7 +342,7 @@ void SetCameraTargetEntity(
     }
 }
 
-void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const double  dAnimSpeed, Entity *pstEntity)
+void SetAnimation(const Uint8 u8AnimStart, const Uint8 u8AnimEnd, const double  dAnimSpeed, Entity *pstEntity)
 {
     pstEntity->dAnimSpeed = dAnimSpeed;
 
@@ -362,13 +359,13 @@ void SetAnimation(const uint8_t u8AnimStart, const uint8_t u8AnimEnd, const doub
 }
 
 int SetCameraBoundariesToMapSize(
-    const int32_t  s32LogicalWindowWidth,
-    const int32_t  s32LogicalWindowHeight,
-    const uint16_t u16MapWidth,
-    const uint16_t u16MapHeight,
+    const Sint32  s32LogicalWindowWidth,
+    const Sint32  s32LogicalWindowHeight,
+    const Uint16 u16MapWidth,
+    const Uint16 u16MapHeight,
     Camera        *pstCamera)
 {
-    bool bReturnValue = 0;
+    SDL_bool bReturnValue = 0;
     pstCamera->s32MaxPosX = u16MapWidth  - s32LogicalWindowWidth;
     pstCamera->s32MaxPosY = u16MapHeight - s32LogicalWindowHeight;
 
@@ -404,13 +401,13 @@ int SetCameraBoundariesToMapSize(
     return bReturnValue;
 }
 
-void SetFrameOffset(const uint8_t u8OffsetX, const uint8_t u8OffsetY, Entity *pstEntity)
+void SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity *pstEntity)
 {
     pstEntity->u8FrameOffsetX = u8OffsetX;
     pstEntity->u8FrameOffsetY = u8OffsetY;
 }
 
-void SetOrientation(const bool bOrientation, Entity *pstEntity)
+void SetOrientation(const SDL_bool bOrientation, Entity *pstEntity)
 {
     if (RIGHT == bOrientation)
     {
@@ -453,7 +450,7 @@ void UnlockCamera(Camera *pstCamera)
 void UpdateEntity(
     const double  dDeltaTime,
     const double  dGravitation,
-    const uint8_t u8MeterInPixel,
+    const Uint8 u8MeterInPixel,
     Entity       *pstEntity)
 {
     double dPosX = pstEntity->dPosX;
@@ -476,7 +473,7 @@ void UpdateEntity(
         }
         else
         {
-            pstEntity->bIsJumping = false;
+            pstEntity->bIsJumping = 0;
             // Correct position along the y-axis.
             pstEntity->dVelocityY = 0.f;
             dPosY = (16.f * round(dPosY / 16.f));

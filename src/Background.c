@@ -8,20 +8,17 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include "Background.h"
 #include "Constants.h"
 
-static int _DrawLayer(
-    const uint8_t  u8Index,
-    const int32_t  s32LogicalWindowHeight,
-    const double   dCameraPosY,
-    SDL_Renderer  *pstRenderer,
-    Background    *pstBackground)
+static Sint8 _DrawLayer(
+    const Uint8   u8Index,
+    const Sint32  s32LogicalWindowHeight,
+    const double  dCameraPosY,
+    SDL_Renderer *pstRenderer,
+    Background   *pstBackground)
 {
-    int32_t  s32Width = 0;
+    Sint32   s32Width = 0;
     double   dPosXa;
     double   dPosXb;
     SDL_Rect stDst;
@@ -100,36 +97,36 @@ static int _DrawLayer(
     return 0;
 }
 
-static int _RenderLayer(
-    const char    *pacFileName,
-    const int32_t  s32WindowWidth,
+static Sint8 _RenderLayer(
+    const char   *pacFileName,
+    const Sint32  s32WindowWidth,
     SDL_Renderer *pstRenderer,
-    SDL_Texture  **pstLayer)
+    SDL_Texture **pstLayer)
 {
-    int          sReturnValue   = 0;
+    Sint8        s8ReturnValue  = 0;
     SDL_Texture *pstImage       = NULL;
-    int32_t      s32ImageWidth  = 0;
-    int32_t      s32ImageHeight = 0;
-    int32_t      s32LayerHeight = 0;
-    int32_t      s32LayerWidth  = 0;
-    uint8_t      u8WidthFactor  = 0;
+    Sint32       s32ImageWidth  = 0;
+    Sint32       s32ImageHeight = 0;
+    Sint32       s32LayerHeight = 0;
+    Sint32       s32LayerWidth  = 0;
+    Uint8        u8WidthFactor  = 0;
 
     pstImage = IMG_LoadTexture(pstRenderer, pacFileName);
     if (! pstImage)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     if (0 != SDL_QueryTexture(pstImage, NULL, NULL, &s32ImageWidth, &s32ImageHeight))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
-    u8WidthFactor  = ceil((double)s32WindowWidth / (double)s32ImageWidth);
+    u8WidthFactor  = SDL_ceil((double)s32WindowWidth / (double)s32ImageWidth);
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
     (*pstLayer)    = SDL_CreateTexture(
@@ -142,20 +139,20 @@ static int _RenderLayer(
     if (! (*pstLayer))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     if (0 != SDL_SetRenderTarget(pstRenderer, (*pstLayer)))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     SDL_Rect stDst;
     stDst.x = 0;
-    for (uint8_t u8Index = 0; u8Index < u8WidthFactor; u8Index++)
+    for (Uint8 u8Index = 0; u8Index < u8WidthFactor; u8Index++)
     {
         stDst.y  = 0;
         stDst.w  = s32ImageWidth;
@@ -167,19 +164,19 @@ static int _RenderLayer(
     if (0 != SDL_SetTextureBlendMode((*pstLayer), SDL_BLENDMODE_BLEND))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
     if (0 != SDL_SetRenderTarget(pstRenderer, NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        sReturnValue = -1;
+        s8ReturnValue = -1;
         goto exit;
     }
 
 exit:
-    if (-1 == sReturnValue)
+    if (-1 == s8ReturnValue)
     {
         if ((*pstLayer))
         {
@@ -191,12 +188,12 @@ exit:
         }
     }
 
-    return sReturnValue;
+    return s8ReturnValue;
 }
 
-int DrawBackground(
-    const bool     bOrientation,
-    const int32_t  s32LogicalWindowHeight,
+Sint8 DrawBackground(
+    const SDL_bool bOrientation,
+    const Sint32   s32LogicalWindowHeight,
     const double   dCameraPosY,
     const double   dVelocity,
     SDL_Renderer  *pstRenderer,
@@ -205,7 +202,7 @@ int DrawBackground(
     pstBackground->bOrientation = bOrientation;
 
     double dFactor = pstBackground->u8Num + 1;
-    for (uint8_t u8Index = 0; u8Index < pstBackground->u8Num; u8Index++)
+    for (Uint8 u8Index = 0; u8Index < pstBackground->u8Num; u8Index++)
     {
         pstBackground->acLayer[u8Index].dVelocity = dVelocity / dFactor;
         dFactor -= 0.5f;
@@ -223,19 +220,19 @@ int DrawBackground(
 
 void FreeBackground(Background *pstBackground)
 {
-    free(pstBackground);
+    SDL_free(pstBackground);
     SDL_Log("Unload parallax scrolling background.\n");
 }
 
-int InitBackground(
-    const uint8_t  u8Num,
+Sint8 InitBackground(
+    const Uint8    u8Num,
     const char    *pacFileNames[static u8Num],
-    const int32_t  s32WindowWidth,
-    const bool     bAlignment,
+    const Sint32   s32WindowWidth,
+    const SDL_bool bAlignment,
     SDL_Renderer  *pstRenderer,
     Background   **pstBackground)
 {
-    *pstBackground = malloc(
+    *pstBackground = SDL_malloc(
         sizeof(struct Background_t)
         + (u8Num * sizeof(struct BGLayer_t)));
     if (! *pstBackground)
@@ -248,7 +245,7 @@ int InitBackground(
     (*pstBackground)->bAlignment = bAlignment;
 
     SDL_Log("Initialise parallax scrolling background with %d layers:\n", u8Num);
-    for (uint8_t u8Index = 0; u8Index < u8Num; u8Index++)
+    for (Uint8 u8Index = 0; u8Index < u8Num; u8Index++)
     {
         if (-1 == _RenderLayer(
                 pacFileNames[u8Index],
@@ -261,7 +258,7 @@ int InitBackground(
         SDL_Log("  Render background layer %d layer: %s.\n", u8Index + 1, pacFileNames[u8Index]);
     }
 
-    for (uint8_t u8Index = 0; u8Index < u8Num; u8Index++)
+    for (Uint8 u8Index = 0; u8Index < u8Num; u8Index++)
     {
         (*pstBackground)->acLayer[u8Index].dPosX     = 0;
         (*pstBackground)->acLayer[u8Index].dPosY     = 0;

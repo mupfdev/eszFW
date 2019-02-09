@@ -9,13 +9,13 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#include <stdbool.h>
+#include <SDL.h>
 
 #define RETURN_ON_ERROR(value) if (-1 == value) { return value; }
 
-void ClearFlag(const uint8_t u8Bit, uint16_t *u16Flags);
-bool IsFlagSet(const uint8_t u8Bit, uint16_t u16Flags);
-void SetFlag(const uint8_t u8Bit, uint16_t *u16Flags);
-void ToggleFlag(const uint8_t u8Bit, uint16_t *u16Flags);
+void ClearFlag(const Uint8 u8Bit, Uint16 *u16Flags);
+SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags);
+void SetFlag(const Uint8 u8Bit, Uint16 *u16Flags);
+void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags);
 
 #endif // _UTILS_H_

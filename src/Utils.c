@@ -6,33 +6,32 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <SDL.h>
 #include "Utils.h"
 
-void ClearFlag(const uint8_t u8Bit, uint16_t *u16Flags)
+void ClearFlag(const Uint8 u8Bit, Uint16 *u16Flags)
 {
     *u16Flags &= ~(1 << u8Bit);
 }
 
-bool IsFlagSet(const uint8_t u8Bit, uint16_t u16Flags)
+SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
 {
     if ((u16Flags >> u8Bit) & 1)
     {
-        return true;
+        return SDL_TRUE;
     }
     else
     {
-        return false;
+        return SDL_FALSE;
     }
 }
 
-void SetFlag(const uint8_t u8Bit, uint16_t *u16Flags)
+void SetFlag(const Uint8 u8Bit, Uint16 *u16Flags)
 {
     *u16Flags |= 1 << u8Bit;
 }
 
-void ToggleFlag(const uint8_t u8Bit, uint16_t *u16Flags)
+void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags)
 {
     *u16Flags ^= 1 << u8Bit;
 }

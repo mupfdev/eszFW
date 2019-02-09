@@ -8,8 +8,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include "Video.h"
 
 void FreeVideo(Video *pstVideo)
@@ -25,23 +23,23 @@ void FreeVideo(Video *pstVideo)
         {
             SDL_DestroyWindow(pstVideo->pstWindow);
         }
-        free(pstVideo);
+        SDL_free(pstVideo);
         SDL_Log("Terminate window.\n");
     }
 }
 
-int InitVideo(
-    const char   *pacWindowTitle,
-    const int32_t s32WindowWidth,
-    const int32_t s32WindowHeight,
-    const int32_t s32LogicalWindowWidth,
-    const int32_t s32LogicalWindowHeight,
-    const bool    bFullscreen,
-    Video       **pstVideo)
+Sint8 InitVideo(
+    const char    *pacWindowTitle,
+    const Sint32   s32WindowWidth,
+    const Sint32   s32WindowHeight,
+    const Sint32   s32LogicalWindowWidth,
+    const Sint32   s32LogicalWindowHeight,
+    const SDL_bool bFullscreen,
+    Video        **pstVideo)
 {
-    uint32_t u32Flags = 0;
+    Uint32 u32Flags = 0;
 
-    *pstVideo = malloc(sizeof(struct Video_t));
+    *pstVideo = SDL_malloc(sizeof(struct Video_t));
     if (! *pstVideo)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitVideo(): error allocating memory.\n");
@@ -138,7 +136,7 @@ void RenderScene(SDL_Renderer *pstRenderer)
     SDL_RenderClear(pstRenderer);
 }
 
-int SetZoomLevel(const double dZoomLevel, Video *pstVideo)
+Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo)
 {
     pstVideo->dZoomLevel             = dZoomLevel;
     pstVideo->s32LogicalWindowWidth  = pstVideo->s32WindowWidth  / dZoomLevel;
@@ -163,29 +161,29 @@ int SetZoomLevel(const double dZoomLevel, Video *pstVideo)
     return 0;
 }
 
-int ToggleFullscreen(Video *pstVideo)
+Sint8 ToggleFullscreen(Video *pstVideo)
 {
-    int      sReturnValue;
-    uint32_t u32WindowFlags;
+    Sint8  s8ReturnValue;
+    Uint32 u32WindowFlags;
 
     u32WindowFlags = SDL_GetWindowFlags(pstVideo->pstWindow);
 
     if (u32WindowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
     {
         SDL_SetWindowPosition(pstVideo->pstWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        sReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, 0);
+        s8ReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, 0);
         SDL_Log("Set window to windowed mode.\n");
     }
     else
     {
-        sReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        s8ReturnValue = SDL_SetWindowFullscreen(pstVideo->pstWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
         SDL_Log("Set window to fullscreen mode.\n");
     }
 
-    if (0 != sReturnValue)
+    if (0 != s8ReturnValue)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
     }
 
-    return sReturnValue;
+    return s8ReturnValue;
 }

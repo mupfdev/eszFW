@@ -16,22 +16,22 @@ typedef struct Font_t
 } Font;
 
 void FreeFont(Font *pstFont);
-int  InitFont(const char *pacFileName, Font **pstFont);
+Sint8 InitFont(const char *pacFileName, Font **pstFont);
 
-int PrintNumber(
-    const int32_t s32Number,
-    const int     sPosX,
-    const int     sPosY,
+Sint8 PrintNumber(
+    const Sint32  s32Number,
+    const Sint32  s32PosX,
+    const Sint32  s32PosY,
     const Font   *pstFont,
     SDL_Renderer *pstRenderer);
 
-int PrintText(
+Sint8 PrintText(
     const char   *pacText,
-    const int     sPosX,
-    const int     sPosY,
+    const Sint32  s32PosX,
+    const Sint32  s32PosY,
     const Font   *pstFont,
     SDL_Renderer *pstRenderer);
 
-void SetFontColour(const uint8_t u8Red, const uint8_t u8Green, const uint8_t u8Blue, Font *pstFont);
+void SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font *pstFont);
 
 #endif // _FONT_H_

@@ -7,14 +7,12 @@
 #define _BACKGROUND_H_
 
 #include <SDL.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 typedef struct BGLayer_t
 {
     SDL_Texture *pstLayer;
-    int32_t      s32Width;
-    int32_t      s32Height;
+    Sint32       s32Width;
+    Sint32       s32Height;
     double       dPosX;
     double       dPosY;
     double       dVelocity;
@@ -22,15 +20,15 @@ typedef struct BGLayer_t
 
 typedef struct Background_t
 {
-    uint8_t u8Num;
-    bool    bAlignment;
-    bool    bOrientation;
-    BGLayer acLayer[];
+    Uint8    u8Num;
+    SDL_bool bAlignment;
+    SDL_bool bOrientation;
+    BGLayer  acLayer[];
 } Background;
 
-int DrawBackground(
-    const bool     bOrientation,
-    const int32_t  s32LogicalWindowHeight,
+Sint8 DrawBackground(
+    const SDL_bool bOrientation,
+    const Sint32   s32LogicalWindowHeight,
     const double   dCameraPosY,
     const double   dVelocity,
     SDL_Renderer  *pstRenderer,
@@ -38,12 +36,12 @@ int DrawBackground(
 
 void FreeBackground(Background *Background);
 
-int InitBackground(
-    const uint8_t  u8BgNum,
+Sint8 InitBackground(
+    const Uint8    u8BgNum,
     const char    *pacFilenames[static u8BgNum],
-    const int32_t  s32WindowWidth,
-    const bool     bAlignment,
-    SDL_Renderer *pstRenderer,
+    const Sint32   s32WindowWidth,
+    const SDL_bool bAlignment,
+    SDL_Renderer  *pstRenderer,
     Background   **pstBackground);
 
 #endif // _BACKGROUND_H_

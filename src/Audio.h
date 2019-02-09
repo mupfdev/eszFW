@@ -6,25 +6,26 @@
 #ifndef _AUDIO_H_
 #define _AUDIO_H_
 
+#include <SDL.h>
 #include <SDL_mixer.h>
 
 typedef struct Audio_t {
-    int      sSamplingFrequency;
-    uint16_t u16AudioFormat;
-    int      sChannels;
-    int      sChunkSize;
+    Sint32 s32SamplingFrequency;
+    Uint16 u16AudioFormat;
+    Sint16 s16Channels;
+    Sint16 s16ChunkSize;
 } Audio;
 
 typedef struct Music_t
 {
     Mix_Music *pstMusic;
-    int8_t     s8Loops;
+    Sint8      s8Loops;
 } Music;
 
 void FreeAudio(Audio *pstAudio);
 void FreeMusic(Music *pstMusic);
-int  InitAudio(Audio **pstAudio);
-int  InitMusic(const char *pacFileName, const int8_t s8Loops, Music **pstMusic);
-int  PlayMusic(const uint16_t u16FadeInMs, const Music *pstMusic);
+Sint8 InitAudio(Audio **pstAudio);
+Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic);
+Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music *pstMusic);
 
 #endif // _AUDIO_H_

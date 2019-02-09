@@ -8,12 +8,9 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
 #include "Map.h"
 
-static uint16_t _ClearGidFlags(uint16_t u16Gid)
+static Uint16 _ClearGidFlags(Uint16 u16Gid)
 {
     return u16Gid & TMX_FLIP_BITS_REMOVAL;
 }
@@ -22,7 +19,7 @@ static void _FindObjectByName(const char *pacName, tmx_object *pstTmxObject, Obj
 {
     if (pstObject)
     {
-        if (0 == strncmp(pacName, pstTmxObject->name, 20))
+        if (0 == SDL_strncmp(pacName, pstTmxObject->name, 20))
         {
             (*pstObject)->dPosX = pstTmxObject->x;
             (*pstObject)->dPosY = pstTmxObject->y;
@@ -34,7 +31,7 @@ static void _FindObjectByName(const char *pacName, tmx_object *pstTmxObject, Obj
     }
 }
 
-static void _GetObjectCount(tmx_object *pstObject, uint16_t **pu16ObjectCount)
+static void _GetObjectCount(tmx_object *pstObject, Uint16 **pu16ObjectCount)
 {
     if (pstObject)
     {
@@ -49,7 +46,7 @@ static void _GetObjectCount(tmx_object *pstObject, uint16_t **pu16ObjectCount)
 
 static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
 {
-    if (0 == strncmp(pProperty->name, "Gravitation", 11))
+    if (0 == SDL_strncmp(pProperty->name, "Gravitation", 11))
     {
         if (PT_FLOAT == pProperty->type)
         {
@@ -61,7 +58,7 @@ static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
 /**
  * @brief Draw Map.
  * @param u16Index         the texture index.  The total amount of layers per map is defined by MAP_TEXTURES.
- * @param bRenderAnimTiles if set to true, all animated tiles will be rendered in this call.
+ * @param bRenderAnimTiles if set to 1, all animated tiles will be rendered in this call.
  * @param bRenderBgColour  determine if the map's background colour should be rendered
  * @param pacLayerName     substring of the layer(s) to render.
  * @param dCameraPosX      camera position along the x-axis.
@@ -72,10 +69,10 @@ static void _GetGravitation(tmx_property *pProperty, void *dGravitation)
  * @return  0 on success, -1 on failure.
  * @ingroup Map
  */
-int DrawMap(
-    const uint16_t u16Index,
-    const bool     bRenderAnimTiles,
-    const bool     bRenderBgColour,
+Sint8 DrawMap(
+    const Uint16   u16Index,
+    const SDL_bool bRenderAnimTiles,
+    const SDL_bool bRenderBgColour,
     const char    *pacLayerName,
     const double   dCameraPosX,
     const double   dCameraPosY,
@@ -120,11 +117,11 @@ int DrawMap(
             return -1;
         }
 
-        for (uint16_t u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
+        for (Uint16 u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
         {
-            uint16_t     u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
-            uint16_t     u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
-            uint16_t     u16NextTileId = 0;
+            Uint16       u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
+            Uint16       u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
+            Uint16       u16NextTileId = 0;
             SDL_Rect     stDst;
             SDL_Rect     stSrc;
             tmx_tileset *pstTS;
@@ -238,8 +235,8 @@ int DrawMap(
     pstLayer = pstMap->pstTmxMap->ly_head;
     while(pstLayer)
     {
-        bool         bRenderLayer = true;
-        uint16_t     u16Gid;
+        SDL_bool     bRenderLayer = 1;
+        Uint16       u16Gid;
         SDL_Rect     stDst;
         SDL_Rect     stSrc;
         tmx_tileset *pstTS;
@@ -248,16 +245,16 @@ int DrawMap(
         {
             if (pacLayerName)
             {
-                if (! strstr(pstLayer->name, pacLayerName))
+                if (! SDL_strstr(pstLayer->name, pacLayerName))
                 {
-                    bRenderLayer = false;
+                    bRenderLayer = 0;
                 }
             }
             if (pstLayer->visible && bRenderLayer)
             {
-                for (uint16_t u16IndexH = 0; u16IndexH < pstMap->pstTmxMap->height; u16IndexH++)
+                for (Uint16 u16IndexH = 0; u16IndexH < pstMap->pstTmxMap->height; u16IndexH++)
                 {
-                    for (uint32_t u16IndexW = 0; u16IndexW < pstMap->pstTmxMap->width; u16IndexW++)
+                    for (Uint32 u16IndexW = 0; u16IndexW < pstMap->pstTmxMap->width; u16IndexW++)
                     {
                         u16Gid = _ClearGidFlags(pstLayer->content.gids[(u16IndexH * pstMap->pstTmxMap->width) + u16IndexW]);
                         if (pstMap->pstTmxMap->tiles[u16Gid])
@@ -273,8 +270,8 @@ int DrawMap(
 
                             if (bRenderAnimTiles && pstMap->pstTmxMap->tiles[u16Gid]->animation)
                             {
-                                uint8_t  u8AnimLen;
-                                uint16_t u16TileId;
+                                Uint8  u8AnimLen;
+                                Uint16 u16TileId;
                                 u8AnimLen = pstMap->pstTmxMap->tiles[u16Gid]->animation_len;
                                 u16TileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[0].tile_id;
                                 pstMap->acAnimTile[pstMap->u16AnimTileSize].u16Gid       = u16Gid;
@@ -329,7 +326,7 @@ void FreeMap(Map *pstMap)
             SDL_DestroyTexture(pstMap->pstTileset);
         }
 
-        for (uint8_t u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
+        for (Uint8 u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
         {
             if (pstMap->pstTexture[u8Index])
             {
@@ -342,14 +339,14 @@ void FreeMap(Map *pstMap)
             SDL_DestroyTexture(pstMap->pstAnimTexture);
         }
 
-        free(pstMap);
+        SDL_free(pstMap);
         SDL_Log("Unload TMX map.\n");
     }
 }
 
 void FreeObject(Object *pstObject)
 {
-    free(pstObject);
+    SDL_free(pstObject);
 }
 
 void GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstObject)
@@ -368,10 +365,10 @@ void GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstO
     }
 }
 
-uint16_t GetObjectCount(const Map *pstMap)
+Uint16 GetObjectCount(const Map *pstMap)
 {
-    uint16_t   u16ObjectCount  = 0;
-    uint16_t  *pu16ObjectCount = &u16ObjectCount;
+    Uint16     u16ObjectCount  = 0;
+    Uint16    *pu16ObjectCount = &u16ObjectCount;
     tmx_layer *pstLayer;
 
     pstLayer = pstMap->pstTmxMap->ly_head;
@@ -389,9 +386,9 @@ uint16_t GetObjectCount(const Map *pstMap)
     return u16ObjectCount;
 }
 
-int InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t u8MeterInPixel, Map **pstMap)
+Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap)
 {
-    *pstMap = malloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN);
+    *pstMap = SDL_malloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN);
     if (! *pstMap)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error allocating memory.\n");
@@ -418,7 +415,7 @@ int InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t 
 
     strncat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
 
-    for (uint8_t u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
+    for (Uint8 u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
     {
         (*pstMap)->pstTexture[u8Index] = NULL;
     }
@@ -426,14 +423,14 @@ int InitMap(const char *pacFileName, const char *pacTilesetImage, const uint8_t 
     (*pstMap)->pstTileset     = NULL;
 
     SDL_Log("Load TMX map file: %s.\n", pacFileName);
-    SetGravitation(0, true, *pstMap);
+    SetGravitation(0, 1, *pstMap);
 
     return 0;
 }
 
-int InitObject(Object **pstObject)
+Sint8 InitObject(Object **pstObject)
 {
-    *pstObject = malloc(sizeof(struct Object_t));
+    *pstObject = SDL_malloc(sizeof(struct Object_t));
     if (! *pstObject)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitObject(): error allocating memory.\n");
@@ -446,11 +443,11 @@ int InitObject(Object **pstObject)
     return 0;
 }
 
-bool IsMapCoordOfType(
+SDL_bool IsMapCoordOfType(
     const char *pacType,
+    const Map  *pstMap,
     double      dPosX,
-    double      dPosY,
-    const Map  *pstMap)
+    double      dPosY)
 {
     tmx_layer *pstLayers;
     dPosX /= (double)pstMap->pstTmxMap->tile_width;
@@ -462,19 +459,19 @@ bool IsMapCoordOfType(
          (dPosX > (double)pstMap->pstTmxMap->width) ||
          (dPosY > (double)pstMap->pstTmxMap->height) )
     {
-        return false;
+        return SDL_FALSE;
     }
 
     pstLayers = pstMap->pstTmxMap->ly_head;
     while(pstLayers)
     {
-        uint16_t u16TsTileCount = pstMap->pstTmxMap->tiles[1]->tileset->tilecount;
-        uint16_t u16Gid         = _ClearGidFlags(pstLayers->content.gids[
-            ((int32_t)dPosY * pstMap->pstTmxMap->width) + (int32_t)dPosX]);
+        Uint16 u16TsTileCount = pstMap->pstTmxMap->tiles[1]->tileset->tilecount;
+        Uint16 u16Gid         = _ClearGidFlags(
+            pstLayers->content.gids[((int32_t)dPosY * pstMap->pstTmxMap->width) + (int32_t)dPosX]);
 
         if (u16Gid > u16TsTileCount)
         {
-            return false;
+            return SDL_FALSE;
         }
 
         if (pstMap->pstTmxMap->tiles[u16Gid])
@@ -483,7 +480,7 @@ bool IsMapCoordOfType(
             {
                 if (0 == strncmp(pacType, pstMap->pstTmxMap->tiles[u16Gid]->type, 20))
                 {
-                    return true;
+                    return SDL_TRUE;
                 }
             }
         }
@@ -491,20 +488,20 @@ bool IsMapCoordOfType(
         pstLayers = pstLayers->next;
     }
 
-    return false;
+    return SDL_FALSE;
 }
 
-bool IsOnTileOfType(
-    const char   *pacType,
-    const double  dPosX,
-    const double  dPosY,
-    const uint8_t u8EntityHeight,
-    const Map    *pstMap)
+SDL_bool IsOnTileOfType(
+    const char  *pacType,
+    const double dPosX,
+    const double dPosY,
+    const Uint8  u8EntityHeight,
+    const Map   *pstMap)
 {
-    return IsMapCoordOfType(pacType, dPosX, dPosY + (double)(u8EntityHeight / 2.f), pstMap);
+    return IsMapCoordOfType(pacType, pstMap, dPosX, dPosY + (double)(u8EntityHeight / 2.f));
 }
 
-void SetGravitation(const double  dGravitation, const bool bUseTmxConstant, Map *pstMap)
+void SetGravitation(const double  dGravitation, const SDL_bool bUseTmxConstant, Map *pstMap)
 {
     if (bUseTmxConstant)
     {

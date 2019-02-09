@@ -6,7 +6,7 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#include <stdbool.h>
+#include <SDL.h>
 #include "AABB.h"
 
 /**
@@ -16,15 +16,15 @@
  * @return 1 if boxes are intersecting, 0 if not.
  * @ingroup AABB
  */
-bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
+SDL_bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
 {
     double dAx = stBoxB.dLeft - stBoxA.dRight;
     double dAy = stBoxB.dTop  - stBoxA.dBottom;
     double dBx = stBoxA.dLeft - stBoxB.dRight;
     double dBy = stBoxA.dTop  - stBoxB.dBottom;
 
-    if (dAx > 0.0 || dAy > 0.0) return 0;
-    if (dBx > 0.0 || dBy > 0.0) return 0;
+    if (dAx > 0.0 || dAy > 0.0) return SDL_FALSE;
+    if (dBx > 0.0 || dBy > 0.0) return SDL_FALSE;
 
-    return 1;
+    return SDL_TRUE;
 }
