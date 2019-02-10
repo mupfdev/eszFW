@@ -59,16 +59,16 @@ Sint8 InitVideo(
     (*pstVideo)->dTimeB                 = SDL_GetTicks();
     (*pstVideo)->dDeltaTime             = ((*pstVideo)->dTimeB - (*pstVideo)->dTimeA) / 1000.f;
 
-    SDL_GetCurrentDisplayMode(0, &stDisplayMode);
-    if (stDisplayMode.refresh_rate != 0)
-    {
-        (*pstVideo)->u8RefreshRate = stDisplayMode.refresh_rate;
-    }
-
     if (0 > SDL_Init(SDL_INIT_VIDEO))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
+    }
+
+    SDL_GetCurrentDisplayMode(0, &stDisplayMode);
+    if (stDisplayMode.refresh_rate != 0)
+    {
+        (*pstVideo)->u8RefreshRate = stDisplayMode.refresh_rate;
     }
 
     if (IMG_INIT_PNG != IMG_Init(IMG_INIT_PNG))
