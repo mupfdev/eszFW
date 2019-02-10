@@ -11,7 +11,6 @@
 #include "Constants.h"
 #include "Entity.h"
 #include "Font.h"
-#include "FPSLimiter.h"
 #include "Map.h"
 #include "Utils.h"
 #include "Video.h"

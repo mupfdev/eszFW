@@ -79,8 +79,8 @@ Sint8 DrawMap(
     Map           *pstMap,
     SDL_Renderer  *pstRenderer)
 {
-    double     dTime    = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
-    tmx_layer *pstLayer = pstMap->pstTmxMap->ly_head;
+    double     dDeltaTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
+    tmx_layer *pstLayer   = pstMap->pstTmxMap->ly_head;
 
     // Load tileset image once.
     if (! pstMap->pstTileset)
@@ -94,7 +94,7 @@ Sint8 DrawMap(
     }
 
     // Update and render animated tiles.
-    pstMap->dAnimDelay += dTime;
+    pstMap->dAnimDelay += dDeltaTime;
 
     if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {

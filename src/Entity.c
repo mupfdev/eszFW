@@ -452,9 +452,9 @@ void UpdateEntity(
     const Uint8  u8MeterInPixel,
     Entity      *pstEntity)
 {
-    double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
-    double dPosX = pstEntity->dPosX;
-    double dPosY = pstEntity->dPosY;
+    double dDeltaTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
+    double dPosX      = pstEntity->dPosX;
+    double dPosY      = pstEntity->dPosY;
 
     // Apply gravitation.
     if (0 != dGravitation)
@@ -467,7 +467,7 @@ void UpdateEntity(
         if (IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
         {
             double dG              = dGravitation * u8MeterInPixel;
-            double dDistanceY      = dG * dTime * dTime;//dDeltaTime * dDeltaTime;
+            double dDistanceY      = dG * dDeltaTime * dDeltaTime;
             pstEntity->dVelocityY += dDistanceY;
             dPosY                 += pstEntity->dVelocityY;
         }
@@ -484,12 +484,12 @@ void UpdateEntity(
     if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         double dAccel          = pstEntity->dAcceleration * (double)u8MeterInPixel;
-        double dDistanceX      = dAccel * dTime * dTime;//* dDeltaTime * dDeltaTime;
+        double dDistanceX      = dAccel * dDeltaTime * dDeltaTime;
         pstEntity->dVelocityX += dDistanceX;
     }
     else
     {
-        pstEntity->dVelocityX -= pstEntity->dAcceleration * dTime;//dDeltaTime;
+        pstEntity->dVelocityX -= pstEntity->dAcceleration * dDeltaTime;
     }
 
     // Set horizontal velocity limits.
@@ -527,7 +527,7 @@ void UpdateEntity(
     // Update animation frame.
     if (IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))
     {
-        pstEntity->dAnimDelay += dTime;//dDeltaTime;
+        pstEntity->dAnimDelay += dDeltaTime;
 
         if (pstEntity->u8AnimFrame < pstEntity->u8AnimStart)
         {

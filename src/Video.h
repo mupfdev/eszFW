@@ -16,8 +16,12 @@ typedef struct Video_t
     Sint32        s32WindowHeight;
     Sint32        s32LogicalWindowWidth;
     Sint32        s32LogicalWindowHeight;
+    Uint8         u8RefreshRate;
     double        dZoomLevel;
     double        dInitialZoomLevel;
+    double        dTimeA;
+    double        dTimeB;
+    double        dDeltaTime;
 } Video;
 
 void FreeVideo(Video *pstVideo);
@@ -31,7 +35,8 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video        **pstVideo);
 
-void RenderScene(SDL_Renderer *pstRenderer);
+void LimitFramerate(Video *pstVideo);
+void RenderScene(Video *pstVideo);
 Sint8 SetFullscreen(const SDL_bool dFullscreen, Video *pstVideo);
 Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo);
 Sint8 ToggleFullscreen(Video *pstVideo);

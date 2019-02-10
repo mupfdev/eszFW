@@ -9,6 +9,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Video.h"
+#include "Constants.h"
 
 void FreeVideo(Video *pstVideo)
 {
@@ -37,7 +38,8 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video        **pstVideo)
 {
-    Uint32 u32Flags = 0;
+    SDL_DisplayMode stDisplayMode;
+    Uint32          u32Flags = 0;
 
     *pstVideo = SDL_malloc(sizeof(struct Video_t));
     if (! *pstVideo)
@@ -52,6 +54,16 @@ Sint8 InitVideo(
     (*pstVideo)->s32WindowWidth         = s32WindowWidth;
     (*pstVideo)->s32LogicalWindowWidth  = s32LogicalWindowWidth;
     (*pstVideo)->s32LogicalWindowHeight = s32LogicalWindowHeight;
+    (*pstVideo)->u8RefreshRate          = 60;
+    (*pstVideo)->dTimeA                 = SDL_GetTicks();
+    (*pstVideo)->dTimeB                 = SDL_GetTicks();
+    (*pstVideo)->dDeltaTime             = ((*pstVideo)->dTimeB - (*pstVideo)->dTimeA) / 1000.f;
+
+    SDL_GetCurrentDisplayMode(0, &stDisplayMode);
+    if (stDisplayMode.refresh_rate != 0)
+    {
+        (*pstVideo)->u8RefreshRate = stDisplayMode.refresh_rate;
+    }
 
     if (0 > SDL_Init(SDL_INIT_VIDEO))
     {
@@ -72,7 +84,6 @@ Sint8 InitVideo(
 
     #ifdef __ANDROID__
     u32Flags = 0;
-    SDL_DisplayMode stDisplayMode;
     if (0 == SDL_GetCurrentDisplayMode(0, &stDisplayMode))
     {
         (*pstVideo)->s32WindowWidth  = stDisplayMode.w;
@@ -121,8 +132,8 @@ Sint8 InitVideo(
     }
 
     SDL_Log(
-        "Setting up window at resolution %dx%d.\n",
-        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
+        "Setting up window at resolution %dx%d @ %d FPS.\n",
+        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight, (*pstVideo)->u8RefreshRate);
 
     SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
@@ -130,10 +141,22 @@ Sint8 InitVideo(
     return 0;
 }
 
-void RenderScene(SDL_Renderer *pstRenderer)
+void RenderScene(Video *pstVideo)
 {
-    SDL_RenderPresent(pstRenderer);
-    SDL_RenderClear(pstRenderer);
+    double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
+
+    pstVideo->dTimeB     = SDL_GetTicks();
+    pstVideo->dDeltaTime = (pstVideo->dTimeB - pstVideo->dTimeA) / 1000.f;
+    pstVideo->dTimeA     = pstVideo->dTimeB;
+
+    if (pstVideo->dDeltaTime >= dTime)
+    {
+        pstVideo->dDeltaTime = dTime;
+    }
+
+    SDL_RenderPresent(pstVideo->pstRenderer);
+    SDL_Delay(1000.f / (double)pstVideo->u8RefreshRate - pstVideo->dDeltaTime);
+    SDL_RenderClear(pstVideo->pstRenderer);
 }
 
 Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo)
