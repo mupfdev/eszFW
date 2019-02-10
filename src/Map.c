@@ -98,12 +98,15 @@ Sint8 DrawMap(
 
     if (0 < pstMap->u16AnimTileSize && pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed && bRenderAnimTiles)
     {
-        pstMap->pstAnimTexture = SDL_CreateTexture(
-            pstRenderer,
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_TEXTUREACCESS_TARGET,
-            pstMap->pstTmxMap->width  * pstMap->pstTmxMap->tile_width,
-            pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height);
+        if (! pstMap->pstAnimTexture)
+        {
+            pstMap->pstAnimTexture = SDL_CreateTexture(
+                pstRenderer,
+                SDL_PIXELFORMAT_ARGB8888,
+                SDL_TEXTUREACCESS_TARGET,
+                pstMap->pstTmxMap->width  * pstMap->pstTmxMap->tile_width,
+                pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height);
+        }
 
         if (! pstMap->pstAnimTexture)
         {
