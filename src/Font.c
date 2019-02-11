@@ -20,7 +20,7 @@ void FreeFont(Font *pstFont)
 
 Sint8 InitFont(const char *pacFileName, Font **pstFont)
 {
-    *pstFont = SDL_malloc(sizeof(struct Font_t));
+    *pstFont = SDL_calloc(sizeof(struct Font_t), sizeof(Sint8));
     if (! *pstFont)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitCamera(): error allocating memory.\n");
@@ -39,10 +39,6 @@ Sint8 InitFont(const char *pacFileName, Font **pstFont)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", TTF_GetError());
         return -1;
     }
-
-    (*pstFont)->stColour.r = 0;
-    (*pstFont)->stColour.g = 0;
-    (*pstFont)->stColour.b = 0;
 
     SDL_Log("Load TrueType font file: %s.\n", pacFileName);
 

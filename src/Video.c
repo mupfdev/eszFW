@@ -41,15 +41,13 @@ Sint8 InitVideo(
     SDL_DisplayMode stDisplayMode;
     Uint32          u32Flags = 0;
 
-    *pstVideo = SDL_malloc(sizeof(struct Video_t));
+    *pstVideo = SDL_calloc(sizeof(struct Video_t), sizeof(Sint8));
     if (! *pstVideo)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitVideo(): error allocating memory.\n");
         return -1;
     }
 
-    (*pstVideo)->pstRenderer            = NULL;
-    (*pstVideo)->pstWindow              = NULL;
     (*pstVideo)->s32WindowHeight        = s32WindowHeight;
     (*pstVideo)->s32WindowWidth         = s32WindowWidth;
     (*pstVideo)->s32LogicalWindowWidth  = s32LogicalWindowWidth;

@@ -34,7 +34,7 @@ void FreeMusic(Music *pstMusic)
 
 Sint8 InitAudio(Audio **pstAudio)
 {
-    *pstAudio = SDL_malloc(sizeof(struct Audio_t));
+    *pstAudio = SDL_calloc(sizeof(struct Audio_t), sizeof(Sint8));
     if (! *pstAudio)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitAudio(): error allocating memory.\n");
@@ -70,7 +70,7 @@ Sint8 InitAudio(Audio **pstAudio)
 
 Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic)
 {
-    *pstMusic = SDL_malloc(sizeof(struct Music_t));
+    *pstMusic = SDL_calloc(sizeof(struct Music_t), sizeof(Sint8));
     if (! *pstMusic)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMusic(): error allocating memory.\n");

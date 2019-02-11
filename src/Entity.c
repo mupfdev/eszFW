@@ -144,20 +144,13 @@ void FreeSprite(Sprite *pstSprite)
 
 int InitCamera(Camera **pstCamera)
 {
-    *pstCamera = SDL_malloc(sizeof(struct Camera_t));
+    *pstCamera = SDL_calloc(sizeof(struct Camera_t), sizeof(Sint8));
     if (! *pstCamera)
     {
         return -1;
     }
 
-    (*pstCamera)->u16Flags   = 0;
-    (*pstCamera)->dPosX      = 0.f;
-    (*pstCamera)->dPosY      = 0.f;
-    (*pstCamera)->s32MaxPosX = 0;
-    (*pstCamera)->s32MaxPosY = 0;
-
     SDL_Log("Initialise camera.\n");
-
     return 0;
 }
 
@@ -168,7 +161,7 @@ int InitEntity(
     const Uint16 u16Height,
     Entity     **pstEntity)
 {
-    *pstEntity = SDL_malloc(sizeof(struct Entity_t));
+    *pstEntity = SDL_calloc(sizeof(struct Entity_t), sizeof(Sint8));
     if (! *pstEntity)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitEntity(): error allocating memory.\n");
@@ -177,24 +170,11 @@ int InitEntity(
 
     (*pstEntity)->dPosX          = dPosX;
     (*pstEntity)->dPosY          = dPosY;
-    (*pstEntity)->bIsJumping     = 0;
-    (*pstEntity)->eDirection   = RIGHT;
+    (*pstEntity)->eDirection     = RIGHT;
     (*pstEntity)->dAcceleration  = 8.f;
-    (*pstEntity)->dVelocityX     = 0.f;
     (*pstEntity)->dMaxVelocityX  = 4.5f;
-    (*pstEntity)->dVelocityY     = 0.f;
-    (*pstEntity)->stBB.dBottom   = 0.f;
-    (*pstEntity)->stBB.dLeft     = 0.f;
-    (*pstEntity)->stBB.dRight    = 0.f;
-    (*pstEntity)->stBB.dTop      = 0.f;
-    (*pstEntity)->u16Flags       = 0;
     (*pstEntity)->u16Width       = u16Width;
     (*pstEntity)->u16Height      = u16Height;
-    (*pstEntity)->u8FrameOffsetX = 0;
-    (*pstEntity)->u8AnimFrame    = 0;
-    (*pstEntity)->u8AnimStart    = 0;
-    (*pstEntity)->u8AnimEnd      = 0;
-    (*pstEntity)->dAnimDelay     = 0.f;
     (*pstEntity)->dAnimSpeed     = 12.f;
 
     return 0;
@@ -209,7 +189,7 @@ int InitSprite(
     Sprite      **pstSprite,
     SDL_Renderer *pstRenderer)
 {
-    *pstSprite = SDL_malloc(sizeof(struct Sprite_t));
+    *pstSprite = SDL_calloc(sizeof(struct Sprite_t), sizeof(Sint8));
     if (! *pstSprite)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitSprite(): error allocating memory.\n");

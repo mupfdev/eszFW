@@ -391,7 +391,7 @@ Uint16 GetObjectCount(const Map *pstMap)
 
 Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap)
 {
-    *pstMap = SDL_malloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN);
+    *pstMap = SDL_calloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN, sizeof(Sint8));
     if (! *pstMap)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error allocating memory.\n");
@@ -407,14 +407,8 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
 
     (*pstMap)->u16Height         = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
     (*pstMap)->u16Width          = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
-    (*pstMap)->dPosX             = 0.f;
-    (*pstMap)->dPosY             = 0.f;
-    (*pstMap)->dGravitation      = 0.f;
     (*pstMap)->u8MeterInPixel    = u8MeterInPixel;
-    (*pstMap)->acTilesetImage[0] = '\0';
-    (*pstMap)->u16AnimTileSize   = 0;
     (*pstMap)->dAnimSpeed        = 6.25f;
-    (*pstMap)->dAnimDelay        = 0.f;
 
     strncat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
 
@@ -433,15 +427,12 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
 
 Sint8 InitObject(Object **pstObject)
 {
-    *pstObject = SDL_malloc(sizeof(struct Object_t));
+    *pstObject = SDL_calloc(sizeof(struct Object_t), sizeof(Sint8));
     if (! *pstObject)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitObject(): error allocating memory.\n");
         return -1;
     }
-
-    (*pstObject)->dPosX = 0.f;
-    (*pstObject)->dPosY = 0.f;
 
     return 0;
 }
@@ -468,13 +459,18 @@ SDL_bool IsMapCoordOfType(
     pstLayers = pstMap->pstTmxMap->ly_head;
     while(pstLayers)
     {
-        Uint16 u16TsTileCount = pstMap->pstTmxMap->tiles[1]->tileset->tilecount;
-        Uint16 u16Gid         = _ClearGidFlags(
-            pstLayers->content.gids[((int32_t)dPosY * pstMap->pstTmxMap->width) + (int32_t)dPosX]);
-
-        if (u16Gid > u16TsTileCount)
+        if (pstLayers->type != L_LAYER)
         {
-            return SDL_FALSE;
+            pstLayers = pstLayers->next;
+            continue;
+        }
+
+        Uint16 u16Gid = _ClearGidFlags(pstLayers->content.gids[((int32_t)dPosY * pstMap->pstTmxMap->width) + (int32_t)dPosX]);
+
+        if (0 == u16Gid)
+        {
+            pstLayers = pstLayers->next;
+            continue;
         }
 
         if (pstMap->pstTmxMap->tiles[u16Gid])

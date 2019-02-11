@@ -232,9 +232,9 @@ Sint8 InitBackground(
     SDL_Renderer   *pstRenderer,
     Background    **pstBackground)
 {
-    *pstBackground = SDL_malloc(
+    *pstBackground = SDL_calloc(
         sizeof(struct Background_t)
-        + (u8Num * sizeof(struct BGLayer_t)));
+        + (u8Num * sizeof(struct BGLayer_t)), sizeof(Sint8));
     if (! *pstBackground)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitBackground(): error allocating memory.\n");
@@ -260,10 +260,6 @@ Sint8 InitBackground(
 
     for (Uint8 u8Index = 0; u8Index < u8Num; u8Index++)
     {
-        (*pstBackground)->acLayer[u8Index].dPosX     = 0;
-        (*pstBackground)->acLayer[u8Index].dPosY     = 0;
-        (*pstBackground)->acLayer[u8Index].dVelocity = 0;
-
         if (0 != SDL_QueryTexture(
                 (*pstBackground)->acLayer[u8Index].pstLayer,
                 NULL,
