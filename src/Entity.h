@@ -131,10 +131,6 @@ void SetSpawnPosition(const double dPosX, const double dPosY, Entity *pstEntity)
 void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *pstEntity);
 void StopEntity(Entity *pstEntity);
 void UnlockCamera(Camera *pstCamera);
-
-void UpdateEntity(
-    const double dGravitation,
-    const Uint8  u8MeterInPixel,
-    Entity      *pstEntity);
+void UpdateEntity(const double dDeltaTime, const double dGravitation, const Uint8 u8MeterInPixel, Entity *pstEntity);
 
 #endif // _ENTITY_H_

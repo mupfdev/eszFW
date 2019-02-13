@@ -17,5 +17,6 @@ void ClearFlag(const Uint8 u8Bit, Uint16 *u16Flags);
 SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags);
 void SetFlag(const Uint8 u8Bit, Uint16 *u16Flags);
 void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags);
+Uint32 Xorshift(Uint32 *pu32State);
 
 #endif // _UTILS_H_

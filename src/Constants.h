@@ -27,4 +27,6 @@ typedef enum TimeConstant_t
     TIME_FACTOR           = 1000
 } TimeConstant;
 
+#define DELTA_TIME (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR
+
 #endif // _CONSTANTS_H_

@@ -322,7 +322,7 @@ void SetCameraTargetEntity(
     }
 }
 
-void SetAnimation(const Uint8 u8AnimStart, const Uint8 u8AnimEnd, const double  dAnimSpeed, Entity *pstEntity)
+void SetAnimation(const Uint8 u8AnimStart, const Uint8 u8AnimEnd, const double dAnimSpeed, Entity *pstEntity)
 {
     pstEntity->dAnimSpeed = dAnimSpeed;
 
@@ -427,14 +427,10 @@ void UnlockCamera(Camera *pstCamera)
     ClearFlag(IS_LOCKED, &pstCamera->u16Flags);
 }
 
-void UpdateEntity(
-    const double dGravitation,
-    const Uint8  u8MeterInPixel,
-    Entity      *pstEntity)
+void UpdateEntity(const double dDeltaTime, const double dGravitation, const Uint8 u8MeterInPixel, Entity *pstEntity)
 {
-    double dDeltaTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
-    double dPosX      = pstEntity->dPosX;
-    double dPosY      = pstEntity->dPosY;
+    double dPosX = pstEntity->dPosX;
+    double dPosY = pstEntity->dPosY;
 
     // Apply gravitation.
     if (0 != dGravitation)
@@ -447,7 +443,7 @@ void UpdateEntity(
         if (IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
         {
             double dG              = dGravitation * u8MeterInPixel;
-            double dDistanceY      = dG * dDeltaTime * dDeltaTime;
+            double dDistanceY      = dG * DELTA_TIME * DELTA_TIME;
             pstEntity->dVelocityY += dDistanceY;
             dPosY                 += pstEntity->dVelocityY;
         }
@@ -464,12 +460,12 @@ void UpdateEntity(
     if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         double dAccel          = pstEntity->dAcceleration * (double)u8MeterInPixel;
-        double dDistanceX      = dAccel * dDeltaTime * dDeltaTime;
+        double dDistanceX      = dAccel * DELTA_TIME * DELTA_TIME;
         pstEntity->dVelocityX += dDistanceX;
     }
     else
     {
-        pstEntity->dVelocityX -= pstEntity->dAcceleration * dDeltaTime;
+        pstEntity->dVelocityX -= pstEntity->dAcceleration * DELTA_TIME;
     }
 
     // Set horizontal velocity limits.
@@ -514,7 +510,7 @@ void UpdateEntity(
             pstEntity->u8AnimFrame = pstEntity->u8AnimStart;
         }
 
-        if (pstEntity->dAnimDelay > 1.f / pstEntity->dAnimSpeed)
+        if (pstEntity->dAnimDelay > (1.f / pstEntity->dAnimSpeed - dDeltaTime))
         {
             pstEntity->u8AnimFrame++;
             pstEntity->dAnimDelay = 0.f;

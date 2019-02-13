@@ -38,8 +38,7 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video        **pstVideo)
 {
-    SDL_DisplayMode stDisplayMode;
-    Uint32          u32Flags = 0;
+    Uint32 u32Flags = 0;
 
     *pstVideo = SDL_calloc(sizeof(struct Video_t), sizeof(Sint8));
     if (! *pstVideo)
@@ -52,7 +51,6 @@ Sint8 InitVideo(
     (*pstVideo)->s32WindowWidth         = s32WindowWidth;
     (*pstVideo)->s32LogicalWindowWidth  = s32LogicalWindowWidth;
     (*pstVideo)->s32LogicalWindowHeight = s32LogicalWindowHeight;
-    (*pstVideo)->u8RefreshRate          = 60;
     (*pstVideo)->dTimeA                 = SDL_GetTicks();
     (*pstVideo)->dTimeB                 = SDL_GetTicks();
     (*pstVideo)->dDeltaTime             = ((*pstVideo)->dTimeB - (*pstVideo)->dTimeA) / 1000.f;
@@ -61,12 +59,6 @@ Sint8 InitVideo(
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
-    }
-
-    SDL_GetCurrentDisplayMode(0, &stDisplayMode);
-    if (stDisplayMode.refresh_rate != 0)
-    {
-        (*pstVideo)->u8RefreshRate = stDisplayMode.refresh_rate;
     }
 
     if (IMG_INIT_PNG != IMG_Init(IMG_INIT_PNG))
@@ -81,6 +73,7 @@ Sint8 InitVideo(
     }
 
     #ifdef __ANDROID__
+    SDL_DisplayMode stDisplayMode;
     u32Flags = 0;
     if (0 == SDL_GetCurrentDisplayMode(0, &stDisplayMode))
     {
@@ -130,8 +123,8 @@ Sint8 InitVideo(
     }
 
     SDL_Log(
-        "Setting up window at resolution %dx%d @ %d FPS.\n",
-        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight, (*pstVideo)->u8RefreshRate);
+        "Setting up window at resolution %dx%d.\n",
+        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
 
     SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
@@ -139,7 +132,7 @@ Sint8 InitVideo(
     return 0;
 }
 
-void RenderScene(Video *pstVideo)
+void RenderScene(const Uint8 u8FPS, Video *pstVideo)
 {
     double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
 
@@ -153,7 +146,7 @@ void RenderScene(Video *pstVideo)
     }
 
     SDL_RenderPresent(pstVideo->pstRenderer);
-    SDL_Delay(1000.f / (double)pstVideo->u8RefreshRate - pstVideo->dDeltaTime);
+    SDL_Delay(1000.f / (double)u8FPS - pstVideo->dDeltaTime);
     SDL_RenderClear(pstVideo->pstRenderer);
 }
 
