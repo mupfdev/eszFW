@@ -38,7 +38,8 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video        **pstVideo)
 {
-    Uint32 u32Flags = 0;
+    SDL_DisplayMode stDisplayMode;
+    Uint32          u32Flags = 0;
 
     *pstVideo = SDL_calloc(sizeof(struct Video_t), sizeof(Sint8));
     if (! *pstVideo)
@@ -72,14 +73,18 @@ Sint8 InitVideo(
         u32Flags = u32Flags | SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 
-    #ifdef __ANDROID__
-    SDL_DisplayMode stDisplayMode;
-    u32Flags = 0;
     if (0 == SDL_GetCurrentDisplayMode(0, &stDisplayMode))
     {
-        (*pstVideo)->s32WindowWidth  = stDisplayMode.w;
-        (*pstVideo)->s32WindowHeight = stDisplayMode.h;
+        (*pstVideo)->u8RefreshRate = stDisplayMode.refresh_rate;
     }
+    if ((*pstVideo)->u8RefreshRate < 60)
+    {
+        (*pstVideo)->u8RefreshRate = 60;
+    }
+    #ifdef __ANDROID__
+    u32Flags = 0;
+    (*pstVideo)->s32WindowWidth  = stDisplayMode.w;
+    (*pstVideo)->s32WindowHeight = stDisplayMode.h;
     #endif
 
     (*pstVideo)->pstWindow = SDL_CreateWindow(
@@ -123,8 +128,8 @@ Sint8 InitVideo(
     }
 
     SDL_Log(
-        "Setting up window at resolution %dx%d.\n",
-        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight);
+        "Setting up window at resolution %dx%d @ %d FPS.\n",
+        (*pstVideo)->s32WindowWidth, (*pstVideo)->s32WindowHeight, (*pstVideo)->u8RefreshRate);
 
     SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
@@ -132,7 +137,7 @@ Sint8 InitVideo(
     return 0;
 }
 
-void RenderScene(const Uint8 u8FPS, Video *pstVideo)
+void RenderScene(Video *pstVideo)
 {
     double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
 
@@ -146,7 +151,7 @@ void RenderScene(const Uint8 u8FPS, Video *pstVideo)
     }
 
     SDL_RenderPresent(pstVideo->pstRenderer);
-    SDL_Delay(1000.f / (double)u8FPS - pstVideo->dDeltaTime);
+    SDL_Delay(1000.f / (double)pstVideo->u8RefreshRate - pstVideo->dDeltaTime);
     SDL_RenderClear(pstVideo->pstRenderer);
 }
 

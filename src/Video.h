@@ -35,8 +35,7 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video        **pstVideo);
 
-void LimitFramerate(Video *pstVideo);
-void RenderScene(const Uint8 u8FPS, Video *pstVideo);
+void RenderScene(Video *pstVideo);
 Sint8 SetFullscreen(const SDL_bool dFullscreen, Video *pstVideo);
 Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo);
 Sint8 ToggleFullscreen(Video *pstVideo);
