@@ -36,6 +36,19 @@ void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags)
     *u16Flags ^= 1 << u8Bit;
 }
 
+double Round(double dValue)
+{
+    double dDecimalPlace = dValue - SDL_floor(dValue);
+    if (dDecimalPlace >= 0.5)
+    {
+        return SDL_ceil(dValue);
+    }
+    else
+    {
+        return SDL_floor(dValue);
+    }
+}
+
 // The state word must be initialized to non-zero.
 Uint32 Xorshift(Uint32 *pu32State)
 {

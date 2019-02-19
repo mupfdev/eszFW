@@ -452,7 +452,7 @@ void UpdateEntity(const double dDeltaTime, const double dGravitation, const Uint
             pstEntity->bIsJumping = 0;
             // Correct position along the y-axis.
             pstEntity->dVelocityY = 0.f;
-            dPosY = (16.f * round(dPosY / 16.f));
+            dPosY = (16.f * Round(dPosY / 16.f));
         }
     }
 

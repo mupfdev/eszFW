@@ -245,6 +245,7 @@ Sint8 InitBackground(
     (*pstBackground)->eAlignment = eAlignment;
 
     SDL_Log("Initialise parallax scrolling background with %d layers:\n", u8Num);
+
     for (Uint8 u8Index = 0; u8Index < u8Num; u8Index++)
     {
         if (-1 == _RenderLayer(
