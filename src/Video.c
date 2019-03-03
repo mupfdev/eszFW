@@ -171,7 +171,7 @@ Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo)
     }
 
     #ifdef DEBUG
-    if (dZoomLevel != (*pstVideo)->dZoomLevel)
+    if (dZoomLevel != pstVideo->dZoomLevel)
     {
         SDL_Log("Set zoom-level to factor %f.\n", dZoomLevel);
     }

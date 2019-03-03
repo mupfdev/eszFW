@@ -16,19 +16,29 @@ static Uint16 _ClearGidFlags(Uint16 u16Gid)
     return u16Gid & TMX_FLIP_BITS_REMOVAL;
 }
 
-static void _FindObjectByName(const char *pacName, tmx_object *pstTmxObject, Object **pstObject)
+static void _GetObject(tmx_object *pstTmxObject, Uint16 u16Index, Object astObject[])
 {
-    if (pstObject)
+    if (pstTmxObject)
     {
-        if (0 == SDL_strncmp(pacName, pstTmxObject->name, 20))
-        {
-            (*pstObject)->dPosX = pstTmxObject->x;
-            (*pstObject)->dPosY = pstTmxObject->y;
-        }
-        else if (pstTmxObject && pstTmxObject->next)
-        {
-            _FindObjectByName(pacName, pstTmxObject->next, pstObject);
-        }
+        astObject[u16Index].u16Id        = pstTmxObject->id;
+        astObject[u16Index].u32PosX      = pstTmxObject->x;
+        astObject[u16Index].u32PosY      = pstTmxObject->y;
+        astObject[u16Index].u16Width     = pstTmxObject->width;
+        astObject[u16Index].u16Height    = pstTmxObject->height;
+
+        SDL_strlcpy(astObject[u16Index].acName, pstTmxObject->name, OBJECT_NAME_LEN - 1);
+        SDL_strlcpy(astObject[u16Index].acType, pstTmxObject->type, OBJECT_TYPE_LEN - 1);
+
+        astObject[u16Index].stBB.dBottom = astObject[u16Index].u32PosY + astObject[u16Index].u16Height / 2;
+        astObject[u16Index].stBB.dLeft   = astObject[u16Index].u32PosX - astObject[u16Index].u16Width  / 2;
+        astObject[u16Index].stBB.dRight  = astObject[u16Index].u32PosX + astObject[u16Index].u16Width  / 2;
+        astObject[u16Index].stBB.dTop    = astObject[u16Index].u32PosY - astObject[u16Index].u16Height / 2;
+    }
+
+    if (pstTmxObject && pstTmxObject->next)
+    {
+        u16Index++;
+        _GetObject(pstTmxObject->next, u16Index, &(*astObject));
     }
 }
 
@@ -347,23 +357,22 @@ void FreeMap(Map *pstMap)
     }
 }
 
-void FreeObject(Object *pstObject)
+void GetObjects(const Map *pstMap, const Uint16 u16ObjectCount, Object astObject[])
 {
-    SDL_free(pstObject);
-}
+    tmx_layer  *pstLayer = pstMap->pstTmxMap->ly_head;
+    tmx_object *pstTmxObject;
 
-void GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstObject)
-{
-    tmx_layer *pstLayer;
+    (void)pstTmxObject;
+    (void)u16ObjectCount;
 
-    pstLayer = pstMap->pstTmxMap->ly_head;
     while(pstLayer)
     {
         if (L_OBJGR == pstLayer->type)
         {
-            _FindObjectByName(pacName, pstLayer->content.objgr->head, pstObject);
-        }
+            pstTmxObject = pstLayer->content.objgr->head;
+            _GetObject(pstTmxObject, 0, &(*astObject));
 
+        }
         pstLayer = pstLayer->next;
     }
 }
@@ -391,7 +400,9 @@ Uint16 GetObjectCount(const Map *pstMap)
 
 Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap)
 {
-    *pstMap = SDL_calloc(sizeof(struct Map_t) + TS_IMG_PATH_LEN, sizeof(Sint8));
+    Uint32 u32Size = sizeof(struct Map_t) + TS_IMG_PATH_LEN;
+
+    *pstMap = SDL_calloc(u32Size, sizeof(Sint8));
     if (! *pstMap)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error allocating memory.\n");
@@ -405,12 +416,26 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
         return -1;
     }
 
+    (*pstMap)->u16ObjectCount = GetObjectCount(*pstMap);
+
+    u32Size = u32Size + ((*pstMap)->u16ObjectCount * sizeof(struct Object_t));
+    *pstMap = realloc(*pstMap, u32Size);
+
+    if (! *pstMap)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error re-allocating memory.\n");
+        return -1;
+    }
+
+    GetObjects((*pstMap), (*pstMap)->u16ObjectCount, (*pstMap)->astObject);
+    ShowMapObjects(*pstMap);
+
     (*pstMap)->u16Height         = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
     (*pstMap)->u16Width          = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
     (*pstMap)->u8MeterInPixel    = u8MeterInPixel;
     (*pstMap)->dAnimSpeed        = 6.25f;
 
-    strncat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
+    SDL_strlcat((*pstMap)->acTilesetImage, pacTilesetImage, TS_IMG_PATH_LEN - 1);
 
     for (Uint8 u8Index = 0; u8Index < MAP_TEXTURES; u8Index++)
     {
@@ -419,20 +444,8 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
     (*pstMap)->pstAnimTexture = NULL;
     (*pstMap)->pstTileset     = NULL;
 
-    SDL_Log("Load TMX map file: %s.\n", pacFileName);
+    SDL_Log("Load TMX map file: %s containing %d object(s).\n", pacFileName, (*pstMap)->u16ObjectCount);
     SetGravitation(0, 1, *pstMap);
-
-    return 0;
-}
-
-Sint8 InitObject(Object **pstObject)
-{
-    *pstObject = SDL_calloc(sizeof(struct Object_t), sizeof(Sint8));
-    if (! *pstObject)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitObject(): error allocating memory.\n");
-        return -1;
-    }
 
     return 0;
 }
@@ -526,4 +539,27 @@ void SetGravitation(const double  dGravitation, const SDL_bool bUseTmxConstant, 
 void SetTileAnimationSpeed(const double dAnimSpeed, Map *pstMap)
 {
     pstMap->dAnimSpeed = dAnimSpeed;
+}
+
+void ShowMapObjects(const Map *pstMap)
+{
+    #ifdef DEBUG
+    for (Uint16 u16Index = 0; u16Index < (*pstMap).u16ObjectCount; u16Index++)
+    {
+        SDL_Log("Object %d\n", u16Index);
+        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Id);
+        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u32PosX);
+        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u32PosY);
+        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Width);
+        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Height);
+        SDL_Log("  %s\n", (*pstMap).astObject[u16Index].acName);
+        SDL_Log("  %s\n", (*pstMap).astObject[u16Index].acType);
+        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dBottom);
+        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dLeft);
+        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dRight);
+        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dTop);
+    }
+    #else
+    (void)pstMap;
+    #endif
 }

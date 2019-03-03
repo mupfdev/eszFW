@@ -1,5 +1,5 @@
 /**
- * @file eszfw.h
+ * @file eszFW.h
  */
 
 #ifndef _ESZFW_H_

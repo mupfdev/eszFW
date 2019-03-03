@@ -8,13 +8,16 @@
 
 #include <SDL.h>
 #include <tmx.h>
+#include "AABB.h"
 
 typedef enum MapConstants_t
 {
     ANIM_TILE_MAX   = 500,
-    // Max textures per map (not to be confused with map layers)
+    // Max textures per map (not to be confused with map layers).
     MAP_TEXTURES    = 4,
-    TS_IMG_PATH_LEN = 64
+    TS_IMG_PATH_LEN = 64,
+    OBJECT_NAME_LEN = 30,
+    OBJECT_TYPE_LEN = 15
 } MapConstants;
 
 typedef struct AnimTile_t
@@ -26,6 +29,18 @@ typedef struct AnimTile_t
     Uint8  u8FrameCount;
     Uint8  u8AnimLen;
 } AnimTile;
+
+typedef struct Object_t
+{
+    Uint16 u16Id;
+    Uint32 u32PosX;
+    Uint32 u32PosY;
+    Uint16 u16Width;
+    Uint16 u16Height;
+    char   acName[OBJECT_NAME_LEN];
+    char   acType[OBJECT_TYPE_LEN];
+    AABB   stBB;
+} Object;
 
 typedef struct Map_t
 {
@@ -44,13 +59,9 @@ typedef struct Map_t
     double       dAnimSpeed;
     Uint16       u16AnimTileSize;
     AnimTile     acAnimTile[ANIM_TILE_MAX];
+    Uint16       u16ObjectCount;
+    Object       astObject[];
 } Map;
-
-typedef struct Object_t
-{
-    double dPosX;
-    double dPosY;
-} Object;
 
 Sint8 DrawMap(
     const Uint16   u16Index,
@@ -63,11 +74,9 @@ Sint8 DrawMap(
     SDL_Renderer  *pstRenderer);
 
 void FreeMap(Map *pstMap);
-void FreeObject(Object *pstObject);
-void GetSingleObjectByName(const char *pacName, const Map *pstMap, Object **pstObject);
+void GetObjects(const Map *pstMap, const Uint16 u16ObjectCount, Object astObject[]);
 Uint16 GetObjectCount(const Map *pstMap);
 Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap);
-Sint8 InitObject(Object **pstObject);
 
 SDL_bool IsMapCoordOfType(
     const char *pacType,
@@ -84,5 +93,6 @@ SDL_bool IsOnTileOfType(
 
 void SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map *pstMap);
 void SetTileAnimationSpeed(const double dAnimSpeed, Map *pstMap);
+void ShowMapObjects(const Map *pstMap);
 
 #endif // _MAP_H_

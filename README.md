@@ -4,10 +4,10 @@
 
 ## About
 
-eszFW is a cross-platform game development framework written in C.  It's
-mainly aimed at platformer games but it can probably used for anything
-else too.  Furthermore, this project is the logical continuation of my
-older projects [Rainbow
+eszFW is a cross-platform game development framework / library written
+in C.  It's mainly aimed at platformer games but it can probably used
+for anything else too.  Furthermore, this project is the logical
+continuation of my older projects [Rainbow
 Joe](https://github.com/mupfelofen-de/rainbow-joe) and [Boondock
 Sam](https://github.com/mupfelofen-de/boondock-sam), which I wrote to
 familiarise myself with the basics of game programming.

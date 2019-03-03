@@ -349,13 +349,6 @@ int SetCameraBoundariesToMapSize(
     pstCamera->s32MaxPosX = u16MapWidth  - s32LogicalWindowWidth;
     pstCamera->s32MaxPosY = u16MapHeight - s32LogicalWindowHeight;
 
-    #ifdef DEBUG
-    SDL_Log(
-        "Set camera boundaries to map size (x: %d y: %d).\n",
-        pstCamera->s32MaxPosX,
-        pstCamera->s32MaxPosY);
-    #endif
-
     if (pstCamera->dPosX <= 0)
     {
         pstCamera->dPosX = 0;
