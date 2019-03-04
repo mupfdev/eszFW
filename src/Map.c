@@ -29,10 +29,20 @@ static void _GetObject(tmx_object *pstTmxObject, Uint16 u16Index, Object astObje
         SDL_strlcpy(astObject[u16Index].acName, pstTmxObject->name, OBJECT_NAME_LEN - 1);
         SDL_strlcpy(astObject[u16Index].acType, pstTmxObject->type, OBJECT_TYPE_LEN - 1);
 
-        astObject[u16Index].stBB.dBottom = astObject[u16Index].u32PosY + astObject[u16Index].u16Height / 2;
-        astObject[u16Index].stBB.dLeft   = astObject[u16Index].u32PosX - astObject[u16Index].u16Width  / 2;
-        astObject[u16Index].stBB.dRight  = astObject[u16Index].u32PosX + astObject[u16Index].u16Width  / 2;
-        astObject[u16Index].stBB.dTop    = astObject[u16Index].u32PosY - astObject[u16Index].u16Height / 2;
+        astObject[u16Index].stBB.dBottom = (double)astObject[u16Index].u32PosY + (double)astObject[u16Index].u16Height / 2.f;
+        astObject[u16Index].stBB.dLeft   = (double)astObject[u16Index].u32PosX - (double)astObject[u16Index].u16Width  / 2.f;
+        astObject[u16Index].stBB.dRight  = (double)astObject[u16Index].u32PosX + (double)astObject[u16Index].u16Width  / 2.f;
+        astObject[u16Index].stBB.dTop    = (double)astObject[u16Index].u32PosY - (double)astObject[u16Index].u16Height / 2.f;
+
+        if (astObject[u16Index].stBB.dLeft <= 0)
+        {
+            astObject[u16Index].stBB.dLeft = 0;
+        }
+
+        if (astObject[u16Index].stBB.dTop <= 0)
+        {
+            astObject[u16Index].stBB.dTop = 0;
+        }
     }
 
     if (pstTmxObject && pstTmxObject->next)
@@ -357,13 +367,10 @@ void FreeMap(Map *pstMap)
     }
 }
 
-void GetObjects(const Map *pstMap, const Uint16 u16ObjectCount, Object astObject[])
+void GetObjects(const Map *pstMap, Object astObject[])
 {
     tmx_layer  *pstLayer = pstMap->pstTmxMap->ly_head;
     tmx_object *pstTmxObject;
-
-    (void)pstTmxObject;
-    (void)u16ObjectCount;
 
     while(pstLayer)
     {
@@ -377,11 +384,16 @@ void GetObjects(const Map *pstMap, const Uint16 u16ObjectCount, Object astObject
     }
 }
 
-Uint16 GetObjectCount(const Map *pstMap)
+Uint16 GetObjectCount(Map *pstMap)
 {
     Uint16     u16ObjectCount  = 0;
     Uint16    *pu16ObjectCount = &u16ObjectCount;
     tmx_layer *pstLayer;
+
+    if (pstMap->u16ObjectCount)
+    {
+        return pstMap->u16ObjectCount;
+    }
 
     pstLayer = pstMap->pstTmxMap->ly_head;
     while(pstLayer)
@@ -392,10 +404,20 @@ Uint16 GetObjectCount(const Map *pstMap)
         }
 
         pstLayer = pstLayer->next;
-
     }
+    pstMap->u16ObjectCount = u16ObjectCount;
 
     return u16ObjectCount;
+}
+
+char *GetObjectName(Object *pstObject)
+{
+    return pstObject->acName;
+}
+
+char *GetObjectType(Object *pstObject)
+{
+    return pstObject->acType;
 }
 
 Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap)
@@ -418,17 +440,22 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
 
     (*pstMap)->u16ObjectCount = GetObjectCount(*pstMap);
 
-    u32Size = u32Size + ((*pstMap)->u16ObjectCount * sizeof(struct Object_t));
-    *pstMap = realloc(*pstMap, u32Size);
-
-    if (! *pstMap)
+    if ((*pstMap)->u16ObjectCount > 0)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error re-allocating memory.\n");
-        return -1;
-    }
+        u32Size = u32Size + ((*pstMap)->u16ObjectCount * sizeof(struct Object_t));
+        *pstMap = realloc(*pstMap, u32Size);
 
-    GetObjects((*pstMap), (*pstMap)->u16ObjectCount, (*pstMap)->astObject);
-    ShowMapObjects(*pstMap);
+        if (! *pstMap)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMap(): error re-allocating memory.\n");
+            return -1;
+        }
+
+        GetObjects((*pstMap), (*pstMap)->astObject);
+        #ifdef DEBUG
+        ShowMapObjects(*pstMap);
+        #endif
+    }
 
     (*pstMap)->u16Height         = (*pstMap)->pstTmxMap->height * (*pstMap)->pstTmxMap->tile_height;
     (*pstMap)->u16Width          = (*pstMap)->pstTmxMap->width  * (*pstMap)->pstTmxMap->tile_width;
@@ -490,7 +517,7 @@ SDL_bool IsMapCoordOfType(
         {
             if (pstMap->pstTmxMap->tiles[u16Gid]->type)
             {
-                if (0 == strncmp(pacType, pstMap->pstTmxMap->tiles[u16Gid]->type, 20))
+                if (0 == SDL_strncmp(pacType, pstMap->pstTmxMap->tiles[u16Gid]->type, 20))
                 {
                     return SDL_TRUE;
                 }
@@ -501,6 +528,18 @@ SDL_bool IsMapCoordOfType(
     }
 
     return SDL_FALSE;
+}
+
+SDL_bool IsObjectOfType(const char *pacType, Object *pstObject)
+{
+    if (0 == SDL_strncmp(pacType, GetObjectType(pstObject), OBJECT_TYPE_LEN))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 SDL_bool IsOnTileOfType(
@@ -543,23 +582,22 @@ void SetTileAnimationSpeed(const double dAnimSpeed, Map *pstMap)
 
 void ShowMapObjects(const Map *pstMap)
 {
-    #ifdef DEBUG
-    for (Uint16 u16Index = 0; u16Index < (*pstMap).u16ObjectCount; u16Index++)
+    if ((*pstMap).u16ObjectCount > 0)
     {
-        SDL_Log("Object %d\n", u16Index);
-        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Id);
-        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u32PosX);
-        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u32PosY);
-        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Width);
-        SDL_Log("  %d\n", (*pstMap).astObject[u16Index].u16Height);
-        SDL_Log("  %s\n", (*pstMap).astObject[u16Index].acName);
-        SDL_Log("  %s\n", (*pstMap).astObject[u16Index].acType);
-        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dBottom);
-        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dLeft);
-        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dRight);
-        SDL_Log("  %f\n", (*pstMap).astObject[u16Index].stBB.dTop);
+        for (Uint16 u16Index = 0; u16Index < (*pstMap).u16ObjectCount; u16Index++)
+        {
+            SDL_Log("Object %d\n", u16Index);
+            SDL_Log("  ID:   %d\n", (*pstMap).astObject[u16Index].u16Id);
+            SDL_Log("  X:    %d\n", (*pstMap).astObject[u16Index].u32PosX);
+            SDL_Log("  Y:    %d\n", (*pstMap).astObject[u16Index].u32PosY);
+            SDL_Log("  W:    %d\n", (*pstMap).astObject[u16Index].u16Width);
+            SDL_Log("  H:    %d\n", (*pstMap).astObject[u16Index].u16Height);
+            SDL_Log("  NAME: %s\n", (*pstMap).astObject[u16Index].acName);
+            SDL_Log("  TYPE: %s\n", (*pstMap).astObject[u16Index].acType);
+            SDL_Log("  BB B: %f\n", (*pstMap).astObject[u16Index].stBB.dBottom);
+            SDL_Log("  BB L: %f\n", (*pstMap).astObject[u16Index].stBB.dLeft);
+            SDL_Log("  BB R: %f\n", (*pstMap).astObject[u16Index].stBB.dRight);
+            SDL_Log("  BB T: %f\n", (*pstMap).astObject[u16Index].stBB.dTop);
+        }
     }
-    #else
-    (void)pstMap;
-    #endif
 }

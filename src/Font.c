@@ -111,8 +111,12 @@ Sint8 PrintText(
 
     stSrc.x = 0;
     stSrc.y = 0;
-    stDst.x = s32PosX;
-    stDst.y = s32PosY;
+    stDst.x = s32PosX - (stSrc.w / 2);
+    stDst.y = s32PosY - (stSrc.h / 2);
+
+    if (0 > stDst.x) { stDst.x = 0; }
+    if (0 > stDst.y) { stDst.y = 0; }
+
     stDst.w = stSrc.w;
     stDst.h = stSrc.h;
 

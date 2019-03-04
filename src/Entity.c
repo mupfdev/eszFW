@@ -488,10 +488,20 @@ void UpdateEntity(const double dDeltaTime, const double dGravitation, const Uint
     SetPosition(dPosX, dPosY, pstEntity);
 
     // Update axis-aligned bounding box.
-    pstEntity->stBB.dBottom = dPosY + (pstEntity->u16Height / 2.0);
-    pstEntity->stBB.dLeft   = dPosX - (pstEntity->u16Width  / 2.0);
-    pstEntity->stBB.dRight  = dPosX + (pstEntity->u16Width  / 2.0);
-    pstEntity->stBB.dTop    = dPosY - (pstEntity->u16Height / 2.0);
+    pstEntity->stBB.dBottom = dPosY + (double)(pstEntity->u16Height / 2.f);
+    pstEntity->stBB.dLeft   = dPosX - (double)(pstEntity->u16Width  / 2.f);
+    pstEntity->stBB.dRight  = dPosX + (double)(pstEntity->u16Width  / 2.f);
+    pstEntity->stBB.dTop    = dPosY - (double)(pstEntity->u16Height / 2.f);
+
+    if (pstEntity->stBB.dLeft <= 0)
+    {
+        pstEntity->stBB.dLeft = 0;
+    }
+
+    if (pstEntity->stBB.dTop <= 0)
+    {
+        pstEntity->stBB.dTop = 0;
+    }
 
     // Update animation frame.
     if (IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))

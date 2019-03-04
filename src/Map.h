@@ -16,7 +16,7 @@ typedef enum MapConstants_t
     // Max textures per map (not to be confused with map layers).
     MAP_TEXTURES    = 4,
     TS_IMG_PATH_LEN = 64,
-    OBJECT_NAME_LEN = 30,
+    OBJECT_NAME_LEN = 50,
     OBJECT_TYPE_LEN = 15
 } MapConstants;
 
@@ -74,8 +74,11 @@ Sint8 DrawMap(
     SDL_Renderer  *pstRenderer);
 
 void FreeMap(Map *pstMap);
-void GetObjects(const Map *pstMap, const Uint16 u16ObjectCount, Object astObject[]);
-Uint16 GetObjectCount(const Map *pstMap);
+void GetObjects(const Map *pstMap, Object astObject[]);
+Uint16 GetObjectCount(Map *pstMap);
+char *GetObjectName(Object *pstObject);
+char *GetObjectType(Object *pstObject);
+
 Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 u8MeterInPixel, Map **pstMap);
 
 SDL_bool IsMapCoordOfType(
@@ -83,6 +86,8 @@ SDL_bool IsMapCoordOfType(
     const Map  *pstMap,
     double      dPosX,
     double      dPosY);
+
+SDL_bool IsObjectOfType(const char *pacType, Object *pstObject);
 
 SDL_bool IsOnTileOfType(
     const char  *pacType,

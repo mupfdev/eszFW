@@ -4,8 +4,8 @@ ifeq ($(OS),Windows_NT)
 	OUT=lib/$(PROJECT).lib
 	TMX_OUT=lib/libtmx.lib
 	TOOLCHAIN=i686-w64-mingw32
-	AR=$(TOOLCHAIN)-ar
-	CC=$(TOOLCHAIN)-cc
+	AR=ar
+	CC=$(TOOLCHAIN)-gcc
 else
 	OUT=lib/$(PROJECT).a
 	TMX_OUT=lib/libtmx.a
@@ -25,8 +25,8 @@ CFLAGS=\
 	-DWANT_ZLIB\
 	-Isrc\
 	-Iexternal/tmx/src\
-	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
-	-isystem /usr/$(TOOLCHAIN)/include/SDL2\
+	-isystem /mingw32/include/libxml2\
+	-isystem /mingw32/include/SDL2\
 	-O2\
 	-pedantic-errors\
 	-std=c99\
