@@ -6,11 +6,13 @@ ifeq ($(OS),Windows_NT)
 	TOOLCHAIN=i686-w64-mingw32
 	AR=ar
 	CC=$(TOOLCHAIN)-gcc
+	INCPATH=/mingw32/include
 else
 	OUT=lib/$(PROJECT).a
 	TMX_OUT=lib/libtmx.a
 	TOOLCHAIN=local
 	UNAME_S := $(shell uname -s)
+	INCPATH=/usr/include
 endif
 
 LIBS=\
@@ -25,8 +27,8 @@ CFLAGS=\
 	-DWANT_ZLIB\
 	-Isrc\
 	-Iexternal/tmx/src\
-	-isystem /mingw32/include/libxml2\
-	-isystem /mingw32/include/SDL2\
+	-isystem $(INCPATH)/libxml2\
+	-isystem $(INCPATH)/SDL2\
 	-O2\
 	-pedantic-errors\
 	-std=c99\
