@@ -2,6 +2,8 @@
 
 # eszFW
 
+[![Build status](https://ci.appveyor.com/api/projects/status/4x6ysgu8okob10wb?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
+
 ## About
 
 eszFW is a cross-platform game development framework / library written

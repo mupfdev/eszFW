@@ -443,7 +443,7 @@ Sint8 InitMap(const char *pacFileName, const char *pacTilesetImage, const Uint8 
     if ((*pstMap)->u16ObjectCount > 0)
     {
         u32Size = u32Size + ((*pstMap)->u16ObjectCount * sizeof(struct Object_t));
-        *pstMap = realloc(*pstMap, u32Size);
+        *pstMap = SDL_realloc(*pstMap, u32Size);
 
         if (! *pstMap)
         {
