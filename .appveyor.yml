@@ -1,9 +1,12 @@
 image: ubuntu
 
 before_build:
+- sudo apt-get update
+- sudo apt-get install libsdl2-dev libsdl2-dev-image libsdl2-mixer-dev libsdl2-ttf-dev
+- sudo apt-get install libxml2-dev
 
 build_script:
-  sh: mkdir -p build
-  sh: cd build
-  sh: cmake ..
-  sh: make
+- mkdir -p build
+- cd build
+- cmake ..
+- make
