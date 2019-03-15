@@ -2,8 +2,6 @@
 
 # eszFW
 
-## Continuous Integration
-
 [![Build status](https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
 
 ## About
