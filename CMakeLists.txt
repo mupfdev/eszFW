@@ -36,8 +36,8 @@ target_link_libraries(
         ${SDL2_TTF_LIBRARY}
 )
 
-target_compile_options(eszFW -pedantic-errors -Wall -Werror -Wextra)
-target_compile_options(tmx -pedantic-errors -Wall -Werror -Wextra)
+target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Werror -Wextra)
+target_compile_options(tmx PRIVATE -pedantic-errors -Wall -Werror -Wextra)
 
 if (UNIX)
     target_link_libraries(eszFW m)

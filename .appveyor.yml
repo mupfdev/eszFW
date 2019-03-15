@@ -6,6 +6,7 @@ before_build:
 - sudo apt-get install -y libxml2-dev
 
 build_script:
+- git submodule update --recursive --remote
 - mkdir -p build
 - cd build
 - cmake ..
