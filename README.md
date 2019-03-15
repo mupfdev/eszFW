@@ -2,7 +2,7 @@
 
 # eszFW
 
-[![Build status](https://ci.appveyor.com/api/projects/status/4x6ysgu8okob10wb?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
+[![Build status](https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
 
 ## About
 
