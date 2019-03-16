@@ -81,16 +81,6 @@ cmake ..
 make
 ```
 
-If it doesn't work, you can also use a plain make instead:
-```
-make
-```
-
-If you're on NixOS enter:
-```
-nix-shell --command make
-```
-
 ## Licence and Credits
 
 This project is licenced under the "THE BEER-WARE LICENCE".  See the
