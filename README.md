@@ -71,10 +71,14 @@ Further, `icu4c` and `libxml2` will need to be force-linked using
 
 ## Compiling
 
-To compile _eszFW_ under Linux simply enter:
+First clone the repository including the submodules:
 ```
 git clone --recurse-submodules -j2 https://github.com/mupfelofen-de/eszFW.git
 cd eszFW
+```
+
+To compile _eszFW_ under Linux use CMake as follows:
+```
 mkdir build
 cd build
 cmake ..

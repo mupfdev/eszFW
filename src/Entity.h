@@ -3,9 +3,7 @@
  * @ingroup Entity
  */
 
-#ifndef _ENTITY_H_
-#define _ENTITY_H_
-
+#pragma once
 #include <SDL.h>
 #include "AABB.h"
 #include "Constants.h"
@@ -132,5 +130,3 @@ void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity *ps
 void StopEntity(Entity *pstEntity);
 void UnlockCamera(Camera *pstCamera);
 void UpdateEntity(const double dDeltaTime, const double dGravitation, const Uint8 u8MeterInPixel, Entity *pstEntity);
-
-#endif // _ENTITY_H_

@@ -3,9 +3,7 @@
  * @ingroup Map
  */
 
-#ifndef _MAP_H_
-#define _MAP_H_
-
+#pragma once
 #include <SDL.h>
 #include <tmx.h>
 #include "AABB.h"
@@ -99,5 +97,3 @@ SDL_bool IsOnTileOfType(
 void SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map *pstMap);
 void SetTileAnimationSpeed(const double dAnimSpeed, Map *pstMap);
 void ShowMapObjects(const Map *pstMap);
-
-#endif // _MAP_H_

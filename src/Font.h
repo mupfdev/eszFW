@@ -3,9 +3,7 @@
  * @ingroup Font
  */
 
-#ifndef _FONT_H_
-#define _FONT_H_
-
+#pragma once
 #include <SDL.h>
 #include <SDL_ttf.h>
 
@@ -33,5 +31,3 @@ Sint8 PrintText(
     SDL_Renderer *pstRenderer);
 
 void SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font *pstFont);
-
-#endif // _FONT_H_

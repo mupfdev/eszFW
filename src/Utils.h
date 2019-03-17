@@ -6,9 +6,7 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
-
+#pragma once
 #include <SDL.h>
 
 #define RETURN_ON_ERROR(value) if (-1 == value) { return value; }
@@ -19,5 +17,3 @@ void SetFlag(const Uint8 u8Bit, Uint16 *u16Flags);
 void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags);
 double Round(double dValue);
 Uint32 Xorshift(Uint32 *pu32State);
-
-#endif // _UTILS_H_

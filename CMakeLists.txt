@@ -39,6 +39,8 @@ target_link_libraries(
 target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Werror -Wextra)
 target_compile_options(tmx PRIVATE -pedantic-errors -Wall -Werror -Wextra)
 
+set_property(TARGET eszFW PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+
 if (UNIX)
     target_link_libraries(eszFW m)
 endif (UNIX)

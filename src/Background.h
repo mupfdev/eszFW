@@ -3,9 +3,7 @@
  * @ingroup Background
  */
 
-#ifndef _BACKGROUND_H_
-#define _BACKGROUND_H_
-
+#pragma once
 #include <SDL.h>
 #include "Constants.h"
 
@@ -44,5 +42,3 @@ Sint8 InitBackground(
     const Alignment eAlignment,
     SDL_Renderer   *pstRenderer,
     Background    **pstBackground);
-
-#endif // _BACKGROUND_H_

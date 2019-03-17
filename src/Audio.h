@@ -3,9 +3,7 @@
  * @ingroup Audio
  */
 
-#ifndef _AUDIO_H_
-#define _AUDIO_H_
-
+#pragma once
 #include <SDL.h>
 #include <SDL_mixer.h>
 
@@ -27,5 +25,3 @@ void FreeMusic(Music *pstMusic);
 Sint8 InitAudio(Audio **pstAudio);
 Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic);
 Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music *pstMusic);
-
-#endif // _AUDIO_H_

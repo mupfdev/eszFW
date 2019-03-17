@@ -3,9 +3,7 @@
  * @ingroup Video
  */
 
-#ifndef _VIDEO_H_
-#define _VIDEO_H_
-
+#pragma once
 #include <SDL.h>
 
 typedef struct Video_t
@@ -39,5 +37,3 @@ void RenderScene(Video *pstVideo);
 Sint8 SetFullscreen(const SDL_bool dFullscreen, Video *pstVideo);
 Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo);
 Sint8 ToggleFullscreen(Video *pstVideo);
-
-#endif // _VIDEO_H_

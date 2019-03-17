@@ -3,9 +3,7 @@
  * @ingroup AABB
  */
 
-#ifndef _AABB_H_
-#define _AABB_H_
-
+#pragma once
 #include <SDL.h>
 
 typedef struct AABB_t {
@@ -16,5 +14,3 @@ typedef struct AABB_t {
 } AABB;
 
 SDL_bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);
-
-#endif // _AABB_H_
