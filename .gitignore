@@ -1,6 +1,5 @@
 backup
 build
-doc
 *.a
 *.dll
 *.exe

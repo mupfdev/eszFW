@@ -1,7 +1,7 @@
 /**
  * @file      Background.c
  * @ingroup   Background
- * @defgroup  Background
+ * @ingroup   Background Parallax-scrolling background handler
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
@@ -15,15 +15,20 @@ static Sint8 _DrawLayer(
     const Uint8   u8Index,
     const Sint32  s32LogicalWindowHeight,
     const double  dCameraPosY,
-    SDL_Renderer *pstRenderer,
-    Background   *pstBackground)
+    SDL_Renderer* pstRenderer,
+    Background*   pstBackground)
 {
     Sint32   s32Width = 0;
     double   dPosXa;
     double   dPosXb;
     SDL_Rect stDst;
 
-    if (0 != SDL_QueryTexture(pstBackground->acLayer[u8Index].pstLayer, NULL, NULL, &s32Width, NULL))
+    if (0 != SDL_QueryTexture(
+            pstBackground->acLayer[u8Index].pstLayer,
+            NULL,
+            NULL,
+            &s32Width,
+            NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -67,8 +72,8 @@ static Sint8 _DrawLayer(
     }
     else
     {
-        stDst.y = pstBackground->acLayer[u8Index].dPosY
-            + (s32LogicalWindowHeight - pstBackground->acLayer[u8Index].s32Height);
+        stDst.y = pstBackground->acLayer[u8Index].dPosY +
+            (s32LogicalWindowHeight - pstBackground->acLayer[u8Index].s32Height);
     }
 
     stDst.x = dPosXa;
@@ -78,7 +83,11 @@ static Sint8 _DrawLayer(
     if (-1 == SDL_RenderCopyEx(
             pstRenderer,
             pstBackground->acLayer[u8Index].pstLayer,
-            NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+            NULL,
+            &stDst,
+            0,
+            NULL,
+            SDL_FLIP_NONE))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -88,7 +97,11 @@ static Sint8 _DrawLayer(
     if (-1 == SDL_RenderCopyEx(
             pstRenderer,
             pstBackground->acLayer[u8Index].pstLayer,
-            NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+            NULL,
+            &stDst,
+            0,
+            NULL,
+            SDL_FLIP_NONE))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         return -1;
@@ -98,13 +111,13 @@ static Sint8 _DrawLayer(
 }
 
 static Sint8 _RenderLayer(
-    const char   *pacFileName,
+    const char*   pacFileName,
     const Sint32  s32WindowWidth,
-    SDL_Renderer *pstRenderer,
-    SDL_Texture **pstLayer)
+    SDL_Renderer* pstRenderer,
+    SDL_Texture** pstLayer)
 {
     Sint8        s8ReturnValue  = 0;
-    SDL_Texture *pstImage       = NULL;
+    SDL_Texture* pstImage       = NULL;
     Sint32       s32ImageWidth  = 0;
     Sint32       s32ImageHeight = 0;
     Sint32       s32LayerHeight = 0;
@@ -112,7 +125,7 @@ static Sint8 _RenderLayer(
     Uint8        u8WidthFactor  = 0;
 
     pstImage = IMG_LoadTexture(pstRenderer, pacFileName);
-    if (! pstImage)
+    if (!pstImage)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", IMG_GetError());
         s8ReturnValue = -1;
@@ -136,7 +149,7 @@ static Sint8 _RenderLayer(
         s32LayerWidth,
         s32LayerHeight);
 
-    if (! (*pstLayer))
+    if (!(*pstLayer))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
         s8ReturnValue = -1;
@@ -154,9 +167,9 @@ static Sint8 _RenderLayer(
     stDst.x = 0;
     for (Uint8 u8Index = 0; u8Index < u8WidthFactor; u8Index++)
     {
-        stDst.y  = 0;
-        stDst.w  = s32ImageWidth;
-        stDst.h  = s32ImageHeight;
+        stDst.y = 0;
+        stDst.w = s32ImageWidth;
+        stDst.h = s32ImageHeight;
         SDL_RenderCopy(pstRenderer, pstImage, NULL, &stDst);
         stDst.x += s32ImageWidth;
     }
@@ -191,13 +204,31 @@ exit:
     return s8ReturnValue;
 }
 
+/**
+ * @brief  Draw background
+ * @param  eDirection
+ *         Scroll direction
+ * @param  s32LogicalWindowHeight
+ *         Logical window height in pixel
+ * @param  dCameraPosY
+ *         Camera position along the y-axis
+ * @param  dVelocity
+ *         Scroll velocity
+ * @param  pstRenderer
+ *         Pointer to SDL rendering context
+ * @param  pstBackground
+ *         Pointer to background handle
+ * @return Error code
+ * @retval 0
+ *         OK
+ */
 Sint8 DrawBackground(
     const Direction eDirection,
     const Sint32    s32LogicalWindowHeight,
     const double    dCameraPosY,
     const double    dVelocity,
-    SDL_Renderer   *pstRenderer,
-    Background     *pstBackground)
+    SDL_Renderer*   pstRenderer,
+    Background*     pstBackground)
 {
     pstBackground->eDirection = eDirection;
 
@@ -207,35 +238,54 @@ Sint8 DrawBackground(
         pstBackground->acLayer[u8Index].dVelocity = dVelocity / dFactor;
         dFactor -= 0.5f;
 
-        _DrawLayer(
-            u8Index,
-            s32LogicalWindowHeight,
-            dCameraPosY,
-            pstRenderer,
-            pstBackground);
+        _DrawLayer(u8Index, s32LogicalWindowHeight, dCameraPosY, pstRenderer, pstBackground);
     }
 
     return 0;
 }
 
-void FreeBackground(Background *pstBackground)
+/**
+ * @brief Free/Unload parallax-scrolling background
+ * @param pstBackground
+ *        Pointer to background handle
+ */
+void FreeBackground(Background* pstBackground)
 {
     SDL_free(pstBackground);
     SDL_Log("Unload parallax scrolling background.\n");
 }
 
+/**
+ * @brief  Initialiase parallax-scrolling background
+ * @param  u8Num
+ *         Number of backgrounds
+ * @param  pacFileNames
+ *         Pointer to array with list of filenames
+ * @param  s32WindowWidth
+ *         Window width in pixel
+ * @param  eAlignment
+ *         Background alignment
+ * @param  pstRenderer
+ *         Pointer to SDL rendering context
+ * @param  pstBackground
+ *         Pointer to background handle
+ * @return Error code
+ * @retval 0
+ *         OK
+ * @retval -1
+ *         Error
+ */
 Sint8 InitBackground(
     const Uint8     u8Num,
-    const char     *pacFileNames[static u8Num],
+    const char*     pacFileNames[static u8Num],
     const Sint32    s32WindowWidth,
     const Alignment eAlignment,
-    SDL_Renderer   *pstRenderer,
-    Background    **pstBackground)
+    SDL_Renderer*   pstRenderer,
+    Background**    pstBackground)
 {
-    *pstBackground = SDL_calloc(
-        sizeof(struct Background_t)
-        + (u8Num * sizeof(struct BGLayer_t)), sizeof(Sint8));
-    if (! *pstBackground)
+    *pstBackground =
+        SDL_calloc(sizeof(struct Background_t) + (u8Num * sizeof(struct BGLayer_t)), sizeof(Sint8));
+    if (!*pstBackground)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitBackground(): error allocating memory.\n");
         return -1;

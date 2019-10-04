@@ -1,8 +1,8 @@
 /**
- * @file Audio.c
- * @ingroup Audio
- * @defgroup Audio
- * @author Michael Fitzmayer
+ * @file      Audio.c
+ * @ingroup   Audio
+ * @defgroup  Audio Audio handler
+ * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
@@ -10,15 +10,28 @@
 #include <SDL_mixer.h>
 #include "Audio.h"
 
-void FreeAudio(Audio *pstAudio)
+/**
+ * @brief Free audio mixer
+ * @param pstAudio
+ *        Pointer to audio mixer handle
+ */
+void FreeAudio(Audio* pstAudio)
 {
     Mix_CloseAudio();
-    while(Mix_Init(0)) Mix_Quit();
+    while (Mix_Init(0))
+    {
+        Mix_Quit();
+    }
 
     SDL_free(pstAudio);
 }
 
-void FreeMusic(Music *pstMusic)
+/**
+ * @brief Free/Unload music file
+ * @param pstMusic
+ *        Pointer to loaded music file handle
+ */
+void FreeMusic(Music* pstMusic)
 {
     if (pstMusic)
     {
@@ -32,10 +45,20 @@ void FreeMusic(Music *pstMusic)
     }
 }
 
-Sint8 InitAudio(Audio **pstAudio)
+/**
+ * @brief  Initialise audio mixer
+ * @param  pstAudio
+ *         Pointer to audio mixer handle
+ * @return Error code
+ * @retval 0
+ *         OK
+ * @brief  -1
+ *         Error
+ */
+Sint8 InitAudio(Audio** pstAudio)
 {
     *pstAudio = SDL_calloc(sizeof(struct Audio_t), sizeof(Sint8));
-    if (! *pstAudio)
+    if (!*pstAudio)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitAudio(): error allocating memory.\n");
         return -1;
@@ -68,10 +91,24 @@ Sint8 InitAudio(Audio **pstAudio)
     return 0;
 }
 
-Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic)
+/**
+ * @brief  Initialise music file
+ * @param  pacFileName
+ *         Path to music file
+ * @param  s8Loops
+ *         Loops to play, -1 to loop endlessly
+ * @param  pstMusic
+ *         Pointer to music file handle
+ * @return Error code
+ * @retval 0
+ *         OK
+ * @retval -1
+ *         Error
+ */
+Sint8 InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic)
 {
     *pstMusic = SDL_calloc(sizeof(struct Music_t), sizeof(Sint8));
-    if (! *pstMusic)
+    if (!*pstMusic)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitMusic(): error allocating memory.\n");
         return -1;
@@ -80,7 +117,7 @@ Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic)
     (*pstMusic)->pstMusic = Mix_LoadMUS(pacFileName);
     (*pstMusic)->s8Loops  = s8Loops;
 
-    if (! (*pstMusic)->pstMusic)
+    if (!(*pstMusic)->pstMusic)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", Mix_GetError());
         return -1;
@@ -90,7 +127,19 @@ Sint8 InitMusic(const char *pacFileName, const Sint8 s8Loops, Music **pstMusic)
     return 0;
 }
 
-Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music *pstMusic)
+/**
+ * @brief  Play music file
+ * @param  u16FadeInMs
+ *         Fade-in time in milliseconds
+ * @param  pstMusic
+ *         Pointer to music file handle
+ * @return Error code
+ * @retval 0
+ *         OK
+ * @retval -1
+ *         Error
+ */
+Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic)
 {
     if (0 != u16FadeInMs)
     {

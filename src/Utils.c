@@ -1,15 +1,15 @@
 /**
- * @file Utils.c
- * @ingroup Utils
- * @defgroup Utils
- * @author Michael Fitzmayer
+ * @file      Utils.c
+ * @ingroup   Utils
+ * @defgroup  Utils Various utilities used across the framework
+ * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
 #include <SDL.h>
 #include "Utils.h"
 
-void ClearFlag(const Uint8 u8Bit, Uint16 *u16Flags)
+void ClearFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags &= ~(1 << u8Bit);
 }
@@ -26,12 +26,12 @@ SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
     }
 }
 
-void SetFlag(const Uint8 u8Bit, Uint16 *u16Flags)
+void SetFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags |= 1 << u8Bit;
 }
 
-void ToggleFlag(const Uint8 u8Bit, Uint16 *u16Flags)
+void ToggleFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags ^= 1 << u8Bit;
 }
@@ -50,7 +50,7 @@ double Round(double dValue)
 }
 
 // The state word must be initialized to non-zero.
-Uint32 Xorshift(Uint32 *pu32State)
+Uint32 Xorshift(Uint32* pu32State)
 {
     Uint32 u32Val = *pu32State;
     u32Val ^= u32Val << 13;

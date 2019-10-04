@@ -1,15 +1,21 @@
 /**
- * @file Video.h
+ * @file    Video.h
  * @ingroup Video
  */
-
 #pragma once
+
 #include <SDL.h>
 
+/**
+ * @typedef Video
+ * @brief   Video handle type
+ * @struct  Video_t
+ * @brief   Video handle data
+ */
 typedef struct Video_t
 {
-    SDL_Renderer *pstRenderer;
-    SDL_Window   *pstWindow;
+    SDL_Renderer* pstRenderer;
+    SDL_Window*   pstWindow;
     Sint32        s32WindowWidth;
     Sint32        s32WindowHeight;
     Sint32        s32LogicalWindowWidth;
@@ -22,18 +28,18 @@ typedef struct Video_t
     double        dDeltaTime;
 } Video;
 
-void FreeVideo(Video *pstVideo);
+void FreeVideo(Video* pstVideo);
 
 Sint8 InitVideo(
-    const char    *pacWindowTitle,
+    const char*    pacWindowTitle,
     const Sint32   s32WindowWidth,
     const Sint32   s32WindowHeight,
     const Sint32   s32LogicalWindowWidth,
     const Sint32   s32LogicalWindowHeight,
     const SDL_bool bFullscreen,
-    Video        **pstVideo);
+    Video**        pstVideo);
 
-void RenderScene(Video *pstVideo);
-Sint8 SetFullscreen(const SDL_bool dFullscreen, Video *pstVideo);
-Sint8 SetZoomLevel(const double dZoomLevel, Video *pstVideo);
-Sint8 ToggleFullscreen(Video *pstVideo);
+void  RenderScene(Video* pstVideo);
+Sint8 SetFullscreen(const SDL_bool dFullscreen, Video* pstVideo);
+Sint8 SetZoomLevel(const double dZoomLevel, Video* pstVideo);
+Sint8 ToggleFullscreen(Video* pstVideo);

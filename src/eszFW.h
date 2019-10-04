@@ -1,9 +1,8 @@
 /**
- * @file eszFW.h
+ * @file  eszFW.h
+ * @brief eszFW main header
  */
-
-#ifndef _ESZFW_H_
-#define _ESZFW_H_
+#pragma once
 
 #include "AABB.h"
 #include "Audio.h"
@@ -14,5 +13,3 @@
 #include "Map.h"
 #include "Utils.h"
 #include "Video.h"
-
-#endif // _ESZFW_H_
