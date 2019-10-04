@@ -18,11 +18,10 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 ### Status
 
-This project is in a very early stage of development.  I will enhance it
-gradually, mainly as a tool to my own use.  To see it in action, take a
-look at [Tau Ceti](https://github.com/mupfelofen-de/TauCeti): a
-cross-platform 2D sci-fi platformer game which I develop using the
-framework.
+This project is in development.  I will enhance it gradually, mainly as
+a tool to my own use.  To see it in action, take a look at [Tau
+Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
+sci-fi platformer tech demo which I develop to test this framework.
 
 ### Trivia
 
@@ -46,6 +45,13 @@ and challenging language which I also have to use professionally.
 Anyway: I hope you find the code of this project useful.  If so, feel
 free to use it in any way you want. Just consider buying me a beer in
 case we meet someday.
+
+## Documentation
+
+[![Documentation](https://codedocs.xyz/mupfelofen-de/eszFW.svg)](https://codedocs.xyz/mupfelofen-de/eszFW/)
+
+The documentation is generated automatically and can be found
+[here](https://codedocs.xyz/mupfelofen-de/eszFW/).
 
 ## Dependencies
 
