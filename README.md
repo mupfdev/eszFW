@@ -16,6 +16,13 @@ It is written in C using SDL2 and the [TMX Map
 Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 (Tile Map XML).
 
+## Documentation
+
+[![Documentation](https://codedocs.xyz/mupfelofen-de/eszFW.svg)](https://codedocs.xyz/mupfelofen-de/eszFW/)
+
+The documentation is generated automatically and can be found
+[here](https://codedocs.xyz/mupfelofen-de/eszFW/).
+
 ### Status
 
 This project is in development.  I will enhance it gradually, mainly as
@@ -45,13 +52,6 @@ and challenging language which I also have to use professionally.
 Anyway: I hope you find the code of this project useful.  If so, feel
 free to use it in any way you want. Just consider buying me a beer in
 case we meet someday.
-
-## Documentation
-
-[![Documentation](https://codedocs.xyz/mupfelofen-de/eszFW.svg)](https://codedocs.xyz/mupfelofen-de/eszFW/)
-
-The documentation is generated automatically and can be found
-[here](https://codedocs.xyz/mupfelofen-de/eszFW/).
 
 ## Dependencies
 
