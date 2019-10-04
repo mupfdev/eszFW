@@ -28,7 +28,7 @@ The documentation is generated automatically and can be found
 This project is in development.  I will enhance it gradually, mainly as
 a tool to my own use.  To see it in action, take a look at [Tau
 Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
-sci-fi platformer tech demo which I develop to test this framework.
+sci-fi themed tech demo which I develop to test this framework.
 
 An Android version of Tau Ceti is available on Google Play:
 
