@@ -1,6 +1,6 @@
 /**
  * @file  eszFW.h
- * @brief eszFW main header
+ * @brief eszFW main include header
  */
 #pragma once
 

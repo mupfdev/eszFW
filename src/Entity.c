@@ -49,6 +49,13 @@ void AnimateEntity(SDL_bool bAnimate, Entity* pstEntity)
     }
 }
 
+/**
+ * @brief Connect horizontal map ends for entity
+ * @param u16MapWidth
+ *        Map width
+ * @param pstEntity
+ *        Pointer to entity handle
+ */
 void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity* pstEntity)
 {
     double dWidth = (double)pstEntity->u16Width;
@@ -63,12 +70,28 @@ void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity* pstEnti
     }
 }
 
+/**
+ * @brief Connect all map ends for entity
+ * @param u16MapWidth
+ *        Map width
+ * @param u16MapHeight
+ *        Map height
+ * @param pstEntity
+ *        Pointer to entity handle
+ */
 void ConnectMapEndsForEntity(const Uint16 u16MapWidth, const Uint16 u16MapHeight, Entity* pstEntity)
 {
     ConnectHorizontalMapEndsForEntity(u16MapWidth, pstEntity);
     ConnectVerticalMapEndsForEntity(u16MapHeight, pstEntity);
 }
 
+/**
+ * @brief Connect vertical map ends for entity
+ * @param u16MapHeight
+ *        Map height
+ * @param pstEntity
+ *        Pointer to entity handle
+ */
 void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity* pstEntity)
 {
     double dHeight = (double)pstEntity->u16Height;
@@ -83,6 +106,16 @@ void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity* pstEntit
     }
 }
 
+/**
+ * @brief  Create bullet/projectile
+ * @param  dPosX
+ *         Position along the x-axis
+ * @param  dPosY
+ *         Position along the y-axis
+ * @param  Pointer to bullet handle
+ * @remark Does nothing yet
+ * @todo   Implement function
+ */
 int CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
 {
     (void)dPosX;

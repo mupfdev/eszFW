@@ -30,6 +30,10 @@ a tool to my own use.  To see it in action, take a look at [Tau
 Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
 sci-fi platformer tech demo which I develop to test this framework.
 
+An Android version of Tau Ceti is available on Google Play:
+
+[![Tau Ceti](.media/badge_new.png)](https://play.google.com/store/apps/details?id=de.mupfelofen.TauCeti)
+
 ### Trivia
 
 The abbreviation esz is a tribute to my best friend [Ertugrul
