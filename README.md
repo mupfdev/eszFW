@@ -1,7 +1,7 @@
 ![eszFW](.media/logo.png "eszFW")
 
 [![Build status](https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
-[![Documentation](https://codedocs.xyz/mupfelofen-de/eszFW.svg)](https://codedocs.xyz/mupfelofen-de/eszFW/)
+[![Documentation](https://codedocs.xyz/mupfelofen-de/eszFW.svg?svg=true)](https://codedocs.xyz/mupfelofen-de/eszFW/)
 
 ## About
 
