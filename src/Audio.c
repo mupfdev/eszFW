@@ -140,7 +140,7 @@ Sint8 Audio_InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstM
  * @retval   0: OK
  * @retval  -1: Error
  */
-Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic)
+Sint8 Audio_PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic)
 {
     if (0 != u16FadeInMs)
     {

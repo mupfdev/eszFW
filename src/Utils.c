@@ -9,12 +9,12 @@
 #include <SDL.h>
 #include "Utils.h"
 
-void ClearFlag(const Uint8 u8Bit, Uint16* u16Flags)
+void Utils_ClearFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags &= ~(1 << u8Bit);
 }
 
-SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
+SDL_bool Utils_IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
 {
     if ((u16Flags >> u8Bit) & 1)
     {
@@ -26,17 +26,17 @@ SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
     }
 }
 
-void SetFlag(const Uint8 u8Bit, Uint16* u16Flags)
+void Utils_SetFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags |= 1 << u8Bit;
 }
 
-void ToggleFlag(const Uint8 u8Bit, Uint16* u16Flags)
+void Utils_ToggleFlag(const Uint8 u8Bit, Uint16* u16Flags)
 {
     *u16Flags ^= 1 << u8Bit;
 }
 
-double Round(double dValue)
+double Utils_Round(double dValue)
 {
     double dDecimalPlace = dValue - SDL_floor(dValue);
     if (dDecimalPlace >= 0.5)
@@ -50,7 +50,7 @@ double Round(double dValue)
 }
 
 // The state word must be initialized to non-zero.
-Uint32 Xorshift(Uint32* pu32State)
+Uint32 Utils_Xorshift(Uint32* pu32State)
 {
     Uint32 u32Val = *pu32State;
     u32Val ^= u32Val << 13;

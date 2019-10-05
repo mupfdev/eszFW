@@ -1,5 +1,6 @@
 /**
  * @file      Entity.c
+ * @brief     Entity handler source
  * @ingroup   Entity
  * @defgroup  Entity Game entity handler
  * @author    Michael Fitzmayer
@@ -18,45 +19,48 @@
  * @brief   Entity flags type
  * @struct  Flags_t
  * @brief   Entity flags data
- * @remark These flags are only used internally
+ * @remark  These flags are only used internally
  */
 typedef enum Flags_t
 {
     IS_ANIMATED   = 0x00,  ///< Entity is animated
     IS_DEAD       = 0x01,  ///< Entity is dead
     IS_IN_MID_AIR = 0x02,  ///< Entity is in mid-air
-    IS_LOCKED     = 0x03,  ///< Entity is locked
+    IS_LOCKED     = 0x03,  ///< Camera is locked
     IS_MOVING     = 0x04   ///< Entity is moving
 
 } Flags;
 
 /**
- * @brief Animate entity
- * @param bAnimate
- *        0 = Do not animate, 1 = Animate
- * @param pstEntity
- *        Pointer to entity handle
+ * @brief   Animate entity
+ * @details Sets or clears the entity's IS_ANIMATED flag
+ * @param   bAnimate
+ *          0 = Do not animate, 1 = Animate
+ * @param   pstEntity
+ *          Pointer to entity handle
  */
-void AnimateEntity(SDL_bool bAnimate, Entity* pstEntity)
+void Entity_Animate(SDL_bool bAnimate, Entity* pstEntity)
 {
     if (bAnimate)
     {
-        SetFlag(IS_ANIMATED, &pstEntity->u16Flags);
+        Utils_SetFlag(IS_ANIMATED, &pstEntity->u16Flags);
     }
     else
     {
-        ClearFlag(IS_ANIMATED, &pstEntity->u16Flags);
+        Utils_ClearFlag(IS_ANIMATED, &pstEntity->u16Flags);
     }
 }
 
 /**
- * @brief Connect horizontal map ends for entity
- * @param u16MapWidth
- *        Map width
- * @param pstEntity
- *        Pointer to entity handle
+ * @brief   Connect horizontal map ends for entity
+ * @details Connects the horizontal map ends for an entity so it can
+ *          travel from one side to the other by leaving the map
+ * @param   u16MapWidth
+ *          Map width
+ * @param   pstEntity
+ *          Pointer to entity handle
  */
-void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity* pstEntity)
+void Entity_ConnectHorizontalMapEnds(const Uint16 u16MapWidth, Entity* pstEntity)
 {
     double dWidth = (double)pstEntity->u16Width;
 
@@ -71,28 +75,32 @@ void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity* pstEnti
 }
 
 /**
- * @brief Connect all map ends for entity
- * @param u16MapWidth
- *        Map width
- * @param u16MapHeight
- *        Map height
- * @param pstEntity
- *        Pointer to entity handle
+ * @brief   Connect all map ends for entity
+ * @details Connects horizontal and vertical map ends for an entity so
+ *          it can travel from one side to the other by leaving the map
+ * @param   u16MapWidth
+ *          Map width
+ * @param   u16MapHeight
+ *          Map height
+ * @param   pstEntity
+ *          Pointer to entity handle
  */
-void ConnectMapEndsForEntity(const Uint16 u16MapWidth, const Uint16 u16MapHeight, Entity* pstEntity)
+void Entity_ConnectMapEnds(const Uint16 u16MapWidth, const Uint16 u16MapHeight, Entity* pstEntity)
 {
-    ConnectHorizontalMapEndsForEntity(u16MapWidth, pstEntity);
-    ConnectVerticalMapEndsForEntity(u16MapHeight, pstEntity);
+    Entity_ConnectHorizontalMapEnds(u16MapWidth, pstEntity);
+    Entity_ConnectVerticalMapEnds(u16MapHeight, pstEntity);
 }
 
 /**
- * @brief Connect vertical map ends for entity
- * @param u16MapHeight
- *        Map height
- * @param pstEntity
- *        Pointer to entity handle
+ * @brief   Connect vertical map ends for entity
+ * @details Connects the vertical map ends for an entity so it can
+ *          travel from one side to the other by leaving the map
+ * @param   u16MapHeight
+ *          Map height
+ * @param   pstEntity
+ *          Pointer to entity handle
  */
-void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity* pstEntity)
+void Entity_ConnectVerticalMapEnds(const Uint16 u16MapHeight, Entity* pstEntity)
 {
     double dHeight = (double)pstEntity->u16Height;
 
@@ -107,16 +115,16 @@ void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity* pstEntit
 }
 
 /**
- * @brief  Create bullet/projectile
- * @param  dPosX
- *         Position along the x-axis
- * @param  dPosY
- *         Position along the y-axis
- * @param  Pointer to bullet handle
- * @remark Does nothing yet
- * @todo   Implement function
+ * @brief   Create bullet/projectile
+ * @details Creates a special bullet/projectile entity
+ * @param   dPosX
+ *          Position along the x-axis
+ * @param   dPosY
+ *          Position along the y-axis
+ * @param   Pointer to bullet handle
+ * @remark  Does nothing yet, function needs to be implemented
  */
-int CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
+int Entity_CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
 {
     (void)dPosX;
     (void)dPosY;
@@ -126,13 +134,21 @@ int CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
 }
 
 /**
- * @brief  Draw entity
- *
- * @return
- * @retval
- * @retval
+ * @brief   Draw entity
+ * @details Draws an entity on screen
+ * @param   pstEntity
+ *          Pointer to entity handle
+ * @param   pstCamera
+ *          Pointer to camera handle
+ * @param   pstSprite
+ *          Pointer to sprite handle
+ * @param   pstRenderer
+ *          Pointer to SDL rendering context
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
  */
-int DrawEntity(
+int Entity_Draw(
     const Entity* pstEntity,
     const Camera* pstCamera,
     const Sprite* pstSprite,
@@ -169,22 +185,46 @@ int DrawEntity(
     return 0;
 }
 
-void DropEntity(Entity* pstEntity)
+/**
+ * @brief   Drop entity
+ * @details Sets the entity's IS_IN_MID_AIR flag
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Drop(Entity* pstEntity)
 {
-    SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
+    Utils_SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
 }
 
-void FreeCamera(Camera* pstCamera)
-{
-    SDL_free(pstCamera);
-}
-
-void FreeEntity(Entity* pstEntity)
+/**
+ * @brief   Free entity
+ * @details Frees up allocated memory and unloads entity
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Free(Entity* pstEntity)
 {
     SDL_free(pstEntity);
 }
 
-void FreeSprite(Sprite* pstSprite)
+/**
+ * @brief   Free camera
+ * @details Frees up allocated memory and unloads camera
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+void Entity_FreeCamera(Camera* pstCamera)
+{
+    SDL_free(pstCamera);
+}
+
+/**
+ * @brief   Free Sprite
+ * @details Frees up allocated memory and unloads sprite
+ * @param   pstSprite
+ *          Pointer to sprite handle
+ */
+void Entity_FreeSprite(Sprite* pstSprite)
 {
     if (pstSprite)
     {
@@ -194,19 +234,24 @@ void FreeSprite(Sprite* pstSprite)
     }
 }
 
-int InitCamera(Camera** pstCamera)
-{
-    *pstCamera = SDL_calloc(sizeof(struct Camera_t), sizeof(Sint8));
-    if (!*pstCamera)
-    {
-        return -1;
-    }
-
-    SDL_Log("Initialise camera.\n");
-    return 0;
-}
-
-int InitEntity(
+/**
+ * @brief   Initialise entity
+ * @details Initialises entity
+ * @param   dPosX
+ *          Initial position along the x-axis
+ *          dPosY
+ *          Initial position along the y-axis
+ *          u16Width
+ *          Entity width in pixel
+ *          u16Height
+ *          Entity height in pixel
+ * @param   pstEntity
+ *          Pointer to entity handle
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
+ */
+int Entity_Init(
     const double dPosX,
     const double dPosY,
     const Uint16 u16Width,
@@ -232,7 +277,51 @@ int InitEntity(
     return 0;
 }
 
-int InitSprite(
+/**
+ * @brief   Initialise camera
+ * @details Initialises the camera
+ * @param   pstCamera
+ *          Pointer to camera handle
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
+ */
+int Entity_InitCamera(Camera** pstCamera)
+{
+    *pstCamera = SDL_calloc(sizeof(struct Camera_t), sizeof(Sint8));
+    if (!*pstCamera)
+    {
+        return -1;
+    }
+
+    SDL_Log("Initialise camera.\n");
+    return 0;
+}
+
+/**
+ * @brief   Initialise sprite
+ * @details Initialises sprite image
+ * @param   pacFileName
+ *          Path and filename of the image file to load
+ * @param   u16Width
+ *          Sprite width in pixel
+ * @param   u16Height
+ *          Sprite height in pixel
+ * @param   u16ImageOffsetX
+ *          Image pixel offset along the x-axis in case a partial image
+ *          should be loaded
+ * @param   u16ImageOffsetY
+ *          Image pixel offset along the y-axis in case a partial image
+ *          should be loaded
+ * @param   pstSprite
+ *          Pointer to sprite handle
+ * @param   pstRenderer
+ *          Pointer to SDL rendering context
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
+ */
+int Entity_InitSprite(
     const char*   pacFileName,
     const Uint16  u16Width,
     const Uint16  u16Height,
@@ -265,9 +354,15 @@ int InitSprite(
     return 0;
 }
 
-SDL_bool IsCameraLocked(const Camera* pstCamera)
+/**
+ * @brief   Check if camera is locked
+ * @details Check whether the camera's IS_LOCKED flag is set or not
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+SDL_bool Entity_IsCameraLocked(const Camera* pstCamera)
 {
-    if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
+    if (Utils_IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
         return SDL_TRUE;
     }
@@ -277,9 +372,15 @@ SDL_bool IsCameraLocked(const Camera* pstCamera)
     }
 }
 
-SDL_bool IsEntityMoving(const Entity* pstEntity)
+/**
+ * @brief   Check if entity is moving
+ * @details Check whether the entity's IS_MOVING flag is set or not
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+SDL_bool Entity_IsMoving(const Entity* pstEntity)
 {
-    if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
+    if (Utils_IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         return SDL_TRUE;
     }
@@ -289,7 +390,13 @@ SDL_bool IsEntityMoving(const Entity* pstEntity)
     }
 }
 
-SDL_bool IsEntityRising(const Entity* pstEntity)
+/**
+ * @brief   Check if a enttiy is rising
+ * @details Check if a entity accelerates up along the y-axis
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+SDL_bool Entity_IsRising(const Entity* pstEntity)
 {
     if (0 > pstEntity->dVelocityY)
     {
@@ -301,7 +408,13 @@ SDL_bool IsEntityRising(const Entity* pstEntity)
     }
 }
 
-void JumpEntity(const double dForce, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Jump(const double dForce, Entity* pstEntity)
 {
     if (!pstEntity->bIsJumping)
     {
@@ -316,17 +429,35 @@ void JumpEntity(const double dForce, Entity* pstEntity)
     }
 }
 
-void LockCamera(Camera* pstCamera)
+/**
+ * @brief   
+ * @details 
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+void Entity_LockCamera(Camera* pstCamera)
 {
-    SetFlag(IS_LOCKED, &pstCamera->u16Flags);
+    Utils_SetFlag(IS_LOCKED, &pstCamera->u16Flags);
 }
 
-void MoveEntity(Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Move(Entity* pstEntity)
 {
-    SetFlag(IS_MOVING, &pstEntity->u16Flags);
+    Utils_SetFlag(IS_MOVING, &pstEntity->u16Flags);
 }
 
-void MoveEntityFull(
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_MoveFull(
     const Direction eDirection,
     const double    dAcceleration,
     const double    dMaxVelocityX,
@@ -336,31 +467,51 @@ void MoveEntityFull(
     const Uint8     u8FrameOffsetY,
     Entity*         pstEntity)
 {
-    SetFlag(IS_MOVING, &pstEntity->u16Flags);
-    SetFrameOffset(0, u8FrameOffsetY, pstEntity);
-    SetSpeed(dAcceleration, dMaxVelocityX, pstEntity);
-    SetDirection(eDirection, pstEntity);
-    SetAnimation(u8AnimStart, u8AnimEnd, dAnimSpeed, pstEntity);
+    Utils_SetFlag(IS_MOVING, &pstEntity->u16Flags);
+    Entity_SetFrameOffset(0, u8FrameOffsetY, pstEntity);
+    Entity_SetSpeed(dAcceleration, dMaxVelocityX, pstEntity);
+    Entity_SetDirection(eDirection, pstEntity);
+    Entity_SetAnimation(u8AnimStart, u8AnimEnd, dAnimSpeed, pstEntity);
 }
 
-void ResetEntity(Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Reset(Entity* pstEntity)
 {
     pstEntity->u16Flags = 0;
 }
 
-void ResetEntityToSpawnPosition(Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_ResetToSpawnPosition(Entity* pstEntity)
 {
     pstEntity->dPosX = pstEntity->dSpawnPosX;
     pstEntity->dPosY = pstEntity->dSpawnPosY;
 }
 
-void SetCameraTargetEntity(
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+void Entity_SetCameraTarget(
     const Sint32  s32LogicalWindowWidth,
     const Sint32  s32LogicalWindowHeight,
     const Entity* pstEntity,
     Camera*       pstCamera)
 {
-    if (IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
+    if (Utils_IsFlagSet(IS_LOCKED, pstCamera->u16Flags))
     {
         pstCamera->dPosX = pstEntity->dPosX;
         pstCamera->dPosX -= s32LogicalWindowWidth / 2.0;
@@ -374,7 +525,13 @@ void SetCameraTargetEntity(
     }
 }
 
-void SetAnimation(
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetAnimation(
     const Uint8  u8AnimStart,
     const Uint8  u8AnimEnd,
     const double dAnimSpeed,
@@ -394,7 +551,13 @@ void SetAnimation(
     }
 }
 
-int SetCameraBoundariesToMapSize(
+/**
+ * @brief   
+ * @details 
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+int Entity_SetCameraBoundariesToMapSize(
     const Sint32 s32LogicalWindowWidth,
     const Sint32 s32LogicalWindowHeight,
     const Uint16 u16MapWidth,
@@ -430,7 +593,13 @@ int SetCameraBoundariesToMapSize(
     return bReturnValue;
 }
 
-void SetDirection(const Direction eDirection, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetDirection(const Direction eDirection, Entity* pstEntity)
 {
     if (RIGHT == eDirection)
     {
@@ -442,41 +611,83 @@ void SetDirection(const Direction eDirection, Entity* pstEntity)
     }
 }
 
-void SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity* pstEntity)
 {
     pstEntity->u8FrameOffsetX = u8OffsetX;
     pstEntity->u8FrameOffsetY = u8OffsetY;
 }
 
-void SetPosition(const double dPosX, const double dPosY, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetPosition(const double dPosX, const double dPosY, Entity* pstEntity)
 {
     pstEntity->dPosX = dPosX;
     pstEntity->dPosY = dPosY;
 }
 
-void SetSpawnPosition(const double dPosX, const double dPosY, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetSpawnPosition(const double dPosX, const double dPosY, Entity* pstEntity)
 {
     pstEntity->dSpawnPosX = dPosX;
     pstEntity->dSpawnPosY = dPosY;
 }
 
-void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity* pstEntity)
 {
     pstEntity->dAcceleration = dAcceleration;
     pstEntity->dMaxVelocityX = dMaxVelocityX;
 }
 
-void StopEntity(Entity* pstEntity)
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Stop(Entity* pstEntity)
 {
-    ClearFlag(IS_MOVING, &pstEntity->u16Flags);
+    Utils_ClearFlag(IS_MOVING, &pstEntity->u16Flags);
 }
 
-void UnlockCamera(Camera* pstCamera)
+/**
+ * @brief   
+ * @details 
+ * @param   pstCamera
+ *          Pointer to camera handle
+ */
+void Entity_UnlockCamera(Camera* pstCamera)
 {
-    ClearFlag(IS_LOCKED, &pstCamera->u16Flags);
+    Utils_ClearFlag(IS_LOCKED, &pstCamera->u16Flags);
 }
 
-void UpdateEntity(
+/**
+ * @brief   
+ * @details 
+ * @param   pstEntity
+ *          Pointer to entity handle
+ */
+void Entity_Update(
     const double dDeltaTime,
     const double dGravitation,
     const Uint8  u8MeterInPixel,
@@ -488,12 +699,12 @@ void UpdateEntity(
     // Apply gravitation.
     if (0 != dGravitation)
     {
-        if (IsEntityRising(pstEntity))
+        if (Entity_IsRising(pstEntity))
         {
-            SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
+            Utils_SetFlag(IS_IN_MID_AIR, &pstEntity->u16Flags);
         }
 
-        if (IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
+        if (Utils_IsFlagSet(IS_IN_MID_AIR, pstEntity->u16Flags))
         {
             double dG         = dGravitation * u8MeterInPixel;
             double dDistanceY = dG * DELTA_TIME * DELTA_TIME;
@@ -505,12 +716,12 @@ void UpdateEntity(
             pstEntity->bIsJumping = 0;
             // Correct position along the y-axis.
             pstEntity->dVelocityY = 0.f;
-            dPosY                 = (16.f * Round(dPosY / 16.f));
+            dPosY                 = (16.f * Utils_Round(dPosY / 16.f));
         }
     }
 
     // Calculate horizontal velocity.
-    if (IsFlagSet(IS_MOVING, pstEntity->u16Flags))
+    if (Utils_IsFlagSet(IS_MOVING, pstEntity->u16Flags))
     {
         double dAccel     = pstEntity->dAcceleration * (double)u8MeterInPixel;
         double dDistanceX = dAccel * DELTA_TIME * DELTA_TIME;
@@ -545,7 +756,7 @@ void UpdateEntity(
     }
 
     // Update position.
-    SetPosition(dPosX, dPosY, pstEntity);
+    Entity_SetPosition(dPosX, dPosY, pstEntity);
 
     // Update axis-aligned bounding box.
     pstEntity->stBB.dBottom = dPosY + (double)(pstEntity->u16Height / 2.f);
@@ -564,7 +775,7 @@ void UpdateEntity(
     }
 
     // Update animation frame.
-    if (IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))
+    if (Utils_IsFlagSet(IS_ANIMATED, pstEntity->u16Flags))
     {
         pstEntity->dAnimDelay += dDeltaTime;
 

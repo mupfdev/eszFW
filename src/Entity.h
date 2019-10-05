@@ -1,5 +1,6 @@
 /**
  * @file    Entity.h
+ * @brief   Entity handler include header
  * @ingroup Entity
  */
 #pragma once
@@ -89,36 +90,37 @@ typedef struct Sprite_t
 
 } Sprite;
 
-void AnimateEntity(SDL_bool bAnimate, Entity* pstEntity);
-void ConnectHorizontalMapEndsForEntity(const Uint16 u16MapWidth, Entity* pstEntity);
+void Entity_AnimateEntity(SDL_bool bAnimate, Entity* pstEntity);
+void Entity_ConnectHorizontalMapEnds(const Uint16 u16MapWidth, Entity* pstEntity);
 
-void ConnectMapEndsForEntity(
+void Entity_ConnectMapEnds(
     const Uint16 u16MapWidth,
     const Uint16 u16MapHeight,
     Entity*      pstEntity);
 
-void ConnectVerticalMapEndsForEntity(const Uint16 u16MapHeight, Entity* pstEntity);
+void Entity_ConnectVerticalMapEnds(const Uint16 u16MapHeight, Entity* pstEntity);
 
-int  DrawEntity(
+int  Entity_Draw(
      const Entity* pstEntity,
      const Camera* pstCamera,
      const Sprite* pstSprite,
      SDL_Renderer* pstRenderer);
 
-void DropEntity(Entity* pstEntity);
-void FreeCamera(Camera* pstCamera);
-void FreeEntity(Entity* pstEntity);
-void FreeSprite(Sprite* pstSprite);
-int  InitCamera(Camera** pstCamera);
+void Entity_Drop(Entity* pstEntity);
+void Entity_Free(Entity* pstEntity);
+void Entity_FreeCamera(Camera* pstCamera);
+void Entity_FreeSprite(Sprite* pstSprite);
 
-int InitEntity(
+int Entity_Init(
     const double dPosX,
     const double dPosY,
     const Uint16 u16Width,
     const Uint16 u16Height,
     Entity**     pstEntity);
 
-int InitSprite(
+int Entity_InitCamera(Camera** pstCamera);
+
+int Entity_InitSprite(
     const char*   pacFileName,
     const Uint16  u16Width,
     const Uint16  u16Height,
@@ -127,14 +129,14 @@ int InitSprite(
     Sprite**      pstSprite,
     SDL_Renderer* pstRenderer);
 
-SDL_bool IsCameraLocked(const Camera* pstCamera);
-SDL_bool IsEntityMoving(const Entity* pstEntity);
-SDL_bool IsEntityRising(const Entity* pstEntity);
-void     JumpEntity(const double dForce, Entity* pstEntity);
-void     LockCamera(Camera* pstCamera);
-void     MoveEntity(Entity* pstEntity);
+SDL_bool Entity_IsCameraLocked(const Camera* pstCamera);
+SDL_bool Entity_IsEntityMoving(const Entity* pstEntity);
+SDL_bool Entity_IsRising(const Entity* pstEntity);
+void     Entity_Jump(const double dForce, Entity* pstEntity);
+void     Entity_LockCamera(Camera* pstCamera);
+void     Entity_Move(Entity* pstEntity);
 
-void MoveEntityFull(
+void Entity_MoveFull(
     const Direction bOrientation,
     const double    dAcceleration,
     const double    dMaxVelocityX,
@@ -144,37 +146,37 @@ void MoveEntityFull(
     const Uint8     u8FrameOffsetY,
     Entity*         pstEntity);
 
-void ResetEntity(Entity* pstEntity);
-void ResetEntityToSpawnPosition(Entity* pstEntity);
+void Entity_Reset(Entity* pstEntity);
+void Entity_ResetToSpawnPosition(Entity* pstEntity);
 
-int SetCameraBoundariesToMapSize(
+int Entity_SetCameraBoundariesToMapSize(
     const Sint32 s32LogicalWindowWidth,
     const Sint32 s32LogicalWindowHeight,
     const Uint16 u16MapWidth,
     const Uint16 u16MapHeight,
     Camera*      pstCamera);
 
-void SetCameraTargetEntity(
+void Entity_SetCameraTarget(
     const Sint32  s32LogicalWindowWidth,
     const Sint32  s32LogicalWindowHeight,
     const Entity* pstEntity,
     Camera*       pstCamera);
 
-void SetAnimation(
+void Entity_SetAnimation(
     const Uint8  u8AnimStart,
     const Uint8  u8AnimEnd,
     const double dAnimSpeed,
     Entity*      pstEntity);
 
-void SetDirection(const Direction eDirection, Entity* pstEntity);
-void SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity* pstEntity);
-void SetPosition(const double dPosX, const double dPosY, Entity* pstEntity);
-void SetSpawnPosition(const double dPosX, const double dPosY, Entity* pstEntity);
-void SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity* pstEntity);
-void StopEntity(Entity* pstEntity);
-void UnlockCamera(Camera* pstCamera);
+void Entity_SetDirection(const Direction eDirection, Entity* pstEntity);
+void Entity_SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity* pstEntity);
+void Entity_SetPosition(const double dPosX, const double dPosY, Entity* pstEntity);
+void Entity_SetSpawnPosition(const double dPosX, const double dPosY, Entity* pstEntity);
+void Entity_SetSpeed(const double dAcceleration, const double dMaxVelocityX, Entity* pstEntity);
+void Entity_Stop(Entity* pstEntity);
+void Entity_UnlockCamera(Camera* pstCamera);
 
-void UpdateEntity(
+void Entity_Update(
     const double dDeltaTime,
     const double dGravitation,
     const Uint8  u8MeterInPixel,

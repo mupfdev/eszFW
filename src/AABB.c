@@ -19,8 +19,8 @@
  * @param   stBoxB
  *          Bounding box B
  * @return  Boolean value
- * @retval  1: Boxes intersect
- * @retval  0: Boxes do not intersect
+ * @retval  SDL_TRUE: Boxes intersect
+ * @retval  SDL_FALSE: Boxes do not intersect
  */
 SDL_bool AABB_BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
 {
