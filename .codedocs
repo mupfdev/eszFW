@@ -25,3 +25,5 @@ DOXYFILE = Doxyfile
 # Note: these repositories must already be built on CodeDocs.
 
 TAGLINKS =
+
+HTML_DYNAMIC_MENUS = NO
