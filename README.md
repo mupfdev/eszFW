@@ -19,6 +19,11 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 ## Documentation
 
+The documentation can be generated using Doxygen:
+```
+doxygen
+```
+
 The documentation is generated automatically and can be found
 [here](https://codedocs.xyz/mupfelofen-de/eszFW/).
 
