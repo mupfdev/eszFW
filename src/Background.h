@@ -1,5 +1,6 @@
 /**
  * @file    Background.h
+ * @brief   Background handler include header
  * @ingroup Background
  */
 #pragma once
@@ -39,7 +40,7 @@ typedef struct Background_t
 
 } Background;
 
-Sint8 DrawBackground(
+Sint8 Background_Draw(
     const Direction eDirection,
     const Sint32    s32LogicalWindowHeight,
     const double    dCameraPosY,
@@ -47,9 +48,9 @@ Sint8 DrawBackground(
     SDL_Renderer*   pstRenderer,
     Background*     pstBackground);
 
-void FreeBackground(Background* Background);
+void Background_Free(Background* Background);
 
-Sint8 InitBackground(
+Sint8 Background_Init(
     const Uint8     u8Num,
     const char*     pacFilenames[static u8Num],
     const Sint32    s32WindowWidth,

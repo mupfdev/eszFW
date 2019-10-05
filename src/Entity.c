@@ -125,6 +125,13 @@ int CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
     return 0;
 }
 
+/**
+ * @brief  Draw entity
+ *
+ * @return
+ * @retval
+ * @retval
+ */
 int DrawEntity(
     const Entity* pstEntity,
     const Camera* pstCamera,

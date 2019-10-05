@@ -1,7 +1,8 @@
 /**
  * @file      Audio.c
+ * @brief     Audio handler source
  * @ingroup   Audio
- * @defgroup  Audio Audio handler
+ * @defgroup  Audio Audio/Music/SFX handler
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
@@ -11,11 +12,12 @@
 #include "Audio.h"
 
 /**
- * @brief Free audio mixer
- * @param pstAudio
- *        Pointer to audio mixer handle
+ * @brief   Free audio mixer
+ * @details Frees up allocated memory and de-initialises audio mixer
+ * @param   pstAudio
+ *          Pointer to audio mixer handle
  */
-void FreeAudio(Audio* pstAudio)
+void Audio_Free(Audio* pstAudio)
 {
     Mix_CloseAudio();
     while (Mix_Init(0))
@@ -27,11 +29,12 @@ void FreeAudio(Audio* pstAudio)
 }
 
 /**
- * @brief Free/Unload music file
- * @param pstMusic
- *        Pointer to loaded music file handle
+ * @brief   Free/Unload music file
+ * @details Frees up allocated memory and unloads music file
+ * @param   pstMusic
+ *          Pointer to loaded music file handle
  */
-void FreeMusic(Music* pstMusic)
+void Audio_FreeMusic(Music* pstMusic)
 {
     if (pstMusic)
     {
@@ -46,16 +49,16 @@ void FreeMusic(Music* pstMusic)
 }
 
 /**
- * @brief  Initialise audio mixer
- * @param  pstAudio
- *         Pointer to audio mixer handle
- * @return Error code
- * @retval 0
- *         OK
- * @brief  -1
- *         Error
+ * @brief   Initialise audio mixer
+ * @details Initialises audio mixer required to play any sound
+ *          whatsoever
+ * @param   pstAudio
+ *          Pointer to audio mixer handle
+ * @return  Error code
+ * @retval   0: OK
+ * @brief   -1: Error
  */
-Sint8 InitAudio(Audio** pstAudio)
+Sint8 Audio_Init(Audio** pstAudio)
 {
     *pstAudio = SDL_calloc(sizeof(struct Audio_t), sizeof(Sint8));
     if (!*pstAudio)
@@ -92,20 +95,19 @@ Sint8 InitAudio(Audio** pstAudio)
 }
 
 /**
- * @brief  Initialise music file
- * @param  pacFileName
- *         Path to music file
- * @param  s8Loops
- *         Loops to play, -1 to loop endlessly
- * @param  pstMusic
- *         Pointer to music file handle
- * @return Error code
- * @retval 0
- *         OK
- * @retval -1
- *         Error
+ * @brief   Initialise music file
+ * @details Loads music file into memory
+ * @param   pacFileName
+ *          Path to music file
+ * @param   s8Loops
+ *          Loops to play, -1 to loop endlessly
+ * @param   pstMusic
+ *          Pointer to music file handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
  */
-Sint8 InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic)
+Sint8 Audio_InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic)
 {
     *pstMusic = SDL_calloc(sizeof(struct Music_t), sizeof(Sint8));
     if (!*pstMusic)
@@ -128,16 +130,15 @@ Sint8 InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic)
 }
 
 /**
- * @brief  Play music file
- * @param  u16FadeInMs
- *         Fade-in time in milliseconds
- * @param  pstMusic
- *         Pointer to music file handle
- * @return Error code
- * @retval 0
- *         OK
- * @retval -1
- *         Error
+ * @brief   Play music file
+ * @details Plays previously loaded music file
+ * @param   u16FadeInMs
+ *          Fade-in time in milliseconds
+ * @param   pstMusic
+ *          Pointer to music file handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
  */
 Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic)
 {

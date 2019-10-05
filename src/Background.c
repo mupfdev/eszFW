@@ -1,5 +1,6 @@
 /**
  * @file      Background.c
+ * @brief     Background handler source
  * @ingroup   Background
  * @ingroup   Background Parallax-scrolling background handler
  * @author    Michael Fitzmayer
@@ -205,24 +206,24 @@ exit:
 }
 
 /**
- * @brief  Draw background
- * @param  eDirection
- *         Scroll direction
- * @param  s32LogicalWindowHeight
- *         Logical window height in pixel
- * @param  dCameraPosY
- *         Camera position along the y-axis
- * @param  dVelocity
- *         Scroll velocity
- * @param  pstRenderer
- *         Pointer to SDL rendering context
- * @param  pstBackground
- *         Pointer to background handle
- * @return Error code
- * @retval 0
- *         OK
+ * @brief   Draw background
+ * @details Draws the layers of a parallax-scrolling background
+ * @param   eDirection
+ *          Scroll direction
+ * @param   s32LogicalWindowHeight
+ *          Logical window height in pixel
+ * @param   dCameraPosY
+ *          Camera position along the y-axis
+ * @param   dVelocity
+ *          Scroll velocity
+ * @param   pstRenderer
+ *          Pointer to SDL rendering context
+ * @param   pstBackground
+ *          Pointer to background handle
+ * @return  Error code
+ * @retval  0: OK
  */
-Sint8 DrawBackground(
+Sint8 Background_Draw(
     const Direction eDirection,
     const Sint32    s32LogicalWindowHeight,
     const double    dCameraPosY,
@@ -245,37 +246,38 @@ Sint8 DrawBackground(
 }
 
 /**
- * @brief Free/Unload parallax-scrolling background
- * @param pstBackground
- *        Pointer to background handle
+ * @brief   Free background
+ * @details Frees up allocated memory and unload parallax-scrolling
+ *          background
+ * @param   pstBackground
+ *          Pointer to background handle
  */
-void FreeBackground(Background* pstBackground)
+void Background_Free(Background* pstBackground)
 {
     SDL_free(pstBackground);
     SDL_Log("Unload parallax scrolling background.\n");
 }
 
 /**
- * @brief  Initialiase parallax-scrolling background
- * @param  u8Num
- *         Number of backgrounds
- * @param  pacFileNames
- *         Pointer to array with list of filenames
- * @param  s32WindowWidth
- *         Window width in pixel
- * @param  eAlignment
- *         Background alignment
- * @param  pstRenderer
- *         Pointer to SDL rendering context
- * @param  pstBackground
- *         Pointer to background handle
- * @return Error code
- * @retval 0
- *         OK
- * @retval -1
- *         Error
+ * @brief   Initialise background
+ * @details Initialises parallax-scrolling background
+ * @param   u8Num
+ *          Number of backgrounds
+ * @param   pacFileNames
+ *          Pointer to array with list of filenames
+ * @param   s32WindowWidth
+ *          Window width in pixel
+ * @param   eAlignment
+ *          Background alignment
+ * @param   pstRenderer
+ *          Pointer to SDL rendering context
+ * @param   pstBackground
+ *          Pointer to background handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
  */
-Sint8 InitBackground(
+Sint8 Background_Init(
     const Uint8     u8Num,
     const char*     pacFileNames[static u8Num],
     const Sint32    s32WindowWidth,

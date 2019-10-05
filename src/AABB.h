@@ -1,5 +1,6 @@
 /**
  * @file    AABB.h
+ * @brief   AABB handler include header
  * @ingroup AABB
  */
 #pragma once
@@ -21,4 +22,4 @@ typedef struct AABB_t
 
 } AABB;
 
-SDL_bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);
+SDL_bool AABB_BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB);

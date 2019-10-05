@@ -1,5 +1,6 @@
 /**
  * @file      AABB.c
+ * @brief     AABB handler source
  * @ingroup   AABB
  * @defgroup  AABB Axis-aligned bounding boxes handler
  * @author    Michael Fitzmayer
@@ -10,14 +11,18 @@
 #include "AABB.h"
 
 /**
- * @brief  Check if two axis-aligned bounding boxes intersect.
- * @param  stBoxA
- *         Bounding box A.
- * @param  stBoxB
- *         Bounding box B.
- * @return 1 if boxes are intersecting, 0 if not.
+ * @brief   Check if two axis-aligned bounding boxes intersect
+ * @details Can be used to trigger events e.g. when two entities
+ *          intersect
+ * @param   stBoxA
+ *          Bounding box A
+ * @param   stBoxB
+ *          Bounding box B
+ * @return  Boolean value
+ * @retval  1: Boxes intersect
+ * @retval  0: Boxes do not intersect
  */
-SDL_bool BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
+SDL_bool AABB_BoxesDoIntersect(const AABB stBoxA, const AABB stBoxB)
 {
     double dAx = stBoxB.dLeft - stBoxA.dRight;
     double dAy = stBoxB.dTop  - stBoxA.dBottom;

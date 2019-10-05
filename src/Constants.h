@@ -1,5 +1,6 @@
 /**
  * @file      Constants.h
+ * @brief     Constants include header
  * @ingroup   Constants
  * @defgroup  Constants Constants used across the framework
  * @author    Michael Fitzmayer
@@ -47,7 +48,9 @@ typedef enum TimeConstant_t
 } TimeConstant;
 
 /**
- * @def   DELTA_TIME
- * @brief Delta time calculation formula
+ * @def     DELTA_TIME
+ * @brief   Delta time calculation formula
+ * @details Calculates the delta-time by dividing the approximate time
+ *          per frame by a time factor
  */
 #define DELTA_TIME (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR

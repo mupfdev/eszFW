@@ -1,5 +1,6 @@
 /**
  * @file    Audio.h
+ * @brief   Audio handler include header
  * @ingroup Audio
  */
 #pragma once
@@ -35,8 +36,8 @@ typedef struct Music_t
 
 } Music;
 
-void  FreeAudio(Audio* pstAudio);
-void  FreeMusic(Music* pstMusic);
-Sint8 InitAudio(Audio** pstAudio);
-Sint8 InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic);
-Sint8 PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic);
+void  Audio_Free(Audio* pstAudio);
+void  Audio_FreeMusic(Music* pstMusic);
+Sint8 Audio_Init(Audio** pstAudio);
+Sint8 Audio_InitMusic(const char* pacFileName, const Sint8 s8Loops, Music** pstMusic);
+Sint8 Audio_PlayMusic(const Uint16 u16FadeInMs, const Music* pstMusic);
