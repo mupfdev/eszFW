@@ -1,17 +1,17 @@
-![eszFW](.media/logo.png "eszFW")
+# eszFW
 
 [![Build status](https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true)](https://ci.appveyor.com/project/mupfelofen-de/eszfw)
 
 ## About
 
-eszFW is a cross-platform game development framework written in C.  It's
-mainly aimed at platformer games, but can be used and customized for any
-other genre.  Furthermore, this project is the logical continuation of
-my older projects [Rainbow
+eszFW is a cross-platform game development framework written in C99.
+It's mainly aimed at platformer games, but can be used and customized
+for any other genre.  Furthermore, this project is the logical
+continuation of my older projects [Rainbow
 Joe](https://github.com/mupfelofen-de/rainbow-joe) and [Boondock
 Sam](https://github.com/mupfelofen-de/boondock-sam).
 
-It is written in C using SDL2 and the [TMX Map
+It is written in C99 using SDL2 and the [TMX Map
 Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 (Tile Map XML).
 

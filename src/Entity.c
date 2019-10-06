@@ -35,7 +35,7 @@ typedef enum Flags_t
  * @brief   Animate entity
  * @details Sets or clears the entity's IS_ANIMATED flag
  * @param   bAnimate
- *          0 = Do not animate, 1 = Animate
+ *          SDL_FALSE = Do not animate, SDL_TRUE = Animate
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -359,6 +359,9 @@ int Entity_InitSprite(
  * @details Check whether the camera's IS_LOCKED flag is set or not
  * @param   pstCamera
  *          Pointer to camera handle
+ * @return  Current lock state of the camera
+ * @retval  SDL_TRUE:  Camera is locked
+ * @retval  SDL_FALSE: Camera is not locked
  */
 SDL_bool Entity_IsCameraLocked(const Camera* pstCamera)
 {
@@ -377,6 +380,9 @@ SDL_bool Entity_IsCameraLocked(const Camera* pstCamera)
  * @details Check whether the entity's IS_MOVING flag is set or not
  * @param   pstEntity
  *          Pointer to entity handle
+ * @return  Current moving state of the entity
+ * @retval  SDL_TRUE: Entity is moving
+ * @retval  SDL_FALSE: Entity is not moving
  */
 SDL_bool Entity_IsMoving(const Entity* pstEntity)
 {
@@ -395,6 +401,9 @@ SDL_bool Entity_IsMoving(const Entity* pstEntity)
  * @details Check if a entity accelerates up along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
+ * @return  Current risin state of the entity
+ * @retval  SDL_TRUE: Entity is rising
+ * @retval  SDL_FALSE: Entity is not rising
  */
 SDL_bool Entity_IsRising(const Entity* pstEntity)
 {
