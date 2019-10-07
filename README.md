@@ -1,11 +1,11 @@
 # eszFW
 
 <p>
-<a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw" alt="Build status">
-    <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" />
+<a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
+    <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" alt="Build status" />
 </a>
-<a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENCE.md" alt="Licence">
-    <img src="https://img.shields.io/badge/licence-BEER--WARE-brightgreen?style=flat" />
+<a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENCE.md">
+    <img src="https://img.shields.io/badge/licence-BEER--WARE-brightgreen?style=flat" alt="Licence" />
 </a>
 </p>
 
