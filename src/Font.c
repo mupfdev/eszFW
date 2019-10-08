@@ -146,7 +146,7 @@ exit:
     return s8ReturnValue;
 }
 
-void Font_SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont)
+void Font_SetColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont)
 {
     pstFont->stColour.r = u8Red;
     pstFont->stColour.g = u8Green;

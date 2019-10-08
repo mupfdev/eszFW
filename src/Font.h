@@ -37,4 +37,4 @@ Sint8 Font_PrintText(
     const Font*   pstFont,
     SDL_Renderer* pstRenderer);
 
-void Font_SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont);
+void Font_SetColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont);

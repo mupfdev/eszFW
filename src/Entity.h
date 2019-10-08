@@ -90,7 +90,7 @@ typedef struct Sprite_t
 
 } Sprite;
 
-void Entity_AnimateEntity(SDL_bool bAnimate, Entity* pstEntity);
+void Entity_Animate(SDL_bool bAnimate, Entity* pstEntity);
 void Entity_ConnectHorizontalMapEnds(const Uint16 u16MapWidth, Entity* pstEntity);
 
 void Entity_ConnectMapEnds(
@@ -130,7 +130,7 @@ int Entity_InitSprite(
     SDL_Renderer* pstRenderer);
 
 SDL_bool Entity_IsCameraLocked(const Camera* pstCamera);
-SDL_bool Entity_IsEntityMoving(const Entity* pstEntity);
+SDL_bool Entity_IsMoving(const Entity* pstEntity);
 SDL_bool Entity_IsRising(const Entity* pstEntity);
 void     Entity_Jump(const double dForce, Entity* pstEntity);
 void     Entity_LockCamera(Camera* pstCamera);
