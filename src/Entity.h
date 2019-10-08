@@ -17,12 +17,12 @@
  */
 typedef struct Bullet_t
 {
-    AABB     stBB;
-    double   dPosX;
-    double   dPosY;
-    Uint8    u8Size;
-    SDL_bool bOrientation;
-    double   dVelocity;
+    AABB     stBB;          ///< Axis-aligned bounding box
+    double   dPosX;         ///< Position along the x-axis
+    double   dPosY;         ///< Position along the y-axis
+    Uint8    u8Size;        ///< Bullet size in pixel
+    SDL_bool bOrientation;  ///< The bullet's orientation
+    double   dVelocity;     ///< Velocity
 
 } Bullet;
 
@@ -50,27 +50,27 @@ typedef struct Camera_t
  */
 typedef struct Entity_t
 {
-    AABB      stBB;
-    Uint16    u16Flags;
-    double    dPosX;
-    double    dPosY;
-    double    dSpawnPosX;
-    double    dSpawnPosY;
-    SDL_bool  bIsJumping;
-    Direction eDirection;
-    double    dAcceleration;
-    double    dVelocityX;
-    double    dMaxVelocityX;
-    double    dVelocityY;
-    Uint16    u16Width;
-    Uint16    u16Height;
-    Uint8     u8FrameOffsetX;
-    Uint8     u8FrameOffsetY;
-    Uint8     u8AnimFrame;
-    Uint8     u8AnimStart;
-    Uint8     u8AnimEnd;
-    double    dAnimDelay;
-    double    dAnimSpeed;
+    AABB      stBB;            ///< Axis-aligned bounding box
+    Uint16    u16Flags;        ///< Flag mask
+    double    dPosX;           ///< Position along the x-axis
+    double    dPosY;           ///< Position along the y-axis
+    double    dSpawnPosX;      ///< Spawn position along the x-axis
+    double    dSpawnPosY;      ///< Spawn position along the y-axis
+    SDL_bool  bIsJumping;      ///< Current jumping-state
+    Direction eDirection;      ///< Direction
+    double    dAcceleration;   ///< Acceleration
+    double    dVelocityX;      ///< Velocity along the x-axis
+    double    dMaxVelocityX;   ///< Max velocity along the x-axis
+    double    dVelocityY;      ///< Velocity along the y-axis
+    Uint16    u16Width;        ///< Entity width in pixel
+    Uint16    u16Height;       ///< Entity height in pixel
+    Uint8     u8FrameOffsetX;  ///< Frame x-offset in frames
+    Uint8     u8FrameOffsetY;  ///< Frame y-offset in frames
+    Uint8     u8AnimFrame;     ///< Current animation frame
+    Uint8     u8AnimStart;     ///< Animation start
+    Uint8     u8AnimEnd;       ///< Animation end
+    double    dAnimDelay;      ///< Animation delay
+    double    dAnimSpeed;      ///< Animation speed
 
 } Entity;
 
@@ -82,11 +82,11 @@ typedef struct Entity_t
  */
 typedef struct Sprite_t
 {
-    SDL_Texture* pstTexture;
-    Uint16       u16Width;
-    Uint16       u16Height;
-    Uint16       u16ImageOffsetX;
-    Uint16       u16ImageOffsetY;
+    SDL_Texture* pstTexture;       ///< SDL2 texture
+    Uint16       u16Width;         ///< Sprite width
+    Uint16       u16Height;        ///< Sprite height
+    Uint16       u16ImageOffsetX;  ///< Image x-offset in pixel
+    Uint16       u16ImageOffsetY;  ///< Image y-offset in pixel
 
 } Sprite;
 

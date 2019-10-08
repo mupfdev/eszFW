@@ -17,7 +17,7 @@
 /**
  * @typedef Flags
  * @brief   Entity flags type
- * @struct  Flags_t
+ * @enum    Flags_t
  * @brief   Entity flags data
  * @remark  These flags are only used internally
  */
@@ -121,8 +121,11 @@ void Entity_ConnectVerticalMapEnds(const Uint16 u16MapHeight, Entity* pstEntity)
  *          Position along the x-axis
  * @param   dPosY
  *          Position along the y-axis
- * @param   Pointer to bullet handle
+ * @param   pstBullet
+ *          Pointer to bullet handle
  * @remark  Does nothing yet, function needs to be implemented
+ * @return  Always 0 at this point
+ * @todo    Implement function
  */
 int Entity_CreateBullet(const double dPosX, const double dPosY, Bullet* pstBullet)
 {
@@ -239,11 +242,11 @@ void Entity_FreeSprite(Sprite* pstSprite)
  * @details Initialises entity
  * @param   dPosX
  *          Initial position along the x-axis
- *          dPosY
+ * @param   dPosY
  *          Initial position along the y-axis
- *          u16Width
+ * @param   u16Width
  *          Entity width in pixel
- *          u16Height
+ * @param   u16Height
  *          Entity height in pixel
  * @param   pstEntity
  *          Pointer to entity handle
@@ -465,6 +468,20 @@ void Entity_Move(Entity* pstEntity)
 /**
  * @brief   Move entity with parameters
  * @details Same as Entity_Move() but all parameters can be set at once
+ * @param   eDirection
+ *          Direction
+ * @param   dAcceleration
+ *          Acceleration
+ * @param   dMaxVelocityX
+ *          Maximum velocity along the y-axis
+ * @param   u8AnimStart
+ *          Start frame
+ * @param   u8AnimEnd
+ *          Last frame
+ * @param   dAnimSpeed
+ *          Animation speed
+ * @param   u8FrameOffsetY
+ *          Frame offset in frames along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -541,8 +558,14 @@ void Entity_SetCameraTarget(
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set animation for entity
+ * @details Sets animation start, end and speed for entity
+ * @param   u8AnimStart
+ *          Start frame
+ * @param   u8AnimEnd
+ *          Last frame
+ * @param   dAnimSpeed
+ *          Animation speed
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -567,10 +590,21 @@ void Entity_SetAnimation(
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set camera boundaries to map size
+ * @details Sets the camera's boundaries to size of the map
+ * @param   s32LogicalWindowWidth
+ *          Logical window width in pixel
+ * @param   s32LogicalWindowHeight
+ *          Logical window height in pixel
+ * @param   u16MapWidth
+ *          Map width in pixel
+ * @param   u16MapHeight
+ *          Map height in pixel
  * @param   pstCamera
  *          Pointer to camera handle
+ * @return  Current state of camera
+ * @retval  0: Camera has reached set boundaries
+ * @retval  1: Camera hasn't reached set boundaries
  */
 int Entity_SetCameraBoundariesToMapSize(
     const Sint32 s32LogicalWindowWidth,
@@ -609,8 +643,10 @@ int Entity_SetCameraBoundariesToMapSize(
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set entity direction
+ * @details Sets the direction of an entity
+ * @param   eDirection
+ *          Direction
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -627,10 +663,15 @@ void Entity_SetDirection(const Direction eDirection, Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set frame offset
+ * @details Sets a frame offset in frames
+ * @param   u8OffsetX
+ *          Offset in frames along the x-axis
+ * @param   u8OffsetY
+ *          Offset in frames along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
+ * @todo    Describe this function in more detail
  */
 void Entity_SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity* pstEntity)
 {
@@ -639,8 +680,12 @@ void Entity_SetFrameOffset(const Uint8 u8OffsetX, const Uint8 u8OffsetY, Entity*
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set entity position
+ * @details Sets the absolute position for an entity
+ * @param   dPosX
+ *          Position along the x-axis
+ * @param   dPosY
+ *          Position along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -651,8 +696,12 @@ void Entity_SetPosition(const double dPosX, const double dPosY, Entity* pstEntit
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set entity spawn position
+ * @details Sets absolute (re)spawn position for an entity
+ * @param   dPosX
+ *          Position along the x-axis
+ * @param   dPosY
+ *          Position along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -663,8 +712,13 @@ void Entity_SetSpawnPosition(const double dPosX, const double dPosY, Entity* pst
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set entity speed
+ * @details Sets a entity's acceleration and maximum velocity along the
+ *          x-axis
+ * @param   dAcceleration
+ *          Acceleration
+ * @param   dMaxVelocityX
+ *          Maximum velocity along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -675,8 +729,8 @@ void Entity_SetSpeed(const double dAcceleration, const double dMaxVelocityX, Ent
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Stop entity
+ * @details Clears the IS_MOVING flag of an entity
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -686,8 +740,8 @@ void Entity_Stop(Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Unlock camera
+ * @details Clears the IS_LOCKED flag of a camera entity
  * @param   pstCamera
  *          Pointer to camera handle
  */
@@ -697,8 +751,15 @@ void Entity_UnlockCamera(Camera* pstCamera)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Update entity
+ * @details Updates the current state of an entity
+ * @remark  This function is usually called once per frame
+ * @param   dDeltaTime
+ *          Delta time since last call
+ * @param   dGravitation
+ *          Gravitational constant of entity
+ * @param   u8MeterInPixel
+ *          Definition of meter in pixel
  * @param   pstEntity
  *          Pointer to entity handle
  */
