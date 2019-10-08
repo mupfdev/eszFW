@@ -10,7 +10,7 @@
 #include <SDL_ttf.h>
 #include "Font.h"
 
-void FreeFont(Font* pstFont)
+void Font_Free(Font* pstFont)
 {
     TTF_Quit();
 
@@ -18,7 +18,7 @@ void FreeFont(Font* pstFont)
     SDL_Log("Close font.\n");
 }
 
-Sint8 InitFont(const char* pacFileName, Font** pstFont)
+Sint8 Font_Init(const char* pacFileName, Font** pstFont)
 {
     *pstFont = SDL_calloc(sizeof(struct Font_t), sizeof(Sint8));
     if (!*pstFont)
@@ -45,7 +45,7 @@ Sint8 InitFont(const char* pacFileName, Font** pstFont)
     return 0;
 }
 
-Sint8 PrintNumber(
+Sint8 Font_PrintNumber(
     const Sint32  s32Number,
     const Sint32  s32PosX,
     const Sint32  s32PosY,
@@ -73,7 +73,7 @@ Sint8 PrintNumber(
     return 0;
 }
 
-Sint8 PrintText(
+Sint8 Font_PrintText(
     const char*   pacText,
     const Sint32  s32PosX,
     const Sint32  s32PosY,
@@ -146,7 +146,7 @@ exit:
     return s8ReturnValue;
 }
 
-void SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont)
+void Font_SetFontColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont)
 {
     pstFont->stColour.r = u8Red;
     pstFont->stColour.g = u8Green;

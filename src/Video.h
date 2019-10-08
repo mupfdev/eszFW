@@ -28,9 +28,9 @@ typedef struct Video_t
     double        dDeltaTime;
 } Video;
 
-void FreeVideo(Video* pstVideo);
+void Video_Free(Video* pstVideo);
 
-Sint8 InitVideo(
+Sint8 Video_Init(
     const char*    pacWindowTitle,
     const Sint32   s32WindowWidth,
     const Sint32   s32WindowHeight,
@@ -39,7 +39,7 @@ Sint8 InitVideo(
     const SDL_bool bFullscreen,
     Video**        pstVideo);
 
-void  RenderScene(Video* pstVideo);
-Sint8 SetFullscreen(const SDL_bool dFullscreen, Video* pstVideo);
-Sint8 SetZoomLevel(const double dZoomLevel, Video* pstVideo);
-Sint8 ToggleFullscreen(Video* pstVideo);
+void  Video_RenderScene(Video* pstVideo);
+Sint8 Video_SetFullscreen(const SDL_bool dFullscreen, Video* pstVideo);
+Sint8 Video_SetZoomLevel(const double dZoomLevel, Video* pstVideo);
+Sint8 Video_ToggleFullscreen(Video* pstVideo);

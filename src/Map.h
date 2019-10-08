@@ -82,7 +82,7 @@ typedef struct Map_t
 
 } Map;
 
-Sint8 DrawMap(
+Sint8 Map_Draw(
     const Uint16   u16Index,
     const SDL_bool bRenderAnimTiles,
     const SDL_bool bRenderBgColour,
@@ -92,29 +92,29 @@ Sint8 DrawMap(
     Map*           pstMap,
     SDL_Renderer*  pstRenderer);
 
-void   FreeMap(Map* pstMap);
-void   GetObjects(const Map* pstMap, Object astObject[]);
-Uint16 GetObjectCount(Map* pstMap);
-char*  GetObjectName(Object* pstObject);
-char*  GetObjectType(Object* pstObject);
+void   Map_Free(Map* pstMap);
+void   Map_GetObjects(const Map* pstMap, Object astObject[]);
+Uint16 Map_GetObjectCount(Map* pstMap);
+char*  Map_GetObjectName(Object* pstObject);
+char*  Map_GetObjectType(Object* pstObject);
 
-Sint8 InitMap(
+Sint8 Map_Init(
     const char* pacFileName,
     const char* pacTilesetImage,
     const Uint8 u8MeterInPixel,
     Map**       pstMap);
 
-SDL_bool IsMapCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY);
+SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY);
 
-SDL_bool IsObjectOfType(const char* pacType, Object* pstObject);
+SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject);
 
-SDL_bool IsOnTileOfType(
+SDL_bool Map_IsOnTileOfType(
     const char*  pacType,
     const double dPosX,
     const double dPosY,
     const Uint8  u8EntityHeight,
     const Map*   pstMap);
 
-void SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap);
-void SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap);
-void ShowMapObjects(const Map* pstMap);
+void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap);
+void Map_SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap);
+void Map_ShowObjects(const Map* pstMap);

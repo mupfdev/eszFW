@@ -397,11 +397,11 @@ SDL_bool Entity_IsMoving(const Entity* pstEntity)
 }
 
 /**
- * @brief   Check if a enttiy is rising
+ * @brief   Check if a entity is rising
  * @details Check if a entity accelerates up along the y-axis
  * @param   pstEntity
  *          Pointer to entity handle
- * @return  Current risin state of the entity
+ * @return  Current rising state of the entity
  * @retval  SDL_TRUE: Entity is rising
  * @retval  SDL_FALSE: Entity is not rising
  */
@@ -418,14 +418,16 @@ SDL_bool Entity_IsRising(const Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Jump with entity
+ * @details Initiates a jump by applying force
+ * @param   dForce
+ *          Initial jump force
  * @param   pstEntity
  *          Pointer to entity handle
  */
 void Entity_Jump(const double dForce, Entity* pstEntity)
 {
-    if (!pstEntity->bIsJumping)
+    if (! pstEntity->bIsJumping)
     {
         // Prevent jumping while falling down.
         if (0 >= pstEntity->dVelocityY)
@@ -439,8 +441,8 @@ void Entity_Jump(const double dForce, Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Lock camera
+ * @details Sets the camera's IS_LOCKED flag
  * @param   pstCamera
  *          Pointer to camera handle
  */
@@ -450,8 +452,8 @@ void Entity_LockCamera(Camera* pstCamera)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set entity in motion
+ * @details Sets the entity's IS_MOVING flag
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -461,8 +463,8 @@ void Entity_Move(Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Move entity with parameters
+ * @details Same as Entity_Move() but all parameters can be set at once
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -484,8 +486,8 @@ void Entity_MoveFull(
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Reset entity flags
+ * @details Resets all flags of an entity
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -495,8 +497,8 @@ void Entity_Reset(Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Reset to spawn position
+ * @details Moves an entity to its configured spawn position
  * @param   pstEntity
  *          Pointer to entity handle
  */
@@ -507,8 +509,12 @@ void Entity_ResetToSpawnPosition(Entity* pstEntity)
 }
 
 /**
- * @brief   
- * @details 
+ * @brief   Set camera target
+ * @details Sets the camera's target entity that should be tracked
+ * @param   s32LogicalWindowWidth
+ *          Logical window width in pixel
+ * @param   s32LogicalWindowHeight
+ *          Locical window height in pixel
  * @param   pstEntity
  *          Pointer to entity handle
  * @param   pstCamera

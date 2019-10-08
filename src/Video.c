@@ -11,7 +11,7 @@
 #include "Video.h"
 #include "Constants.h"
 
-void FreeVideo(Video* pstVideo)
+void Video_Free(Video* pstVideo)
 {
     IMG_Quit();
     if (pstVideo)
@@ -29,7 +29,7 @@ void FreeVideo(Video* pstVideo)
     }
 }
 
-Sint8 InitVideo(
+Sint8 Video_Init(
     const char*    pacWindowTitle,
     const Sint32   s32WindowWidth,
     const Sint32   s32WindowHeight,
@@ -128,13 +128,13 @@ Sint8 InitVideo(
         (*pstVideo)->s32WindowHeight,
         (*pstVideo)->u8RefreshRate);
 
-    SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
+    Video_SetZoomLevel((*pstVideo)->dZoomLevel, *pstVideo);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*pstVideo)->dZoomLevel);
 
     return 0;
 }
 
-void RenderScene(Video* pstVideo)
+void Video_RenderScene(Video* pstVideo)
 {
     double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
 
@@ -152,7 +152,7 @@ void RenderScene(Video* pstVideo)
     SDL_RenderClear(pstVideo->pstRenderer);
 }
 
-Sint8 SetZoomLevel(const double dZoomLevel, Video* pstVideo)
+Sint8 Video_SetZoomLevel(const double dZoomLevel, Video* pstVideo)
 {
     pstVideo->dZoomLevel             = dZoomLevel;
     pstVideo->s32LogicalWindowWidth  = pstVideo->s32WindowWidth / dZoomLevel;
@@ -177,7 +177,7 @@ Sint8 SetZoomLevel(const double dZoomLevel, Video* pstVideo)
     return 0;
 }
 
-Sint8 ToggleFullscreen(Video* pstVideo)
+Sint8 Video_ToggleFullscreen(Video* pstVideo)
 {
     Sint8  s8ReturnValue;
     Uint32 u32WindowFlags;

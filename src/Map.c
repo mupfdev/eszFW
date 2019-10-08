@@ -98,7 +98,7 @@ static void _GetGravitation(tmx_property* pProperty, void* dGravitation)
  * @return  0 on success, -1 on failure.
  * @ingroup Map
  */
-Sint8 DrawMap(
+Sint8 Map_Draw(
     const Uint16   u16Index,
     const SDL_bool bRenderAnimTiles,
     const SDL_bool bRenderBgColour,
@@ -345,7 +345,7 @@ Sint8 DrawMap(
     return 0;
 }
 
-void FreeMap(Map* pstMap)
+void Map_Free(Map* pstMap)
 {
     if (pstMap)
     {
@@ -377,7 +377,7 @@ void FreeMap(Map* pstMap)
     }
 }
 
-void GetObjects(const Map* pstMap, Object astObject[])
+void Map_GetObjects(const Map* pstMap, Object astObject[])
 {
     tmx_layer*  pstLayer = pstMap->pstTmxMap->ly_head;
     tmx_object* pstTmxObject;
@@ -393,7 +393,7 @@ void GetObjects(const Map* pstMap, Object astObject[])
     }
 }
 
-Uint16 GetObjectCount(Map* pstMap)
+Uint16 Map_GetObjectCount(Map* pstMap)
 {
     Uint16     u16ObjectCount  = 0;
     Uint16*    pu16ObjectCount = &u16ObjectCount;
@@ -419,17 +419,17 @@ Uint16 GetObjectCount(Map* pstMap)
     return u16ObjectCount;
 }
 
-char* GetObjectName(Object* pstObject)
+char* Map_GetObjectName(Object* pstObject)
 {
     return pstObject->acName;
 }
 
-char* GetObjectType(Object* pstObject)
+char* Map_GetObjectType(Object* pstObject)
 {
     return pstObject->acType;
 }
 
-Sint8 InitMap(
+Sint8 Map_Init(
     const char* pacFileName,
     const char* pacTilesetImage,
     const Uint8 u8MeterInPixel,
@@ -451,7 +451,7 @@ Sint8 InitMap(
         return -1;
     }
 
-    (*pstMap)->u16ObjectCount = GetObjectCount(*pstMap);
+    (*pstMap)->u16ObjectCount = Map_GetObjectCount(*pstMap);
 
     if ((*pstMap)->u16ObjectCount > 0)
     {
@@ -464,9 +464,9 @@ Sint8 InitMap(
             return -1;
         }
 
-        GetObjects((*pstMap), (*pstMap)->astObject);
+        Map_GetObjects((*pstMap), (*pstMap)->astObject);
         #ifdef DEBUG
-        ShowMapObjects(*pstMap);
+        Map_ShowMapObjects(*pstMap);
         #endif
     }
 
@@ -486,12 +486,12 @@ Sint8 InitMap(
 
     SDL_Log(
         "Load TMX map file: %s containing %d object(s).\n", pacFileName, (*pstMap)->u16ObjectCount);
-    SetGravitation(0, 1, *pstMap);
+    Map_SetGravitation(0, 1, *pstMap);
 
     return 0;
 }
 
-SDL_bool IsMapCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY)
+SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY)
 {
     tmx_layer* pstLayers;
     dPosX /= (double)pstMap->pstTmxMap->tile_width;
@@ -539,9 +539,9 @@ SDL_bool IsMapCoordOfType(const char* pacType, const Map* pstMap, double dPosX, 
     return SDL_FALSE;
 }
 
-SDL_bool IsObjectOfType(const char* pacType, Object* pstObject)
+SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject)
 {
-    if (0 == SDL_strncmp(pacType, GetObjectType(pstObject), OBJECT_TYPE_LEN))
+    if (0 == SDL_strncmp(pacType, Map_GetObjectType(pstObject), OBJECT_TYPE_LEN))
     {
         return 1;
     }
@@ -551,17 +551,17 @@ SDL_bool IsObjectOfType(const char* pacType, Object* pstObject)
     }
 }
 
-SDL_bool IsOnTileOfType(
+SDL_bool Map_IsOnTileOfType(
     const char*  pacType,
     const double dPosX,
     const double dPosY,
     const Uint8  u8EntityHeight,
     const Map*   pstMap)
 {
-    return IsMapCoordOfType(pacType, pstMap, dPosX, dPosY + (double)(u8EntityHeight / 2.f));
+    return Map_IsCoordOfType(pacType, pstMap, dPosX, dPosY + (double)(u8EntityHeight / 2.f));
 }
 
-void SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap)
+void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap)
 {
     if (bUseTmxConstant)
     {
@@ -584,12 +584,12 @@ void SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, M
         pstMap->u8MeterInPixel);
 }
 
-void SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap)
+void Map_SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap)
 {
     pstMap->dAnimSpeed = dAnimSpeed;
 }
 
-void ShowMapObjects(const Map* pstMap)
+void Map_ShowObjects(const Map* pstMap)
 {
     if ((*pstMap).u16ObjectCount > 0)
     {

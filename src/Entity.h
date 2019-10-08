@@ -34,11 +34,11 @@ typedef struct Bullet_t
  */
 typedef struct Camera_t
 {
-    Uint16 u16Flags;
-    double dPosX;
-    double dPosY;
-    Sint32 s32MaxPosX;
-    Sint32 s32MaxPosY;
+    Uint16 u16Flags;    ///< Camera flags
+    double dPosX;       ///< Position along the x-axis
+    double dPosY;       ///< Position along the y-axis
+    Sint32 s32MaxPosX;  ///< Maximum position along the x-axis
+    Sint32 s32MaxPosY;  ///< Maximum position along the y-axis
 
 } Camera;
 
