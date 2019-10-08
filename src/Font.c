@@ -66,7 +66,7 @@ Sint8 Font_PrintNumber(
         }
     }
 
-    if (-1 == PrintText(acOutput, s32PosX, s32PosY, pstFont, pstRenderer))
+    if (-1 == Font_PrintText(acOutput, s32PosX, s32PosY, pstFont, pstRenderer))
     {
         return -1;
     }
