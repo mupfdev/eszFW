@@ -150,10 +150,10 @@ Sint8 Map_Draw(
             return -1;
         }
 
-        for (Uint16 u16Index = 0; u16Index < pstMap->u16AnimTileSize; u16Index++)
+        for (Uint16 u16Idx = 0; u16Idx < pstMap->u16AnimTileSize; u16Idx++)
         {
-            Uint16       u16Gid        = pstMap->acAnimTile[u16Index].u16Gid;
-            Uint16       u16TileId     = pstMap->acAnimTile[u16Index].u16TileId + 1;
+            Uint16       u16Gid        = pstMap->acAnimTile[u16Idx].u16Gid;
+            Uint16       u16TileId     = pstMap->acAnimTile[u16Idx].u16TileId + 1;
             Uint16       u16NextTileId = 0;
             SDL_Rect     stDst;
             SDL_Rect     stSrc;
@@ -164,20 +164,20 @@ Sint8 Map_Draw(
             stSrc.y = pstMap->pstTmxMap->tiles[u16TileId]->ul_y;
             stSrc.w = stDst.w = pstTS->tile_width;
             stSrc.h = stDst.h = pstTS->tile_height;
-            stDst.x           = pstMap->acAnimTile[u16Index].s16DstX;
-            stDst.y           = pstMap->acAnimTile[u16Index].s16DstY;
+            stDst.x           = pstMap->acAnimTile[u16Idx].s16DstX;
+            stDst.y           = pstMap->acAnimTile[u16Idx].s16DstY;
             SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
 
-            pstMap->acAnimTile[u16Index].u8FrameCount++;
-            if (pstMap->acAnimTile[u16Index].u8FrameCount >= pstMap->acAnimTile[u16Index].u8AnimLen)
+            pstMap->acAnimTile[u16Idx].u8FrameCount++;
+            if (pstMap->acAnimTile[u16Idx].u8FrameCount >= pstMap->acAnimTile[u16Idx].u8AnimLen)
             {
-                pstMap->acAnimTile[u16Index].u8FrameCount = 0;
+                pstMap->acAnimTile[u16Idx].u8FrameCount = 0;
             }
 
             u16NextTileId = pstMap->pstTmxMap->tiles[u16Gid]
-                                ->animation[pstMap->acAnimTile[u16Index].u8FrameCount]
+                                ->animation[pstMap->acAnimTile[u16Idx].u8FrameCount]
                                 .tile_id;
-            pstMap->acAnimTile[u16Index].u16TileId = u16NextTileId;
+            pstMap->acAnimTile[u16Idx].u16TileId = u16NextTileId;
         }
 
         if (pstMap->dAnimDelay > 1.f / pstMap->dAnimSpeed)
