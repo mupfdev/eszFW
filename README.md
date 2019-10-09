@@ -4,11 +4,11 @@
 <a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
   <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" alt="Build status" />
 </a>
-<a href="https://lgtm.com/projects/g/mupfelofen-de/eszFW/alerts/">
-  <img alt="Total alerts" src="https://img.shields.io/lgtm/alerts/g/mupfelofen-de/eszFW.svg?logo=lgtm?style=flat&amp;logoWidth=18?svg=true" />
+<a href="https://lgtm.com/projects/g/mupfelofen-de/eszFW/context:cpp">
+<img alt="Language grade: C/C++" src="https://img.shields.io/lgtm/grade/cpp/g/mupfelofen-de/eszFW.svg?logo=lgtm&logoWidth=18?style=flat?svg=true"/>
 </a>
 <a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENCE.md">
-  <img src="https://img.shields.io/badge/licence-BEER--WARE-brightgreen?style=flat" alt="Licence" />
+  <img src="https://img.shields.io/badge/licence-BEER--WARE-brightgreen?style=flat?svg=true" alt="Licence" />
 </a>
 </p>
 
