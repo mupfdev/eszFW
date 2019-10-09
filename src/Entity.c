@@ -146,7 +146,7 @@ int Entity_CreateBullet(const double dPosX, const double dPosY, Bullet* pstBulle
  * @param   pstSprite
  *          Pointer to sprite handle
  * @param   pstRenderer
- *          Pointer to SDL rendering context
+ *          Pointer to SDL2 rendering context
  * @return  Error code
  * @retval  0:  OK
  * @retval  -1: Error
@@ -319,7 +319,7 @@ int Entity_InitCamera(Camera** pstCamera)
  * @param   pstSprite
  *          Pointer to sprite handle
  * @param   pstRenderer
- *          Pointer to SDL rendering context
+ *          Pointer to SDL2 rendering context
  * @return  Error code
  * @retval  0:  OK
  * @retval  -1: Error

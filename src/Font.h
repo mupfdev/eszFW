@@ -15,8 +15,8 @@
  */
 typedef struct Font_t
 {
-    TTF_Font*  pstTTF;
-    SDL_Colour stColour;
+    TTF_Font*  pstTTF;    ///< Pointer to SDL2 TTF handle
+    SDL_Colour stColour;  ///< Font colour
 
 } Font;
 

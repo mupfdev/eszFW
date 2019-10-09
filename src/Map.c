@@ -94,7 +94,7 @@ static void _GetGravitation(tmx_property* pProperty, void* dGravitation)
  * @param   dCameraPosX      camera position along the x-axis.
  * @param   dCameraPosY      camera position along the y-axis.
  * @param   pstMap           pointer to Map structure.
- * @param   pstRenderer      pointer to SDL rendering context.
+ * @param   pstRenderer:      pointer to SDL2 rendering context.
  * @return  0 on success, -1 on failure.
  * @ingroup Map
  */

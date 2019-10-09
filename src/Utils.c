@@ -9,11 +9,30 @@
 #include <SDL.h>
 #include "Utils.h"
 
-void Utils_ClearFlag(const Uint8 u8Bit, Uint16* u16Flags)
+/**
+ * @brief   Clear flag
+ * @details Clears flag
+ * @param   u8Bit
+ *          Flag/bit to clear
+ * @param   pu16Flags
+ *          Pointer to flags/bit field
+ */
+void Utils_ClearFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
     *u16Flags &= ~(1 << u8Bit);
 }
 
+/**
+ * @brief   Check if flag is set
+ * @details Checks whether a specific flag is set or not
+ * @param   u8Bit
+ *          Flag/bit to check
+ * @param   u16Flags
+ *          Flags/bit field
+ * @return  Current state of the flag
+ * @retval  SDL_TRUE:  Flag is set
+ * @retval  SDL_FALSE: Flag is not set
+ */
 SDL_bool Utils_IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
 {
     if ((u16Flags >> u8Bit) & 1)
@@ -26,12 +45,12 @@ SDL_bool Utils_IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
     }
 }
 
-void Utils_SetFlag(const Uint8 u8Bit, Uint16* u16Flags)
+void Utils_SetFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
     *u16Flags |= 1 << u8Bit;
 }
 
-void Utils_ToggleFlag(const Uint8 u8Bit, Uint16* u16Flags)
+void Utils_ToggleFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
     *u16Flags ^= 1 << u8Bit;
 }

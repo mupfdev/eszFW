@@ -11,6 +11,12 @@
 #include "Video.h"
 #include "Constants.h"
 
+/**
+ * @brief   Free video
+ * @details Frees up allocated memory and destroys window
+ * @param   pstVideo
+ *          Pointer to video handle
+ */
 void Video_Free(Video* pstVideo)
 {
     IMG_Quit();
@@ -29,6 +35,27 @@ void Video_Free(Video* pstVideo)
     }
 }
 
+/**
+ * @brief   Initialise video
+ * @details Initialises video and creates window
+ * @param   pacWindowTitle
+ *          Window title
+ * @param   s32WindowWidth
+ *          Window width in pixel
+ * @param   s32WindowHeight
+ *          Window height in pixel
+ * @param   s32LogicalWindowWidth
+ *          Logical window width in pixel
+ * @param   s32LogicalWindowHeight
+ *          Logical window height in pixel
+ * @param   bFullscreen
+ *          Initial fullscreen state
+ * @param   pstVideo
+ *          Pointer to video handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
+ */
 Sint8 Video_Init(
     const char*    pacWindowTitle,
     const Sint32   s32WindowWidth,
@@ -134,6 +161,12 @@ Sint8 Video_Init(
     return 0;
 }
 
+/**
+ * @brief   Render scene
+ * @details Render/draw current scene
+ * @param   pstVideo
+ *          Pointer to video handle
+ */
 void Video_RenderScene(Video* pstVideo)
 {
     double dTime = (double)APPROX_TIME_PER_FRAME / (double)TIME_FACTOR;
@@ -152,6 +185,17 @@ void Video_RenderScene(Video* pstVideo)
     SDL_RenderClear(pstVideo->pstRenderer);
 }
 
+/**
+ * @brief   Set zoom-level
+ * @details Sets zoom-level
+ * @param   dZoomLevel
+ *          Zoom-level
+ * @param   pstVideo
+ *          Pointer to video handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
+ */
 Sint8 Video_SetZoomLevel(const double dZoomLevel, Video* pstVideo)
 {
     pstVideo->dZoomLevel             = dZoomLevel;
@@ -177,6 +221,15 @@ Sint8 Video_SetZoomLevel(const double dZoomLevel, Video* pstVideo)
     return 0;
 }
 
+/**
+ * @brief   Toggle fullscreen
+ * @details Togggles fullscreen state
+ * @param   pstVideo
+ *          Pointer to video handle
+ * @return  Error code
+ * @retval  0: OK
+ * @retval  Negative error code: failure
+ */
 Sint8 Video_ToggleFullscreen(Video* pstVideo)
 {
     Sint8  s8ReturnValue;

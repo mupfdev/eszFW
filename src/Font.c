@@ -10,6 +10,12 @@
 #include <SDL_ttf.h>
 #include "Font.h"
 
+/**
+ * @brief   Free font
+ * @details Frees up allocated memory and unloads font
+ * @param   pstFont
+ *          Pointer to font handle
+ */
 void Font_Free(Font* pstFont)
 {
     TTF_Quit();
@@ -18,6 +24,17 @@ void Font_Free(Font* pstFont)
     SDL_Log("Close font.\n");
 }
 
+/**
+ * @brief   Initialise font
+ * @details Initialises font
+ * @param   pacFileName
+ *          Full path and filename of file
+ * @param   pstFont
+ *          Pointer to font handle
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
+ */
 Sint8 Font_Init(const char* pacFileName, Font** pstFont)
 {
     *pstFont = SDL_calloc(sizeof(struct Font_t), sizeof(Sint8));
@@ -45,6 +62,23 @@ Sint8 Font_Init(const char* pacFileName, Font** pstFont)
     return 0;
 }
 
+/**
+ * @brief   Print number
+ * @details Prints number on screen
+ * @param   s32Number
+ *          The number to print
+ * @param   s32PosX
+ *          Position along the x-axis
+ * @param   s32PosY
+ *          Position along the y-axis
+ * @param   pstFont
+ *          Pointer to font handle
+ * @param   pstRenderer
+ *          Pointer to SDL2 rendering context
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
+ */
 Sint8 Font_PrintNumber(
     const Sint32  s32Number,
     const Sint32  s32PosX,
@@ -73,6 +107,23 @@ Sint8 Font_PrintNumber(
     return 0;
 }
 
+/**
+ * @brief   Print text
+ * @details Prints a string on screen
+ * @param   pacText
+ *          The text to print
+ * @param   s32PosX
+ *          Position along the x-axis
+ * @param   s32PosY
+ *          Position along the y-axis
+ * @param   pstFont
+ *          Pointer to font handle
+ * @param   pstRenderer
+ *          Pointer to SDL2 rendering context
+ * @return  Error code
+ * @retval   0: OK
+ * @retval  -1: Error
+ */
 Sint8 Font_PrintText(
     const char*   pacText,
     const Sint32  s32PosX,
@@ -146,6 +197,15 @@ exit:
     return s8ReturnValue;
 }
 
+/**
+ * @brief   Set font colour
+ * @details Sets the colour (RGB) of a font
+ * @param   u8Red:   Red colour
+ * @param   u8Green: Green colour
+ * @param   u8Blue:  Blue colour
+ * @param   pstFont
+ *          Pointer to font handle
+ */
 void Font_SetColour(const Uint8 u8Red, const Uint8 u8Green, const Uint8 u8Blue, Font* pstFont)
 {
     pstFont->stColour.r = u8Red;

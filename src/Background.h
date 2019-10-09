@@ -16,12 +16,12 @@
  */
 typedef struct BGLayer_t
 {
-    SDL_Texture* pstLayer;
-    Sint32       s32Width;
-    Sint32       s32Height;
-    double       dPosX;
-    double       dPosY;
-    double       dVelocity;
+    SDL_Texture* pstLayer;   ///< Pointer to SDL2 texture
+    Sint32       s32Width;   ///< Background width in pixel
+    Sint32       s32Height;  ///< Background height in pixel
+    double       dPosX;      ///< Position along the x-axis
+    double       dPosY;      ///< Position along the y-axis
+    double       dVelocity;  ///< Velocity
 
 } BGLayer;
 
@@ -33,10 +33,10 @@ typedef struct BGLayer_t
  */
 typedef struct Background_t
 {
-    Uint8     u8Num;
-    Alignment eAlignment;
-    Direction eDirection;
-    BGLayer   acLayer[];
+    Uint8     u8Num;       ///< Number of layers
+    Alignment eAlignment;  ///< Background alignment
+    Direction eDirection;  ///< Scroll direction
+    BGLayer   acLayer[];   ///< Array of background layers
 
 } Background;
 

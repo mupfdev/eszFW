@@ -217,7 +217,7 @@ exit:
  * @param   dVelocity
  *          Scroll velocity
  * @param   pstRenderer
- *          Pointer to SDL rendering context
+ *          Pointer to SDL2 rendering context
  * @param   pstBackground
  *          Pointer to background handle
  * @return  Error code
@@ -270,7 +270,7 @@ void Background_Free(Background* pstBackground)
  * @param   eAlignment
  *          Background alignment
  * @param   pstRenderer
- *          Pointer to SDL rendering context
+ *          Pointer to SDL2 rendering context
  * @param   pstBackground
  *          Pointer to background handle
  * @return  Error code

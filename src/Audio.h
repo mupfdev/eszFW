@@ -16,10 +16,10 @@
  */
 typedef struct Audio_t
 {
-    Sint32 s32SamplingFrequency;
-    Uint16 u16AudioFormat;
-    Sint16 s16Channels;
-    Sint16 s16ChunkSize;
+    Sint32 s32SamplingFrequency;  ///< Sampling frequency
+    Uint16 u16AudioFormat;        ///< Audio format
+    Sint16 s16Channels;           ///< Channels
+    Sint16 s16ChunkSize;          ///< Chunk size
 
 } Audio;
 
@@ -31,8 +31,8 @@ typedef struct Audio_t
  */
 typedef struct Music_t
 {
-    Mix_Music* pstMusic;
-    Sint8      s8Loops;
+    Mix_Music* pstMusic;  ///< SDL2 music handle
+    Sint8      s8Loops;   ///< Loop count
 
 } Music;
 

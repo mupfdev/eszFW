@@ -15,10 +15,10 @@
  */
 typedef struct AABB_t
 {
-    double dBottom;
-    double dLeft;
-    double dRight;
-    double dTop;
+    double dBottom;  ///< Bottom edge position
+    double dLeft;    ///< Left edge position
+    double dRight;   ///< Right edge position
+    double dTop;     ///< Top edge position
 
 } AABB;
 
