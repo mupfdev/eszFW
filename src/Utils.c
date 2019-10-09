@@ -19,7 +19,7 @@
  */
 void Utils_ClearFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
-    *u16Flags &= ~(1 << u8Bit);
+    *pu16Flags &= ~(1 << u8Bit);
 }
 
 /**
@@ -47,12 +47,12 @@ SDL_bool Utils_IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
 
 void Utils_SetFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
-    *u16Flags |= 1 << u8Bit;
+    *pu16Flags |= 1 << u8Bit;
 }
 
 void Utils_ToggleFlag(const Uint8 u8Bit, Uint16* pu16Flags)
 {
-    *u16Flags ^= 1 << u8Bit;
+    *pu16Flags ^= 1 << u8Bit;
 }
 
 double Utils_Round(double dValue)
