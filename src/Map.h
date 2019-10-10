@@ -8,10 +8,16 @@
 #include <tmx.h>
 #include "AABB.h"
 
+/**
+ * @typedef MapConstants
+ * @brief   Map constants handle type
+ * @enum    MapConstants_t
+ * @brief   Map constants enumeration
+ */
 typedef enum MapConstants_t
 {
-    ANIM_TILE_MAX = 500,
-    MAP_TEXTURES    = 4, ///< Max textures per map (not to be confused with map layers)
+    ANIM_TILE_MAX   = 500,
+    MAP_TEXTURES    = 4,   ///< Max textures per map (not to be confused with map layers)
     TS_IMG_PATH_LEN = 64,
     OBJECT_NAME_LEN = 50,
     OBJECT_TYPE_LEN = 15

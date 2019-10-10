@@ -391,6 +391,13 @@ void Map_Free(Map* pstMap)
     }
 }
 
+/**
+ * @brief   Get objects
+ * @details 
+ * @param   pstMap
+ * @param   astObject[]
+ * @todo    Document function
+ */
 void Map_GetObjects(const Map* pstMap, Object astObject[])
 {
     tmx_layer*  pstLayer = pstMap->pstTmxMap->ly_head;
@@ -407,6 +414,13 @@ void Map_GetObjects(const Map* pstMap, Object astObject[])
     }
 }
 
+/**
+ * @brief   Get object count
+ * @details 
+ * @param   pstMap
+ * @todo    Document function
+ * @return  Number of objects in the map
+ */
 Uint16 Map_GetObjectCount(Map* pstMap)
 {
     Uint16     u16ObjectCount  = 0;
@@ -433,16 +447,42 @@ Uint16 Map_GetObjectCount(Map* pstMap)
     return u16ObjectCount;
 }
 
+/**
+ * @brief   Get object name
+ * @details 
+ * @param   pstObject
+ * @return  The object name as a string
+ * @todo    Document function
+ */
 char* Map_GetObjectName(Object* pstObject)
 {
     return pstObject->acName;
 }
 
+/**
+ * @brief   Get object type
+ * @details 
+ * @param   pstObject
+ * @return  The object type as a string
+ * @todo    Document function
+ */
 char* Map_GetObjectType(Object* pstObject)
 {
     return pstObject->acType;
 }
 
+/**
+ * @brief   Initialise map
+ * @details 
+ * @param   pacFileName
+ * @param   pacTilesetImage
+ * @param   u8MeterInPixel
+ * @param   pstMap
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
+ * @todo    Document function
+ */
 Sint8 Map_Init(
     const char* pacFileName,
     const char* pacTilesetImage,
@@ -505,6 +545,18 @@ Sint8 Map_Init(
     return 0;
 }
 
+/**
+ * @brief   Check if map coordinate is of specific type
+ * @details 
+ * @param   pacType
+ * @param   pstMap
+ * @param   dPosX
+ * @param   dPosY
+ * @return  Boolean state
+ * @retval  SDL_TRUE: Map coordinate is of specific type
+ * @retval  SDL_FALSE: Map coordinate is not of specific type
+ * @todo    Document function
+ */
 SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY)
 {
     tmx_layer* pstLayers;
@@ -553,6 +605,16 @@ SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX,
     return SDL_FALSE;
 }
 
+/**
+ * @brief   Determine if object is of specific type
+ * @details 
+ * @param   pacType
+ * @param   pstObject
+ * @return  Boolean state
+ * @retval  SDL_TRUE: Object is of specific type
+ * @retval  SDL_FALSE: Object is not of specific type
+ * @todo    Document function
+ */
 SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject)
 {
     if (0 == SDL_strncmp(pacType, Map_GetObjectType(pstObject), OBJECT_TYPE_LEN))
@@ -565,6 +627,20 @@ SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject)
     }
 }
 
+/**
+ * @brief   Determine if entity/object is on-top of tile with specific
+ *          type
+ * @details 
+ * @param   pacType
+ * @param   dPosX
+ * @param   dPosY
+ * @param   u8EntityHeight
+ * @param   pstMap
+ * @return  Boolean state
+ * @retval  SDL_TRUE: entity is on-top of tile of specific type
+ * @retval  SDL_FALSE: entity is not on-top of tile of specific type
+ * @todo    Document function
+ */
 SDL_bool Map_IsOnTileOfType(
     const char*  pacType,
     const double dPosX,
@@ -575,6 +651,14 @@ SDL_bool Map_IsOnTileOfType(
     return Map_IsCoordOfType(pacType, pstMap, dPosX, dPosY + (double)(u8EntityHeight / 2.f));
 }
 
+/**
+ * @brief   Set map gravitation
+ * @details Sets the gravitational constant of the map
+ * @param   dGravitation
+ * @param   bUseTmxConstant
+ * @param   pstMap
+ * @todo    Document function
+ */
 void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap)
 {
     if (bUseTmxConstant)
@@ -598,11 +682,25 @@ void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstan
         pstMap->u8MeterInPixel);
 }
 
+/**
+ * @brief   Set animation speed of map tile
+ * @details 
+ * @param   dAnimSpeed
+ * @param   pstMap
+ * @todo    Document function
+ */
 void Map_SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap)
 {
     pstMap->dAnimSpeed = dAnimSpeed;
 }
 
+/**
+ * @brief   Show map objects
+ * @details Prints a list of all map objects
+ * @param   pstMap
+ *          Pointer to map handle
+ * @remark  This function is mainly for debugging purposes
+ */
 void Map_ShowObjects(const Map* pstMap)
 {
     if ((*pstMap).u16ObjectCount > 0)

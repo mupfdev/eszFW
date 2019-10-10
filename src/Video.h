@@ -40,6 +40,5 @@ Sint8 Video_Init(
     Video**        pstVideo);
 
 void  Video_RenderScene(Video* pstVideo);
-Sint8 Video_SetFullscreen(const SDL_bool dFullscreen, Video* pstVideo);
 Sint8 Video_SetZoomLevel(const double dZoomLevel, Video* pstVideo);
 Sint8 Video_ToggleFullscreen(Video* pstVideo);
