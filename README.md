@@ -60,9 +60,18 @@ here]`, because writing games in C99 is neither a easy thing to do nor
 very common these days (even though many popular and critical acclaimed
 games are written in C e.g. Doom, Quake and Neverwinter Nights).
 
-The main reason is simple: because I love it.  Even though I am
-currently trying to get on with Haskell, I still consider C a fun and
-challenging language which I also use professionally.
+The main reason is simple: because I share the view that object-oriented
+programming creates more problems than it solves. I think that in many
+cases, object-oriented programming creates confusing coherences and
+delivers the illusion of higher flexibility, structure and
+maintainability.  If you are more interested in the topic, take a look at
+this video by Brian Will: [Object-Oriented Programming is
+Bad](https://www.youtube.com/watch?v=QM1iUe6IofM).
+
+But the more important reason why I chose C99: because I love it.  Even
+though I am currently trying to get on with Haskell (and functional
+programming in general), I still consider C a fun and challenging
+language which I also use professionally.
 
 Anyway: I hope you find the code of this project useful.  If so, feel
 free to use it in any way you want. Just consider buying me a beer in

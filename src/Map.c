@@ -81,7 +81,8 @@ static void _GetGravitation(tmx_property* pProperty, void* dGravitation)
 }
 
 /**
- * @brief   Draw Map.
+ * @brief   Draw Map
+ * @details Draws the map on screen
  * @param   u16Index
  *          The texture index; the total amount of layers per map is
  *          defined by MAP_TEXTURES.
@@ -90,13 +91,19 @@ static void _GetGravitation(tmx_property* pProperty, void* dGravitation)
  *          call.
  * @param   bRenderBgColour
  *          Determine if the map's background colour should be rendered
- * @param   pacLayerName     substring of the layer(s) to render.
- * @param   dCameraPosX      camera position along the x-axis.
- * @param   dCameraPosY      camera position along the y-axis.
- * @param   pstMap           pointer to Map structure.
- * @param   pstRenderer:      pointer to SDL2 rendering context.
- * @return  0 on success, -1 on failure.
- * @ingroup Map
+ * @param   pacLayerName
+ *          Sub-string of the layer(s) to render
+ * @param   dCameraPosX
+ *          Camera position along the x-axis
+ * @param   dCameraPosY
+ *          Camera position along the y-axis
+ * @param   pstMap
+ *          Pointer to map handle
+ * @param   pstRenderer
+ *          Pointer to SDL2 rendering context
+ * @return  Error code
+ * @retval  0:  OK
+ * @retval  -1: Error
  */
 Sint8 Map_Draw(
     const Uint16   u16Index,
@@ -345,6 +352,13 @@ Sint8 Map_Draw(
     return 0;
 }
 
+/**
+ * @brief   Free map
+ * @details Frees up allocated memory and unloads map
+ * @param   pstMap
+ *          Pointer to map handle
+ *
+ */
 void Map_Free(Map* pstMap)
 {
     if (pstMap)
