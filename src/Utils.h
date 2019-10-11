@@ -8,6 +8,10 @@
 
 #include <SDL.h>
 
+/**
+ * @def    RETURN_ON_ERROR
+ * @brief  Macro used for error checking
+ */
 #define RETURN_ON_ERROR(value) if (-1 == value) { return value; }
 
 void     Utils_ClearFlag(const Uint8 u8Bit, Uint16* pu16Flags);

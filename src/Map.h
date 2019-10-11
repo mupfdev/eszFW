@@ -16,11 +16,11 @@
  */
 typedef enum MapConstants_t
 {
-    ANIM_TILE_MAX   = 500,
-    MAP_TEXTURES    = 4,   ///< Max textures per map (not to be confused with map layers)
-    TS_IMG_PATH_LEN = 64,
-    OBJECT_NAME_LEN = 50,
-    OBJECT_TYPE_LEN = 15
+    ANIM_TILE_MAX   = 500,  ///< Max. number of animated tiles
+    MAP_TEXTURES    = 4,    ///< Max. textures per map (not to be confused with map layers)
+    TS_IMG_PATH_LEN = 64,   ///< Max. tileset image path length
+    OBJECT_NAME_LEN = 50,   ///< Max. object name length
+    OBJECT_TYPE_LEN = 15    ///< Max. object type length
 
 } MapConstants;
 
@@ -32,12 +32,12 @@ typedef enum MapConstants_t
  */
 typedef struct AnimTile_t
 {
-    Uint16 u16Gid;
-    Uint16 u16TileId;
-    Sint16 s16DstX;
-    Sint16 s16DstY;
-    Uint8  u8FrameCount;
-    Uint8  u8AnimLen;
+    Uint16 u16Gid;        ///< GID
+    Uint16 u16TileId;     ///< Tile ID
+    Sint16 s16DstX;       ///< Destination coordinate along the x-axis
+    Sint16 s16DstY;       ///< Destination coordinate along the y-axis
+    Uint8  u8FrameCount;  ///< Frame count
+    Uint8  u8AnimLen;     ///< Animation length
 
 } AnimTile;
 
@@ -49,14 +49,14 @@ typedef struct AnimTile_t
  */
 typedef struct Object_t
 {
-    Uint16 u16Id;
-    Uint32 u32PosX;
-    Uint32 u32PosY;
-    Uint16 u16Width;
-    Uint16 u16Height;
-    char   acName[OBJECT_NAME_LEN];
-    char   acType[OBJECT_TYPE_LEN];
-    AABB   stBB;
+    Uint16 u16Id;                    ///< Object ID
+    Uint32 u32PosX;                  ///< Position along the x-axis
+    Uint32 u32PosY;                  ///< Position along the y-axis
+    Uint16 u16Width;                 ///< Object width in pixel
+    Uint16 u16Height;                ///< Object height in pixel
+    char   acName[OBJECT_NAME_LEN];  ///< Object name
+    char   acType[OBJECT_TYPE_LEN];  ///< Object type
+    AABB   stBB;                     ///< Axis-aligned bounding box
 
 } Object;
 
@@ -68,23 +68,23 @@ typedef struct Object_t
  */
 typedef struct Map_t
 {
-    tmx_map*     pstTmxMap;
-    SDL_Texture* pstAnimTexture;
-    SDL_Texture* pstTexture[MAP_TEXTURES];
-    SDL_Texture* pstTileset;
-    Uint16       u16Height;
-    Uint16       u16Width;
-    double       dPosX;
-    double       dPosY;
-    double       dGravitation;
-    Uint8        u8MeterInPixel;
-    char         acTilesetImage[TS_IMG_PATH_LEN];
-    double       dAnimDelay;
-    double       dAnimSpeed;
-    Uint16       u16AnimTileSize;
-    AnimTile     acAnimTile[ANIM_TILE_MAX];
-    Uint16       u16ObjectCount;
-    Object       astObject[];
+    tmx_map*     pstTmxMap;                        ///< TMX map handle
+    SDL_Texture* pstAnimTexture;                   ///< Texture for animated tiles
+    SDL_Texture* pstTexture[MAP_TEXTURES];         ///< Map textures
+    SDL_Texture* pstTileset;                       ///< Tileset texture
+    Uint16       u16Height;                        ///< Map height in pixel
+    Uint16       u16Width;                         ///< Map width in pixel
+    double       dPosX;                            ///< Position along the x-axis
+    double       dPosY;                            ///< Position along the y-axis
+    double       dGravitation;                     ///< Gravitational constant
+    Uint8        u8MeterInPixel;                   ///< Definition of meter in pixel
+    char         acTilesetImage[TS_IMG_PATH_LEN];  ///< Tileset image
+    double       dAnimDelay;                       ///< Animation delay
+    double       dAnimSpeed;                       ///< Animation speed
+    Uint16       u16AnimTileSize;                  ///< Animated tile size
+    AnimTile     acAnimTile[ANIM_TILE_MAX];        ///< Animated tiles
+    Uint16       u16ObjectCount;                   ///< Object count
+    Object       astObject[];                      ///< Objects
 
 } Map;
 

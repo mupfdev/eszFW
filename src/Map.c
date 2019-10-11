@@ -357,7 +357,6 @@ Sint8 Map_Draw(
  * @details Frees up allocated memory and unloads map
  * @param   pstMap
  *          Pointer to map handle
- *
  */
 void Map_Free(Map* pstMap)
 {
@@ -393,10 +392,11 @@ void Map_Free(Map* pstMap)
 
 /**
  * @brief   Get objects
- * @details 
+ * @details Retreive objects from map
  * @param   pstMap
- * @param   astObject[]
- * @todo    Document function
+ *          Pointer to map handle
+ * @param   astObject
+ *          Array to store the objects
  */
 void Map_GetObjects(const Map* pstMap, Object astObject[])
 {
@@ -416,9 +416,9 @@ void Map_GetObjects(const Map* pstMap, Object astObject[])
 
 /**
  * @brief   Get object count
- * @details 
+ * @details Return total object count of map
  * @param   pstMap
- * @todo    Document function
+ *          Pointer to map handle
  * @return  Number of objects in the map
  */
 Uint16 Map_GetObjectCount(Map* pstMap)
@@ -449,10 +449,10 @@ Uint16 Map_GetObjectCount(Map* pstMap)
 
 /**
  * @brief   Get object name
- * @details 
+ * @details Get name of an object
  * @param   pstObject
+ *          Pointer to object handle
  * @return  The object name as a string
- * @todo    Document function
  */
 char* Map_GetObjectName(Object* pstObject)
 {
@@ -461,10 +461,10 @@ char* Map_GetObjectName(Object* pstObject)
 
 /**
  * @brief   Get object type
- * @details 
+ * @details Get type of an object
  * @param   pstObject
+ *          Pointer to object handle
  * @return  The object type as a string
- * @todo    Document function
  */
 char* Map_GetObjectType(Object* pstObject)
 {
@@ -473,15 +473,18 @@ char* Map_GetObjectType(Object* pstObject)
 
 /**
  * @brief   Initialise map
- * @details 
+ * @details Initialises/load map
  * @param   pacFileName
+ *          Path and filename of the TMX map to load
  * @param   pacTilesetImage
+ *          Path and filename of the tileset image
  * @param   u8MeterInPixel
+ *          Definition of meter in pixel
  * @param   pstMap
+ *          Pointer to map handle
  * @return  Error code
  * @retval  0:  OK
  * @retval  -1: Error
- * @todo    Document function
  */
 Sint8 Map_Init(
     const char* pacFileName,
@@ -547,15 +550,18 @@ Sint8 Map_Init(
 
 /**
  * @brief   Check if map coordinate is of specific type
- * @details 
+ * @details Checks if a coodinate is of a specific type
  * @param   pacType
+ *          Name of the type to check for
  * @param   pstMap
+ *          Pointer to map handle
  * @param   dPosX
+ *          Coordinate along the x-axis
  * @param   dPosY
+ *          Coordinate along the y-axis
  * @return  Boolean state
  * @retval  SDL_TRUE: Map coordinate is of specific type
  * @retval  SDL_FALSE: Map coordinate is not of specific type
- * @todo    Document function
  */
 SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX, double dPosY)
 {
@@ -607,13 +613,14 @@ SDL_bool Map_IsCoordOfType(const char* pacType, const Map* pstMap, double dPosX,
 
 /**
  * @brief   Determine if object is of specific type
- * @details 
+ * @details Determines if an object is of a specific type
  * @param   pacType
+ *          The type name to check for
  * @param   pstObject
+ *          Pointer to object handle
  * @return  Boolean state
  * @retval  SDL_TRUE: Object is of specific type
  * @retval  SDL_FALSE: Object is not of specific type
- * @todo    Document function
  */
 SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject)
 {
@@ -628,18 +635,23 @@ SDL_bool Map_IsObjectOfType(const char* pacType, Object* pstObject)
 }
 
 /**
- * @brief   Determine if entity/object is on-top of tile with specific
+ * @brief   Determine if entity/object is on-top of tile of specific
  *          type
- * @details 
+ * @details Determines if an entity/object is on-top of a tile of a
+ *          specific type
  * @param   pacType
+ *          The type name to check for
  * @param   dPosX
+ *          Position along the x-axis
  * @param   dPosY
+ *          Position along the y-axis
  * @param   u8EntityHeight
+ *          Height ob the entity/object in pixel
  * @param   pstMap
+ *          Pointer to map handle
  * @return  Boolean state
  * @retval  SDL_TRUE: entity is on-top of tile of specific type
  * @retval  SDL_FALSE: entity is not on-top of tile of specific type
- * @todo    Document function
  */
 SDL_bool Map_IsOnTileOfType(
     const char*  pacType,
@@ -657,7 +669,6 @@ SDL_bool Map_IsOnTileOfType(
  * @param   dGravitation
  * @param   bUseTmxConstant
  * @param   pstMap
- * @todo    Document function
  */
 void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstant, Map* pstMap)
 {
@@ -683,11 +694,12 @@ void Map_SetGravitation(const double dGravitation, const SDL_bool bUseTmxConstan
 }
 
 /**
- * @brief   Set animation speed of map tile
- * @details 
+ * @brief   Set speed of animated tiles
+ * @details Sets the speed of animated tiles
  * @param   dAnimSpeed
+ *          Animation speed
  * @param   pstMap
- * @todo    Document function
+ *          Pointer to map handle
  */
 void Map_SetTileAnimationSpeed(const double dAnimSpeed, Map* pstMap)
 {

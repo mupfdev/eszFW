@@ -32,8 +32,8 @@ The documentation can be generated using Doxygen:
 doxygen
 ```
 
-A pre-generated version of the documentation can be found here:
-[eszfw.de](https://eszfw.de)
+A automatically generated version of the documentation can be found
+here:  [eszfw.de](https://eszfw.de)
 
 ### Status
 
@@ -41,6 +41,9 @@ This project is in development.  I will enhance it gradually, mainly as
 a tool to my own use.  To see it in action, take a look at [Tau
 Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
 sci-fi themed tech demo which I develop to test this framework.
+
+[![Tau Ceti](https://media.eszfw.de/tc-01-tn.png)](https://media.eszfw.de/tc-01.png?raw=true "Tau Ceti 1")
+[![Tau Ceti](https://media.eszfw.de/tc-02-tn.png)](https://media.eszfw.de/tc-02.png?raw=true "Tau Ceti 2")
 
 An Android version of Tau Ceti is available on Google Play:
 
