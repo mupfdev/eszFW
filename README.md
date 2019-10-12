@@ -56,7 +56,7 @@ An Android version of Tau Ceti is available on Google Play:
 
 The abbreviation esz is a tribute to my best friend [Ertugrul
 Söylemez](https://github.com/esoeylemez), who suddenly passed away on
-May 12th 2018.  We all miss you deeply.
+May 12th, 2018.  We all miss you deeply.
 
 ## Why C?
 
