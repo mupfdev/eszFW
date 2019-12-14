@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file      Font.c
  * @ingroup   Font

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file    Audio.h
  * @brief   Audio handler include header

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file    Map.h
  * @ingroup Map

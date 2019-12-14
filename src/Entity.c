@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file      Entity.c
  * @brief     Entity handler source

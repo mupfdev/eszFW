@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file  eszFW.h
  * @brief eszFW main include header

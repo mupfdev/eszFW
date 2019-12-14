@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file      Background.c
  * @brief     Background handler source

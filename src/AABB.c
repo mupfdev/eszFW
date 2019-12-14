@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Beerware
 /**
  * @file      AABB.c
  * @brief     AABB handler source
