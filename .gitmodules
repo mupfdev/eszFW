@@ -1,0 +1,6 @@
+[submodule "external/tmx"]
+	path = external/tmx
+	url = https://github.com/baylej/tmx.git
+[submodule "external/cwalk"]
+	path = external/cwalk
+	url = https://github.com/likle/cwalk.git
