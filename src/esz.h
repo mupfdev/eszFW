@@ -31,6 +31,15 @@ typedef enum
 } esz_Alignment;
 
 /**
+ * @brief Camera flags
+ */
+typedef enum
+{
+    CAMERA_IS_LOCKED = 0
+
+} esz_CameraFlag;
+
+/**
  * @brief Orientational constants
  */
 typedef enum
@@ -86,15 +95,13 @@ typedef struct esz_AABB_t
  */
 typedef struct esz_AnimatedTile_t
 {
+    Sint32 dst_x;
+    Sint32 dst_y;
     Uint16 gid;
-/*
-    Uint16 u16Gid;       ///< GID
-    Uint16 u16TileId;    ///< Tile ID
-    Sint16 s16DstX;      ///< Destination coordinate along the x-axis
-    Sint16 s16DstY;      ///< Destination coordinate along the y-axis
-    Uint8  u8FrameCount; ///< Frame count
-    Uint8  u8AnimLen;    ///< Animation length
-*/
+    Uint16 id;
+    Uint8  current_frame;
+    Uint8  animation_length;
+
 } esz_AnimatedTile;
 
 /**
@@ -176,22 +183,25 @@ typedef struct esz_Sprite_t
  */
 typedef struct esz_Map_t
 {
-    char         resource_path[ESZ_MAX_PATH_LEN];
-    char         tileset_image[ESZ_MAX_PATH_LEN];
-    tmx_map*     tmx_map;
-    SDL_Texture* tileset_texture;
-    esz_Object*  object;
-    esz_Sprite*  sprite;
-    double       gravitation;
-    double       tile_animation_speed;
-    size_t       resource_path_length;
-    Uint8        meter_in_pixel;
-    Uint8        sprite_sheet_count;
-    Uint16       animated_tiles_count;
-    Uint16       object_count;
-    Uint16       height;
-    Uint16       width;
-    SDL_bool     is_loaded;
+    char              resource_path[ESZ_MAX_PATH_LEN];
+    char              tileset_image[ESZ_MAX_PATH_LEN];
+    tmx_map*          tmx_map;
+    SDL_Texture*      animated_tile_texture;
+    SDL_Texture*      tileset_texture;
+    SDL_Texture*      map_texture;
+    esz_AnimatedTile* animated_tile;
+    esz_Object*       object;
+    esz_Sprite*       sprite;
+    double            gravitation;
+    double            tile_animation_speed;
+    size_t            resource_path_length;
+    Uint16            animated_tile_count;
+    Uint16            object_count;
+    Uint16            width;
+    Uint16            height;
+    Uint8             meter_in_pixel;
+    Uint8             sprite_sheet_count;
+    SDL_bool          is_loaded;
 
 //    SDL_Texture* pstAnimTexture;                   ///< Texture for animated tiles
 //    SDL_Texture* pstTexture[MAP_TEXTURES];         ///< Map textures
@@ -245,7 +255,10 @@ Uint32     esz_GetKeycode(esz_Core* core);
 void       esz_ExitCore(esz_Core* core);
 esz_Status esz_InitCore(esz_Config* config, esz_Core** core);
 void       esz_LoadMap(const char* map_file_name, esz_Core* core);
+void       esz_LockCamera(esz_Core* core);
 void       esz_RegisterEventCallback(const esz_EventType event_type, void (*callback)(void* core), esz_Core* core);
 esz_Status esz_SetZoomLevel(const double factor, esz_Core* core);
 esz_Status esz_StartCore(const char* window_title, esz_Core* core);
+esz_Status esz_ToggleFullscreen(esz_Core* core);
+void       esz_UnlockCamera(esz_Core* core);
 void       esz_UnloadMap(esz_Core* core);

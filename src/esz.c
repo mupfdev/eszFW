@@ -3,6 +3,7 @@
  * @file    esz.c
  * @brief   eszFW game engine
  * @details A cross-platform game engine written in C99
+ * @todo    - Update logging
  */
 
 #ifdef __EMSCRIPTEN__
@@ -17,88 +18,39 @@
 #include <tmx.h>
 #include "esz.h"
 
-/**
- * @enum  EntityFlags
- * @brief Entity flags data
- */
-/*typedef enum
-{
-    IS_ANIMATED   = 0x00, ///< Entity is animated
-    IS_DEAD       = 0x01, ///< Entity is dead
-    IS_IN_MID_AIR = 0x02, ///< Entity is in mid-air
-    IS_LOCKED     = 0x03, ///< Camera is locked
-    IS_MOVING     = 0x04  ///< Entity is moving
-
-} EntityFlags;*/
-
-/*****************
- * Private Types *
- *****************/
-
-/*typedef struct Entity_t
-{
-    AABB      hBB;            ///< Axis-aligned bounding box
-    Uint16    u16Flags;       ///< Flag mask
-    double    dPosX;          ///< Position along the x-axis
-    double    dPosY;          ///< Position along the y-axis
-    double    dSpawnPosX;     ///< Spawn position along the x-axis
-    double    dSpawnPosY;     ///< Spawn position along the y-axis
-    SDL_bool  bIsJumping;     ///< Current jumping-state
-    Direction eDirection;     ///< Direction
-    double    dAcceleration;  ///< Acceleration
-    double    dVelocityX;     ///< Velocity along the x-axis
-    double    dMaxVelocityX;  ///< Max velocity along the x-axis
-    double    dVelocityY;     ///< Velocity along the y-axis
-    Uint16    u16Width;       ///< Entity width in pixel
-    Uint16    u16Height;      ///< Entity height in pixel
-    Uint8     u8FrameOffsetX; ///< Frame x-offset in frames
-    Uint8     u8FrameOffsetY; ///< Frame y-offset in frames
-    Uint8     u8AnimFrame;    ///< Current animation frame
-    Uint8     u8AnimStart;    ///< Animation start
-    Uint8     u8AnimEnd;      ///< Animation end
-    double    dAnimDelay;     ///< Animation delay
-    double    dAnimSpeed;     ///< Animation speed
-    Uint16    u16SpriteID;     ///< Sprite sheet ID
-
-} Entity;*/
-
 /**********************
  * Private Prototypes *
  **********************/
 
-static void       CountAnimatedTiles(esz_Map *map, Uint16* animated_tiles_count);
 static void       CountObjects(tmx_object* tmx_object, Uint16** object_count);
 static esz_Status DrawMap(const Uint16 texture_index, const SDL_bool render_animated_tiles, const SDL_bool render_bg_color, esz_Core *core);
+static Uint16     GetCameraTarget(esz_Core* core);
+static esz_Status InitAnimatedTiles(esz_Core* core);
+static esz_Status InitObjects(esz_Core* core);
+static SDL_bool   IsCameraLocked(esz_Core* core);
 static void       LoadMapPropertyByName(const char* property_name, esz_Core* core);
-static esz_Status LoadObjects(esz_Core* core);
 static esz_Status LoadSprite(const char* sprite_sheet_image, esz_Sprite* sprite, esz_Core* core);
+static void       MoveCameraToTarget(esz_Core* core);
 static void       PollEvents(esz_Core* core);
+static Uint16     RemoveGidFlipBits(Uint16 gid);
 static esz_Status Render(esz_Core *core);
+static double     RoundNumber(double number);
+static SDL_bool   SetCameraBoundariesToMapSize(esz_Core* core);
+static void       SetCameraTarget(const Uint16 target_entity_id, esz_Core* core);
 static void       StoreProperty(tmx_property* property, void* core);
 static void       Update(esz_Core* core);
+static void       UpdateCamera(esz_Core* core);
 
 /*
-static void      ClearFlag(const Uint8 u8Bit, Uint16* pu16Flags);
-static Uint16    ClearGidFlags(Uint16 u16Gid);
 static void      ConnectHorizontalMapEndsForEntity(Entity* hEntity);
 static void      ConnectMapEndsForEntity(Entity* hEntity);
 static void      ConnectVerticalMapEndsForEntity(Entity* hEntity);
 static eszStatus DrawEntity(const Entity* hEntity);
-static Uint16    GetCameraTarget(void);
 static void      GetEntity(tmx_object* pstTiledObject, Uint16 u16Index, Object ahObject[]);
-static SDL_bool  IsCameraLocked(void);
 static SDL_bool  IsEntityMoving(const Entity* hEntity);
 static SDL_bool  IsEntityRising(const Entity* hEntity);
-static SDL_bool  IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags);
-static void      MoveCameraToTarget(void);
 static void      RenderScene(void);
-static double    Round(double dValue);
-static SDL_bool  SetCameraBoundariesToMapSize(void);
-static void      SetCameraTarget(Uint16 u16TargetEntityID);
 static void      SetEntityPosition(const double dPosX, const double dPosY, Entity* hEntity);
-static void      SetFlag(const Uint8 u8Bit, Uint16* pu16Flags);
-static void      ToggleFlag(const Uint8 u8Bit, Uint16* pu16Flags);
-static void      UpdateCamera(void);
 static void      UpdateEntities(void);
 static void      UpdateEntity(Entity* hEntity);
 */
@@ -165,7 +117,7 @@ esz_Status esz_InitCore(esz_Config* config, esz_Core** core)
 
     if (! *core)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_InitCore(): error allocating memory for engine core.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_InitCore(): error allocating memory.\n");
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -183,7 +135,11 @@ esz_Status esz_InitCore(esz_Config* config, esz_Core** core)
 }
 
 /**
- *
+ * @brief Load map
+ * @param map_file_name
+ *        file name of the map to load
+ * @param core
+ *        Engine core
  */
 void esz_LoadMap(const char* map_file_name, esz_Core* core)
 {
@@ -206,19 +162,19 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         SDL_Log("Load map file: %s.\n", map_file_name);
     }
 
-    /****************
-     * Load objects *
-     ****************/
+    /**********************
+     * Initialise objects *
+     **********************/
 
-    if (ESZ_OK != LoadObjects(core))
+    if (ESZ_OK != InitObjects(core))
     {
         esz_UnloadMap(core);
         return;
     }
 
-    /*****************
-     * Load entities *
-     *****************/
+    /***********************
+     * Initialise entities *
+     ***********************/
 
     // tbd.
 
@@ -294,6 +250,7 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         return;
     }
 
+    // Todo: move to InitSprites()
     LoadMapPropertyByName("sprite_sheet_count", core);
     if (core->integer_property)
     {
@@ -304,7 +261,7 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
 
     if (! core->map.sprite)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_LoadMap(): error allocating memory for sprite sheets.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_LoadMap(): error allocating memory.\n");
         esz_UnloadMap(core);
     }
 
@@ -313,7 +270,7 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         char property_name[17]                    = { 0 };
         char sprite_sheet_image[ESZ_MAX_PATH_LEN] = { 0 };
 
-        for (Uint16 index = 0; index < core->map.sprite_sheet_count; index++)
+        for (Uint16 index = 0; index < core->map.sprite_sheet_count; index += 1)
         {
             SDL_snprintf(property_name, 17, "sprite_sheet_%u", index);
 
@@ -329,13 +286,29 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         }
     }
 
+    if (ESZ_OK != InitAnimatedTiles(core))
+    {
+        esz_UnloadMap(core);
+        return;
+    }
+
     if (core->event.map_loaded_cb)
     {
         core->event.map_loaded_cb(core);
     }
 
     SDL_Log(
-        "Load Tiled map file: %s containing %d object(s).\n", map_file_name, core->map.object_count);
+        "Load map file: %s containing %d object(s).\n",
+        map_file_name, core->map.object_count);
+}
+
+/**
+ * @brief Enable camera lock
+ */
+void esz_LockCamera(esz_Core* core)
+{
+    SDL_Log("Enable camera lock.\n");
+    core->camera.flags |= 1UL << CAMERA_IS_LOCKED;
 }
 
 /**
@@ -540,10 +513,47 @@ quit:
     }
 
     SDL_Quit();
+    return status;
+}
+
+/**
+ * @brief Toggle between fullscreen and windowed mode
+ */
+esz_Status esz_ToggleFullscreen(esz_Core* core)
+{
+    esz_Status status = ESZ_OK;
+
+    core->window_flags = SDL_GetWindowFlags(core->window);
+
+    if (core->window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+    {
+        SDL_SetWindowPosition(core->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        if (0 > SDL_SetWindowFullscreen(core->window, 0))
+        {
+            status = ESZ_ERROR_WARNING;
+        }
+        SDL_Log("Set window to windowed mode.\n");
+    }
+    else
+    {
+        if (0 > SDL_SetWindowFullscreen(core->window, SDL_WINDOW_FULLSCREEN_DESKTOP))
+        {
+            status = ESZ_ERROR_WARNING;
+        }
+        SDL_Log("Set window to fullscreen mode.\n");
+    }
+
+    if (ESZ_OK != status)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_ToggleFullscreen(): %s\n", SDL_GetError());
+    }
 
     return status;
 }
 
+/**
+ *
+ */
 void esz_UnloadMap(esz_Core* core)
 {
     if (! core->map.is_loaded)
@@ -555,9 +565,19 @@ void esz_UnloadMap(esz_Core* core)
         core->map.is_loaded = SDL_FALSE;
     }
 
+    if (core->map.animated_tile)
+    {
+        SDL_free(core->map.animated_tile);
+    }
+
+    if (core->map.animated_tile_texture)
+    {
+        SDL_DestroyTexture(core->map.animated_tile_texture);
+    }
+
     if (core->map.sprite)
     {
-        for (Uint16 index = 0; index < core->map.sprite_sheet_count; index++)
+        for (Uint16 index = 0; index < core->map.sprite_sheet_count; index += 1)
         {
             if (core->map.sprite[index].texture)
             {
@@ -586,66 +606,17 @@ void esz_UnloadMap(esz_Core* core)
 }
 
 /**
- * @brief Lock camera (track player entity)
+ * @brief Disable camera lock
  */
-/*void eszLockCamera(void)
+void esz_UnlockCamera(esz_Core* core)
 {
-    SDL_Log("Set camera to track player entity.\n");
-    SetFlag(IS_LOCKED, &heszFW.hCamera->u16Flags);
-}*/
-
-/**
- * @brief Unlock camera (do not track player entity)
- */
-/*void eszUnlockCamera(void)
-{
-    SDL_Log("Unlock camera.\n");
-    ClearFlag(IS_LOCKED, &heszFW.hCamera->u16Flags);
-}*/
-
-/**
- * @brief Toggle fullscreen
- */
-/*eszStatus eszToggleFullscreen(void)
-{
-    eszStatus eStatus = ESZ_OK;
-
-    heszFW.hVideo->u32WindowFlags = SDL_GetWindowFlags(heszFW.hVideo->pstWindow);
-
-    if (heszFW.hVideo->u32WindowFlags & SDL_WINDOW_FULLSCREEN_DESKTOP)
-    {
-        SDL_SetWindowPosition(heszFW.hVideo->pstWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        if (0 > SDL_SetWindowFullscreen(heszFW.hVideo->pstWindow, 0))
-        {
-            eStatus = ESZ_ERROR;
-        }
-        SDL_Log("Set window to windowed mode.\n");
-    }
-    else
-    {
-        if (0 > SDL_SetWindowFullscreen(heszFW.hVideo->pstWindow, SDL_WINDOW_FULLSCREEN_DESKTOP))
-        {
-            eStatus = ESZ_ERROR;
-        }
-        SDL_Log("Set window to fullscreen mode.\n");
-    }
-
-    if (ESZ_OK != eStatus)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "eszToggleFullscreen(): %s\n", SDL_GetError());
-    }
-
-    return eStatus;
-}*/
+    SDL_Log("Disable camera lock.\n");
+    core->camera.flags &= ~(1UL << CAMERA_IS_LOCKED);
+}
 
 /*********************
  * Private Functions *
  *********************/
-
-static void CountAnimatedTiles(esz_Map *map, Uint16* animated_tiles_count)
-{
-
-}
 
 static void CountObjects(tmx_object* tmx_object, Uint16** object_count)
 {
@@ -664,155 +635,163 @@ static esz_Status DrawMap(const Uint16 texture_index, const SDL_bool render_anim
 {
     static double tile_animation_delay = 0.f;
 
-    tmx_layer* tmx_layer = core->map.tmx_map->ly_head;
+    //tmx_layer* layer = core->map.tmx_map->ly_head;
 
-    /***********************************
-    * Update and render animated tiles *
-    ************************************/
+    /************************************
+     * Update and render animated tiles *
+     ************************************/
 
     tile_animation_delay += core->time_between_frames;
 
-    /*
-
-    if (0 < heszFW.hMap->u16AnimTileSize &&
-        heszFW.hMap->dTileAnimationDelay > (1.f / heszFW.hMap->dTileAnimationSpeed - dDeltaTime) && bRenderAnimTiles)
+    if (0 < core->map.animated_tile_count &&
+        tile_animation_delay > (1.f / core->map.tile_animation_speed - core->time_between_frames) &&
+        render_animated_tiles)
     {
-        if (! heszFW.hMap->pstAnimTexture)
+        /*  Remark: if render_animated_tiles is set to true, the
+         *  animated tiles of *all* layers are rendered in this pass.
+         */
+
+        if (! core->map.animated_tile_texture)
         {
-            heszFW.hMap->pstAnimTexture = SDL_CreateTexture(
-                heszFW.hVideo->pstRenderer,
+            core->map.animated_tile_texture = SDL_CreateTexture(
+                core->renderer,
                 SDL_PIXELFORMAT_ARGB8888,
                 SDL_TEXTUREACCESS_TARGET,
-                heszFW.hMap->pstTiledMap->width * heszFW.hMap->pstTiledMap->tile_width,
-                heszFW.hMap->pstTiledMap->height * heszFW.hMap->pstTiledMap->tile_height);
+                core->map.tmx_map->width  * core->map.tmx_map->tile_width,
+                core->map.tmx_map->height * core->map.tmx_map->tile_height);
         }
 
-        if (! heszFW.hMap->pstAnimTexture)
+        if (! core->map.animated_tile_texture)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-            return ESZ_ERROR;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
+            return ESZ_ERROR_CRITICAL;
         }
 
-        if (0 != SDL_SetRenderTarget(heszFW.hVideo->pstRenderer, heszFW.hMap->pstAnimTexture))
+        if (0 != SDL_SetRenderTarget(core->renderer, core->map.animated_tile_texture))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-            return ESZ_ERROR;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
+            return ESZ_ERROR_CRITICAL;
         }
 
-        for (Uint16 u16Idx = 0; u16Idx < heszFW.hMap->u16AnimTileSize; u16Idx++)
+        for (Uint16 index = 0; core->map.animated_tile_count > index; index += 1)
         {
-            Uint16       u16Gid        = heszFW.hMap->acAnimTile[u16Idx].u16Gid;
-            Uint16       u16TileId     = heszFW.hMap->acAnimTile[u16Idx].u16TileId + 1;
-            Uint16       u16NextTileId = 0;
-            SDL_Rect     stDst;
-            SDL_Rect     stSrc;
-            tmx_tileset* pstTS;
+            Uint16       gid          = core->map.animated_tile[index].gid;
+            Uint16       tile_id      = core->map.animated_tile[index].id + 1;
+            Uint16       next_tile_id = 0;
+            SDL_Rect     dst;
+            SDL_Rect     src;
+            tmx_tileset* tileset;
 
-            pstTS   = heszFW.hMap->pstTiledMap->tiles[1]->tileset;
-            stSrc.x = heszFW.hMap->pstTiledMap->tiles[u16TileId]->ul_x;
-            stSrc.y = heszFW.hMap->pstTiledMap->tiles[u16TileId]->ul_y;
-            stSrc.w = stDst.w = pstTS->tile_width;
-            stSrc.h = stDst.h = pstTS->tile_height;
-            stDst.x = heszFW.hMap->acAnimTile[u16Idx].s16DstX;
-            stDst.y = heszFW.hMap->acAnimTile[u16Idx].s16DstY;
+            tileset = core->map.tmx_map->tiles[1]->tileset;
+            src.x   = core->map.tmx_map->tiles[tile_id]->ul_x;
+            src.y   = core->map.tmx_map->tiles[tile_id]->ul_y;
+            src.w   = dst.w = tileset->tile_width;
+            src.h   = dst.h = tileset->tile_height;
+            dst.x           = core->map.animated_tile[index].dst_x;
+            dst.y           = core->map.animated_tile[index].dst_y;
 
-            SDL_RenderCopy(heszFW.hVideo->pstRenderer, heszFW.hMap->pstTileset, &stSrc, &stDst);
+            SDL_RenderCopy(core->renderer, core->map.tileset_texture, &src, &dst);
 
-            heszFW.hMap->acAnimTile[u16Idx].u8FrameCount++;
-            if (heszFW.hMap->acAnimTile[u16Idx].u8FrameCount >= heszFW.hMap->acAnimTile[u16Idx].u8AnimLen)
+            core->map.animated_tile[index].current_frame += 1;
+
+            if (core->map.animated_tile[index].current_frame >= core->map.animated_tile[index].animation_length)
             {
-                heszFW.hMap->acAnimTile[u16Idx].u8FrameCount = 0;
+                core->map.animated_tile[index].current_frame = 0;
             }
 
-            u16NextTileId = heszFW.hMap->pstTiledMap->tiles[u16Gid]
-                ->animation[heszFW.hMap->acAnimTile[u16Idx].u8FrameCount]
-                .tile_id;
-            heszFW.hMap->acAnimTile[u16Idx].u16TileId = u16NextTileId;
+            next_tile_id = core->map.tmx_map->tiles[gid]->animation[core->map.animated_tile[index].current_frame].tile_id;
+
+            core->map.animated_tile[index].id = next_tile_id;
         }
 
-        if (heszFW.hMap->dTileAnimationDelay > 1.f / heszFW.hMap->dTileAnimationSpeed)
+        if (tile_animation_delay > (1.f / core->map.tile_animation_speed))
         {
-            heszFW.hMap->dTileAnimationDelay = 0.f;
+            tile_animation_delay = 0.f;
         }
 
         // Switch back to default render target.
-        if (0 != SDL_SetRenderTarget(heszFW.hVideo->pstRenderer, NULL))
+        if (0 != SDL_SetRenderTarget(core->renderer, NULL))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-            return ESZ_ERROR;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
+            return ESZ_ERROR_CRITICAL;
         }
 
-        if (0 != SDL_SetTextureBlendMode(heszFW.hMap->pstAnimTexture, SDL_BLENDMODE_BLEND))
+        if (0 != SDL_SetTextureBlendMode(core->map.animated_tile_texture, SDL_BLENDMODE_BLEND))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-            return ESZ_ERROR;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
+            return ESZ_ERROR_CRITICAL;
         }
     }
 
-    // The texture has already been rendered and can be drawn.
-    if (heszFW.hMap->pstTexture[u16Index])
+    /***********************************************
+     * Texture has already been rendered. Draw it: *
+     ***********************************************/
+
+    /*if (core->map.pstMap->pstTexture[u16Index])
     {
-        double   dRenderPosX = heszFW.hMap->dPosX - heszFW.hCamera->dPosX;
-        double   dRenderPosY = heszFW.hMap->dPosY - heszFW.hCamera->dPosY;
-        SDL_Rect stDst       = {
-            dRenderPosX,
-            dRenderPosY,
-            heszFW.hMap->pstTiledMap->width * heszFW.hMap->pstTiledMap->tile_width,
-            heszFW.hMap->pstTiledMap->height * heszFW.hMap->pstTiledMap->tile_height
-        };
+        double   dRenderPosX = pstMap->dPosX - dCameraPosX;
+        double   dRenderPosY = pstMap->dPosY - dCameraPosY;
+        SDL_Rect stDst       = { dRenderPosX,
+                           dRenderPosY,
+                           pstMap->pstTmxMap->width * pstMap->pstTmxMap->tile_width,
+                           pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height };
 
         if (-1 ==
             SDL_RenderCopyEx(
-                heszFW.hVideo->pstRenderer, heszFW.hMap->pstTexture[u16Index], NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+                pstRenderer, pstMap->pstTexture[u16Index], NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-            return ESZ_ERROR;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+            return -1;
         }
 
         if (bRenderAnimTiles)
         {
-            if (heszFW.hMap->pstAnimTexture)
+            if (pstMap->pstAnimTexture)
             {
                 if (-1 ==
                     SDL_RenderCopyEx(
-                        heszFW.hVideo->pstRenderer, heszFW.hMap->pstAnimTexture, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+                        pstRenderer, pstMap->pstAnimTexture, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
                 {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-                    return ESZ_ERROR;
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+                    return -1;
                 }
             }
         }
 
-        return ESZ_OK;
-    }
+        return 0;
+    }*/
 
-    // Otherwise render the texture once.
-    heszFW.hMap->pstTexture[u16Index] = SDL_CreateTexture(
-        heszFW.hVideo->pstRenderer,
+    /******************************************
+     * Texture does not yet exist. Render it: *
+     ******************************************/
+
+    /*
+    pstMap->pstTexture[u16Index] = SDL_CreateTexture(
+        pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
-        heszFW.hMap->pstTiledMap->width  * heszFW.hMap->pstTiledMap->tile_width,
-        heszFW.hMap->pstTiledMap->height * heszFW.hMap->pstTiledMap->tile_height);
+        pstMap->pstTmxMap->width * pstMap->pstTmxMap->tile_width,
+        pstMap->pstTmxMap->height * pstMap->pstTmxMap->tile_height);
 
-    if (! heszFW.hMap->pstTexture[u16Index])
+    if (!pstMap->pstTexture[u16Index])
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-        return ESZ_ERROR;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return -1;
     }
 
-    if (0 != SDL_SetRenderTarget(heszFW.hVideo->pstRenderer, heszFW.hMap->pstTexture[u16Index]))
+    if (0 != SDL_SetRenderTarget(pstRenderer, pstMap->pstTexture[u16Index]))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-        return ESZ_ERROR;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return -1;
     }
 
     if (bRenderBgColour)
     {
         SDL_SetRenderDrawColor(
-            heszFW.hVideo->pstRenderer,
-            (heszFW.hMap->pstTiledMap->backgroundcolor >> 16) & 0xFF,
-            (heszFW.hMap->pstTiledMap->backgroundcolor >> 8) & 0xFF,
-            (heszFW.hMap->pstTiledMap->backgroundcolor) & 0xFF,
+            pstRenderer,
+            (pstMap->pstTmxMap->backgroundcolor >> 16) & 0xFF,
+            (pstMap->pstTmxMap->backgroundcolor >> 8) & 0xFF,
+            (pstMap->pstTmxMap->backgroundcolor) & 0xFF,
             255);
     }
 
@@ -826,76 +805,204 @@ static esz_Status DrawMap(const Uint16 texture_index, const SDL_bool render_anim
 
         if (L_LAYER == pstLayer->type)
         {
-            if (szLayerNamePattern)
+            if (pacLayerName)
             {
-                if (! SDL_strstr(pstLayer->name, szLayerNamePattern)) Replace!!
+                if (!SDL_strstr(pstLayer->name, pacLayerName))
                 {
                     bRenderLayer = 0;
                 }
             }
             if (pstLayer->visible && bRenderLayer)
             {
-                for (Uint16 u16IndexH = 0; u16IndexH < heszFW.hMap->pstTiledMap->height; u16IndexH++)
+                for (Uint16 u16IndexH = 0; u16IndexH < pstMap->pstTmxMap->height; u16IndexH++)
                 {
-                    for (Uint32 u16IndexW = 0; u16IndexW < heszFW.hMap->pstTiledMap->width; u16IndexW++)
+                    for (Uint32 u16IndexW = 0; u16IndexW < pstMap->pstTmxMap->width; u16IndexW++)
                     {
-                        u16Gid = ClearGidFlags(
+                        u16Gid = _ClearGidFlags(
                             pstLayer->content
-                            .gids[(u16IndexH * heszFW.hMap->pstTiledMap->width) + u16IndexW]);
-                        if (heszFW.hMap->pstTiledMap->tiles[u16Gid])
+                                .gids[(u16IndexH * pstMap->pstTmxMap->width) + u16IndexW]);
+                        if (pstMap->pstTmxMap->tiles[u16Gid])
                         {
-                            pstTS   = heszFW.hMap->pstTiledMap->tiles[1]->tileset;
-                            stSrc.x = heszFW.hMap->pstTiledMap->tiles[u16Gid]->ul_x;
-                            stSrc.y = heszFW.hMap->pstTiledMap->tiles[u16Gid]->ul_y;
+                            pstTS   = pstMap->pstTmxMap->tiles[1]->tileset;
+                            stSrc.x = pstMap->pstTmxMap->tiles[u16Gid]->ul_x;
+                            stSrc.y = pstMap->pstTmxMap->tiles[u16Gid]->ul_y;
                             stSrc.w = stDst.w = pstTS->tile_width;
                             stSrc.h = stDst.h = pstTS->tile_height;
                             stDst.x           = u16IndexW * pstTS->tile_width;
                             stDst.y           = u16IndexH * pstTS->tile_height;
-                            SDL_RenderCopy(heszFW.hVideo->pstRenderer, heszFW.hMap->pstTileset, &stSrc, &stDst);
+                            SDL_RenderCopy(pstRenderer, pstMap->pstTileset, &stSrc, &stDst);
 
-                            if (bRenderAnimTiles && heszFW.hMap->pstTiledMap->tiles[u16Gid]->animation)
+                            if (bRenderAnimTiles && pstMap->pstTmxMap->tiles[u16Gid]->animation)
                             {
-                                Uint8  u8AnimLen = heszFW.hMap->pstTiledMap->tiles[u16Gid]->animation_len;
-                                Uint16 u16TileId = heszFW.hMap->pstTiledMap->tiles[u16Gid]->animation[0].tile_id;
-
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].u16Gid       = u16Gid;
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].u16TileId    = u16TileId;
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].s16DstX      = stDst.x;
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].s16DstY      = stDst.y;
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].u8FrameCount = 0;
-                                heszFW.hMap->acAnimTile[heszFW.hMap->u16AnimTileSize].u8AnimLen    = u8AnimLen;
-
-                                heszFW.hMap->u16AnimTileSize++;
+                                Uint8  u8AnimLen;
+                                Uint16 u16TileId;
+                                u8AnimLen = pstMap->pstTmxMap->tiles[u16Gid]->animation_len;
+                                u16TileId = pstMap->pstTmxMap->tiles[u16Gid]->animation[0].tile_id;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].u16Gid    = u16Gid;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].u16TileId = u16TileId;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].s16DstX   = stDst.x;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].s16DstY   = stDst.y;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].u8FrameCount = 0;
+                                pstMap->acAnimTile[pstMap->u16AnimTileSize].u8AnimLen = u8AnimLen;
+                                pstMap->u16AnimTileSize++;
 
                                 // Prevent buffer overflow.
-                                if (heszFW.hMap->u16AnimTileSize >= ANIM_TILE_MAX)
+                                if (pstMap->u16AnimTileSize >= ANIM_TILE_MAX)
                                 {
-                                    heszFW.hMap->u16AnimTileSize = ANIM_TILE_MAX;
+                                    pstMap->u16AnimTileSize = ANIM_TILE_MAX;
                                 }
                             }
                         }
                     }
                 }
-                SDL_Log("Render map layer: %s\n", pstLayer->name);
+                SDL_Log("Render TMX map layer: %s\n", pstLayer->name);
             }
         }
         pstLayer = pstLayer->next;
     }
     // Switch back to default render target.
-    if (0 != SDL_SetRenderTarget(heszFW.hVideo->pstRenderer, NULL))
+    if (0 != SDL_SetRenderTarget(pstRenderer, NULL))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-        return ESZ_ERROR;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return -1;
     }
 
-    if (0 != SDL_SetTextureBlendMode(heszFW.hMap->pstTexture[u16Index], SDL_BLENDMODE_BLEND))
+    if (0 != SDL_SetTextureBlendMode(pstMap->pstTexture[u16Index], SDL_BLENDMODE_BLEND))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "_DrawMap(): %s\n", SDL_GetError());
-        return ESZ_ERROR;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        return -1;
     }
+
+    return 0;
+*/
 
     return ESZ_OK;
-    */
+}
+
+static Uint16 GetCameraTarget(esz_Core* core)
+{
+    return core->camera.target_entity_id;
+}
+
+static esz_Status InitAnimatedTiles(esz_Core* core)
+{
+    tmx_layer* layer = core->map.tmx_map->ly_head;
+
+    core->map.animated_tile_count = 0;
+
+    /************************
+     * Count animated tiles *
+     ************************/
+
+    while (layer)
+    {
+        Uint16 gid;
+
+        if (L_LAYER == layer->type)
+        {
+            if (layer->visible)
+            {
+                for (Uint16 index_height = 0; index_height < core->map.tmx_map->height; index_height += 1)
+                {
+                    for (Uint32 index_width = 0; index_width < core->map.tmx_map->width; index_width += 1)
+                    {
+                        gid = RemoveGidFlipBits(
+                            layer->content.gids[(index_height * core->map.tmx_map->width) + index_width]);
+
+                        if (core->map.tmx_map->tiles[gid])
+                        {
+                            if (core->map.tmx_map->tiles[gid]->animation)
+                            {
+                                core->map.animated_tile_count += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        layer = layer->next;
+    }
+
+    if (0 == core->map.animated_tile_count)
+    {
+        SDL_Log("No animated tiles found.\n");
+        return ESZ_OK;
+    }
+
+    /**************************************
+     * Allocate memory for animated tiles *
+     **************************************/
+
+    if (core->map.animated_tile_count)
+    {
+        core->map.animated_tile = SDL_calloc(core->map.animated_tile_count, sizeof(struct esz_AnimatedTile_t));
+
+        if (! core->map.animated_tile)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitAnimatedTiles(): error allocating memory.\n");
+            return ESZ_ERROR_CRITICAL;
+        }
+    }
+
+    SDL_Log("Initialise %u animated tile(s).\n", core->map.animated_tile_count);
+    return ESZ_OK;
+}
+
+static esz_Status InitObjects(esz_Core* core)
+{
+    Uint16*    object_count = &core->map.object_count;
+    tmx_layer* layer;
+
+    /*****************
+     * Count objects *
+     *****************/
+
+    if (core->map.object_count)
+    {
+        return ESZ_OK;
+    }
+
+    layer = core->map.tmx_map->ly_head;
+
+    while (layer)
+    {
+        if (L_OBJGR == layer->type)
+        {
+            CountObjects(layer->content.objgr->head, &object_count);
+        }
+
+        layer = layer->next;
+    }
+
+    /*******************************
+     * Allocate memory for objects *
+     *******************************/
+
+    if (core->map.object_count)
+    {
+        core->map.object = SDL_calloc(core->map.object_count, sizeof(struct esz_Object_t));
+
+        if (! core->map.object)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InitObjects(): error allocating memory.\n");
+            return ESZ_ERROR_CRITICAL;
+        }
+    }
+
+    SDL_Log("Initialise %u object(s).\n", core->map.object_count);
+    return ESZ_OK;
+}
+
+static SDL_bool IsCameraLocked(esz_Core* core)
+{
+    if ((core->camera.flags >> CAMERA_IS_LOCKED) & 1U)
+    {
+        return SDL_TRUE;
+    }
+    else
+    {
+        return SDL_FALSE;
+    }
 }
 
 static void LoadMapPropertyByName(const char* property_name, esz_Core* core)
@@ -911,44 +1018,6 @@ static void LoadMapPropertyByName(const char* property_name, esz_Core* core)
     tmx_property_foreach(property, StoreProperty, (void*)core);
 }
 
-static esz_Status LoadObjects(esz_Core* core)
-{
-    Uint16*    object_count = &core->map.object_count;
-    tmx_layer* tmx_layer;
-
-    if (core->map.object_count)
-    {
-        return ESZ_OK;
-    }
-
-    tmx_layer = core->map.tmx_map->ly_head;
-
-    while (tmx_layer)
-    {
-        if (L_OBJGR == tmx_layer->type)
-        {
-            CountObjects(tmx_layer->content.objgr->head, &object_count);
-        }
-
-        tmx_layer = tmx_layer->next;
-    }
-
-    if (core->map.object_count)
-    {
-        core->map.object = SDL_calloc(core->map.object_count, sizeof(struct esz_Object_t));
-
-        if (! core->map.object)
-        {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadObjects(): error allocating memory for objects.\n");
-            return ESZ_ERROR_CRITICAL;
-        }
-    }
-
-    SDL_Log("Loading %u object(s).\n", core->map.object_count);
-
-    return ESZ_OK;
-}
-
 static esz_Status LoadSprite(const char* sprite_sheet_image, esz_Sprite* sprite, esz_Core* core)
 {
     sprite->texture = IMG_LoadTexture(core->renderer, sprite_sheet_image);
@@ -960,8 +1029,27 @@ static esz_Status LoadSprite(const char* sprite_sheet_image, esz_Sprite* sprite,
     }
 
     SDL_Log("Load sprite image file: %s.\n", sprite_sheet_image);
-
     return ESZ_OK;
+}
+
+static void MoveCameraToTarget(esz_Core* core)
+{
+    if ((core->camera.flags >> CAMERA_IS_LOCKED) & 1U)
+    {
+        /*
+        Entity* hEntity = &heszFW.hMap->hEntity[heszFW.hCamera->u16TargetEntityID];
+
+        heszFW.hCamera->dPosX  = hEntity->dPosX;
+        heszFW.hCamera->dPosX -= heszFW.hVideo->s32LogicalWindowWidth  / 2.0;
+        heszFW.hCamera->dPosY  = hEntity->dPosY;
+        heszFW.hCamera->dPosY -= heszFW.hVideo->s32LogicalWindowHeight / 2.0;
+
+        if (heszFW.hCamera->dPosX < 0)
+        {
+            heszFW.hCamera->dPosX = 0;
+        }
+        */
+    }
 }
 
 static void PollEvents(esz_Core* core)
@@ -1013,6 +1101,11 @@ static void PollEvents(esz_Core* core)
     }
 }
 
+static Uint16 RemoveGidFlipBits(Uint16 gid)
+{
+    return gid & TMX_FLIP_BITS_REMOVAL;
+}
+
 static esz_Status Render(esz_Core *core)
 {
     static Uint32 time_a = 0;
@@ -1037,6 +1130,59 @@ static esz_Status Render(esz_Core *core)
 
     SDL_RenderPresent(core->renderer);
     SDL_RenderClear(core->renderer);
+
+    return ESZ_OK;
+}
+
+static double RoundNumber(double number)
+{
+    double decimal_place = number - SDL_floor(number);
+
+    if (decimal_place >= 0.5f)
+    {
+        return SDL_ceil(number);
+    }
+    else
+    {
+        return SDL_floor(number);
+    }
+}
+
+static SDL_bool SetCameraBoundariesToMapSize(esz_Core* core)
+{
+    SDL_bool camera_reached_boundaries = SDL_FALSE;
+
+    core->camera.max_pos_x = core->map.width  - core->logical_window_width;
+    core->camera.max_pos_y = core->map.height - core->logical_window_height;
+
+    if (0 >= core->camera.pos_x)
+    {
+        core->camera.pos_x       = 0;
+        camera_reached_boundaries = 1;
+    }
+
+    if (0 <= core->camera.pos_y)
+    {
+        core->camera.pos_y = 0;
+    }
+
+    if (core->camera.pos_x > core->camera.max_pos_x)
+    {
+        core->camera.pos_x       = core->camera.max_pos_x;
+        camera_reached_boundaries = 1;
+    }
+
+    if (core->camera.pos_y > core->camera.max_pos_y)
+    {
+        core->camera.pos_y = core->camera.max_pos_y;
+    }
+
+    return camera_reached_boundaries;
+}
+
+static void SetCameraTarget(const Uint16 target_entity_id, esz_Core* core)
+{
+    core->camera.target_entity_id = target_entity_id;
 }
 
 static void StoreProperty(tmx_property* property, void* core)
@@ -1055,23 +1201,23 @@ static void StoreProperty(tmx_property* property, void* core)
                 // tbd.
                 break;
             case PT_BOOL:
-                SDL_Log("Loading boolean property '%s': %u\n", core_ptr->search_pattern, property->value.boolean);
+                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading boolean property '%s': %u\n", core_ptr->search_pattern, property->value.boolean);
                 core_ptr->boolean_property  = property->value.boolean;
                 break;
             case PT_FILE:
-                SDL_Log("Loading string property '%s': %s\n", core_ptr->search_pattern, property->value.file);
+                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading string property '%s': %s\n", core_ptr->search_pattern, property->value.file);
                 core_ptr->string_property   = property->value.file;
                 break;
             case PT_FLOAT:
-                SDL_Log("Loading floating point property '%s': %f\n", core_ptr->search_pattern, property->value.decimal);
+                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading floating point property '%s': %f\n", core_ptr->search_pattern, property->value.decimal);
                 core_ptr->decimal_property  = property->value.decimal;
                 break;
             case PT_INT:
-                SDL_Log("Loading integer property '%s': %d\n", core_ptr->search_pattern, property->value.integer);
+                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading integer property '%s': %d\n", core_ptr->search_pattern, property->value.integer);
                 core_ptr->integer_property  = property->value.integer;
                 break;
             case PT_STRING:
-                SDL_Log("Loading string property '%s': %s\n", core_ptr->search_pattern, property->value.string);
+                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading string property '%s': %s\n", core_ptr->search_pattern, property->value.string);
                 core_ptr->string_property   = property->value.string;
                 break;
         }
@@ -1090,17 +1236,30 @@ static void Update(esz_Core* core)
     // Todo: update everything else.
 }
 
+static void UpdateCamera(esz_Core* core)
+{
+    MoveCameraToTarget(core);
+
+    if (SetCameraBoundariesToMapSize(core))
+    {
+        // Do not move background when camera hits boundaries.
+        //dBgVelocityX = 0;
+    }
+    else
+    {
+        //Uint16 u16EntityID = GetCameraTarget(void);;
+        //dBgVelocityX = pstRes->pstEntity[u16EntityID]->dVelocityX;
+    }
+
+    // Do not move background when camera is locked.
+    if (! IsCameraLocked(core))
+    {
+        //dBgVelocityX = 0;
+    }
+}
+
 /*
 
-static void ClearFlag(const Uint8 u8Bit, Uint16* pu16Flags)
-{
-    *pu16Flags &= ~(1 << u8Bit);
-}
-
-static Uint16 ClearGidFlags(Uint16 u16Gid)
-{
-    return u16Gid & TMX_FLIP_BITS_REMOVAL;
-}
 
 static void ConnectHorizontalMapEndsForEntity(Entity* hEntity)
 {
@@ -1173,10 +1332,6 @@ static eszStatus DrawEntity(const Entity* hEntity)
     return ESZ_OK;
 }
 
-static Uint16 GetCameraTarget(void)
-{
-    return heszFW.hCamera->u16TargetEntityID;
-}
 
 static void GetEntity(tmx_object* pstTiledObject, Uint16 u16Index, Object ahObject[])
 {
@@ -1322,17 +1477,6 @@ static void* GetMapPropertyByName(char* szName)
     return szName;
 }
 
-static SDL_bool IsCameraLocked(void)
-{
-    if (IsFlagSet(IS_LOCKED, heszFW.hCamera->u16Flags))
-    {
-        return SDL_TRUE;
-    }
-    else
-    {
-        return SDL_FALSE;
-    }
-}
 
 static SDL_bool IsEntityMoving(const Entity* hEntity)
 {
@@ -1358,159 +1502,10 @@ static SDL_bool IsEntityRising(const Entity* hEntity)
     }
 }
 
-static SDL_bool IsFlagSet(const Uint8 u8Bit, Uint16 u16Flags)
-{
-    if ((u16Flags >> u8Bit) & 1)
-    {
-        return SDL_TRUE;
-    }
-    else
-    {
-        return SDL_FALSE;
-    }
-}
-
-static void MoveCameraToTarget(void)
-{
-    if (IsFlagSet(IS_LOCKED, heszFW.hCamera->u16Flags))
-    {
-        Entity* hEntity = &heszFW.hMap->hEntity[heszFW.hCamera->u16TargetEntityID];
-
-        heszFW.hCamera->dPosX  = hEntity->dPosX;
-        heszFW.hCamera->dPosX -= heszFW.hVideo->s32LogicalWindowWidth  / 2.0;
-        heszFW.hCamera->dPosY  = hEntity->dPosY;
-        heszFW.hCamera->dPosY -= heszFW.hVideo->s32LogicalWindowHeight / 2.0;
-
-        if (heszFW.hCamera->dPosX < 0)
-        {
-            heszFW.hCamera->dPosX = 0;
-        }
-    }
-}
-
-static eszStatus Render(void)
-{
-    eszStatus eStatus;
-
-    ****************************
-     * Draw background layer(s) *
-     ****************************
-
-    eStatus = DrawMap(0, SDL_TRUE, SDL_TRUE, "BG");
-
-    if (ESZ_OK != eStatus)
-    {
-        return eStatus;
-    }
-
-    ****************************
-     * Draw foreground layer(s) *
-     ****************************
-
-    //eStatus = DrawMap(1, SDL_FALSE, SDL_FALSE, "FG");
-    eStatus = DrawMap(1, SDL_TRUE, SDL_FALSE, "FG");
-
-    if (ESZ_OK != eStatus)
-    {
-        return eStatus;
-    }
-
-    RenderScene();
-
-    return eStatus;
-}
-
-static double Round(double dValue)
-{
-    double dDecimalPlace = dValue - SDL_floor(dValue);
-
-    if (dDecimalPlace >= 0.5)
-    {
-        return SDL_ceil(dValue);
-    }
-    else
-    {
-        return SDL_floor(dValue);
-    }
-}
-
-static SDL_bool SetCameraBoundariesToMapSize(void)
-{
-    SDL_bool bRet = SDL_FALSE;
-
-    heszFW.hCamera->s32MaxPosX = heszFW.hMap->u16Width  - heszFW.hVideo->s32LogicalWindowWidth;
-    heszFW.hCamera->s32MaxPosY = heszFW.hMap->u16Height - heszFW.hVideo->s32LogicalWindowHeight;
-
-    if (0 >= heszFW.hCamera->dPosX)
-    {
-        heszFW.hCamera->dPosX = 0;
-        bRet                   = 1;
-    }
-
-    if (0 >= heszFW.hCamera->dPosY)
-    {
-        heszFW.hCamera->dPosY = 0;
-    }
-
-    if (heszFW.hCamera->dPosX > heszFW.hCamera->s32MaxPosX)
-    {
-        heszFW.hCamera->dPosX = heszFW.hCamera->s32MaxPosX;
-        bRet                   = 1;
-    }
-
-    if (heszFW.hCamera->dPosY > heszFW.hCamera->s32MaxPosY)
-    {
-        heszFW.hCamera->dPosY = heszFW.hCamera->s32MaxPosY;
-    }
-
-    return bRet;
-}
-
-static void SetCameraTarget(Uint16 u16TargetEntityID)
-{
-    heszFW.hCamera->u16TargetEntityID = u16TargetEntityID;
-}
-
-static void SetFlag(const Uint8 u8Bit, Uint16* pu16Flags)
-{
-    *pu16Flags |= 1 << u8Bit;
-}
-
 static void SetEntityPosition(const double dPosX, const double dPosY, Entity* hEntity)
 {
     hEntity->dPosX = dPosX;
     hEntity->dPosY = dPosY;
-}
-
-static void ToggleFlag(const Uint8 u8Bit, Uint16* pu16Flags)
-{
-    *pu16Flags ^= 1 << u8Bit;
-}
-
-static void UpdateCamera(void)
-{
-    MoveCameraToTarget();
-
-    if (SetCameraBoundariesToMapSize())
-    {
-        // Do not move background when camera hits boundaries.
-        //dBgVelocityX = 0;
-    }
-    else
-    {
-        //Uint16 u16EntityID = GetCameraTarget(void);;
-        //dBgVelocityX = pstRes->pstEntity[u16EntityID]->dVelocityX;
-    }
-
-    // Do not move background when camera is locked.
-    if (! IsCameraLocked())
-    {
-        //dBgVelocityX = 0;
-    }
-}
-
-static void UpdateEntities(void)
-{
 }
 
 static void UpdateEntity(Entity* hEntity)
