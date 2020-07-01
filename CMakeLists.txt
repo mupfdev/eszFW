@@ -41,7 +41,7 @@ target_link_libraries(
     ${SDL2_TTF_LIBRARY}
 )
 
-target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Wextra)
+target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Wextra -Wno-unused-function)
 target_compile_options(tmx PRIVATE -pedantic-errors -Wall -Wextra)
 
 set_property(TARGET eszFW PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
