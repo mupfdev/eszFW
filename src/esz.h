@@ -40,6 +40,17 @@ typedef enum
 } esz_CameraFlag;
 
 /**
+ * @brief Layer types
+ */
+typedef enum
+{
+    ESZ_BACKGROUND = 0,
+    ESZ_FOREGROUND,
+    ESZ_LAYER_MAX
+
+} esz_LayerType;
+
+/**
  * @brief Orientational constants
  */
 typedef enum
@@ -186,23 +197,23 @@ typedef struct esz_Map_t
     char              resource_path[ESZ_MAX_PATH_LEN];
     char              tileset_image[ESZ_MAX_PATH_LEN];
     tmx_map*          tmx_map;
+    SDL_Texture*      map_layer[ESZ_LAYER_MAX];
     SDL_Texture*      animated_tile_texture;
     SDL_Texture*      tileset_texture;
-    SDL_Texture*      map_texture;
     esz_AnimatedTile* animated_tile;
     esz_Object*       object;
     esz_Sprite*       sprite;
     double            gravitation;
-    double            tile_animation_speed;
+    double            animation_speed;
+    double            pos_x;
+    double            pos_y;
     size_t            resource_path_length;
-    Uint16            animated_tile_count;
     Uint16            object_count;
     Uint16            width;
     Uint16            height;
     Uint8             meter_in_pixel;
     Uint8             sprite_sheet_count;
     SDL_bool          is_loaded;
-
 //    SDL_Texture* pstAnimTexture;                   ///< Texture for animated tiles
 //    SDL_Texture* pstTexture[MAP_TEXTURES];         ///< Map textures
 //    double       dPosX;                            ///< Position along the x-axis
