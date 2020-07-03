@@ -84,8 +84,8 @@ SDL_bool esz_BoundingBoxesDoIntersect(const esz_AABB bb_a, const esz_AABB bb_b)
  */
 void esz_ExitCore(esz_Core* core)
 {
-    esz_UnloadMap(core);
     core->is_running = SDL_FALSE;
+    esz_UnloadMap(core);
 }
 
 /**
@@ -140,16 +140,19 @@ esz_Status esz_InitCore(esz_Config* config, esz_Core** core)
  */
 void esz_LoadMap(const char* map_file_name, esz_Core* core)
 {
-    /* TODO: This functions segfaults when called after a map has been
-     * unloaded
-     */
+    if (core->map.is_loaded)
+    {
+        SDL_Log("A map has already been loaded: unload map first.\n");
+        return;
+    }
 
-    // This does nothing if no map is currently loaded.
-    esz_UnloadMap(core);
+    /******************************************
+     * Load map and allocate required memory: *
+     ******************************************/
 
-    /***********************
-     * Load Tiled map file *
-     ***********************/
+    /**************
+     * 1 Map file *
+     **************/
 
     core->map.tmx_map = tmx_load(map_file_name);
     if (! core->map.tmx_map)
@@ -158,9 +161,9 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         return;
     }
 
-    /**********************
-     * Initialise objects *
-     **********************/
+    /*************
+     * 2 Objects *
+     *************/
 
     if (ESZ_OK != InitObjects(core))
     {
@@ -168,44 +171,15 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         return;
     }
 
-    /***********************
-     * Initialise entities *
-     ***********************/
+    /**************
+     * 3 Entities *
+     **************/
 
     // tbd.
 
-    /***********************
-     * Set base attributes *
-     ***********************/
-
-    core->map.height = core->map.tmx_map->height * core->map.tmx_map->tile_height;
-    core->map.width  = core->map.tmx_map->width  * core->map.tmx_map->tile_width;
-
-    /************************
-     * Parse map properties *
-     ************************/
-
-    LoadPropertyByName("gravitation", core->map.tmx_map->properties, core);
-    if (core->decimal_property)
-    {
-        core->map.gravitation = core->decimal_property;
-    }
-
-    LoadPropertyByName("meter_in_pixel", core->map.tmx_map->properties, core);
-    if (core->integer_property)
-    {
-        core->map.meter_in_pixel = core->integer_property;
-    }
-
-    SDL_Log(
-        "Set gravitational constant to %f (g*%dpx/s^2).\n",
-        core->map.gravitation, core->map.meter_in_pixel);
-
-    LoadPropertyByName("animation_speed", core->map.tmx_map->properties, core);
-    if (core->decimal_property)
-    {
-        core->map.animation_speed = core->decimal_property;
-    }
+    /*************
+     * 4 Tileset *
+     *************/
 
     LoadPropertyByName("tileset_image", core->map.tmx_map->properties, core);
     if (core->string_property)
@@ -238,16 +212,55 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         return;
     }
 
+    /*************
+     * 5 Sprites *
+     *************/
+
     if (ESZ_OK != InitSprites(core))
     {
         esz_UnloadMap(core);
         return;
     }
 
+    /********************
+     * 6 Animated tiles *
+     ********************/
+
     if (ESZ_OK != InitAnimatedTiles(core))
     {
         esz_UnloadMap(core);
         return;
+    }
+
+    /***********************
+     * Set base attributes *
+     ***********************/
+
+    core->map.animated_tile_count = 0;
+
+    core->map.height = core->map.tmx_map->height * core->map.tmx_map->tile_height;
+    core->map.width  = core->map.tmx_map->width  * core->map.tmx_map->tile_width;
+
+    LoadPropertyByName("gravitation", core->map.tmx_map->properties, core);
+    if (core->decimal_property)
+    {
+        core->map.gravitation = core->decimal_property;
+    }
+
+    LoadPropertyByName("meter_in_pixel", core->map.tmx_map->properties, core);
+    if (core->integer_property)
+    {
+        core->map.meter_in_pixel = core->integer_property;
+    }
+
+    SDL_Log(
+        "Set gravitational constant to %f (g*%dpx/s^2).\n",
+        core->map.gravitation, core->map.meter_in_pixel);
+
+    LoadPropertyByName("animation_speed", core->map.tmx_map->properties, core);
+    if (core->decimal_property)
+    {
+        core->map.animation_speed = core->decimal_property;
     }
 
     if (core->event.map_loaded_cb)
@@ -303,6 +316,9 @@ void esz_RegisterEventCallback(const esz_EventType event_type, void (*callback)(
             break;
         case EVENT_MAP_LOADED:
             core->event.map_loaded_cb    = callback;
+            break;
+        case EVENT_MAP_UNLOADED:
+            core->event.map_unloaded_cb  = callback;
             break;
         case EVENT_MULTIGESTURE:
             core->event.multi_gesture_cb = callback;
@@ -552,12 +568,72 @@ void esz_UnloadMap(esz_Core* core)
 {
     if (! core->map.is_loaded)
     {
+        SDL_Log("No map has been loaded.\n");
         return;
     }
+
+    /*************************
+     * Reset base attributes *
+     *************************/
+
+    core->map.gravitation         = 0.f;
+    core->map.animation_delay     = 0.f;
+    core->map.animation_speed     = 0.f;
+    core->map.pos_x               = 0.f;
+    core->map.pos_y               = 0.f;
+    core->map.animated_tile_count = 0;
+    core->map.object_count        = 0;
+    core->map.width               = 0;
+    core->map.height              = 0;
+    core->map.meter_in_pixel      = 0;
+    core->map.sprite_sheet_count  = 0;
+
+    /****************************************************
+     * Destroy textures that where created in DrawMap() *
+     ****************************************************/
+
+    for (Uint8 layer = 0; ESZ_LAYER_MAX > layer; layer += 1)
+    {
+        if (core->map.map_layer[layer])
+        {
+            SDL_DestroyTexture(core->map.map_layer[layer]);
+        }
+        core->map.map_layer[layer] = NULL;
+    }
+
+    if (core->map.animated_tile_texture)
+    {
+        SDL_DestroyTexture(core->map.animated_tile_texture);
+        core->map.animated_tile_texture = NULL;
+    }
+
+    /**********************************************
+     * Free up allocated memory in reverse order: *
+     **********************************************/
+
+    /********************
+     * 6 Animated tiles *
+     ********************/
 
     if (core->map.animated_tile)
     {
         SDL_free(core->map.animated_tile);
+    }
+
+    /*************
+     * 5 Sprites *
+     *************/
+
+    if (0 < core->map.sprite_sheet_count)
+    {
+        for (Uint16 index = 0; index < core->map.sprite_sheet_count; index += 1)
+        {
+            if (core->map.sprite[index].texture)
+            {
+                SDL_DestroyTexture(core->map.sprite[index].texture);
+                core->map.sprite[index].texture = NULL;
+            }
+        }
     }
 
     if (core->map.sprite)
@@ -565,14 +641,42 @@ void esz_UnloadMap(esz_Core* core)
         SDL_free(core->map.sprite);
     }
 
+    /*************
+     * 4 Tileset *
+     *************/
+    if (core->map.tileset_texture)
+    {
+        SDL_DestroyTexture(core->map.tileset_texture);
+        core->map.tileset_texture = NULL;
+    }
+
+    /**************
+     * 3 Entities *
+     **************/
+
+    // tbd.
+
+    /*************
+     * 2 Objects *
+     *************/
+
     if (core->map.object)
     {
         SDL_free(core->map.object);
     }
 
+    /**************
+     * 1 Map file *
+     **************/
+
     if (core->map.tmx_map)
     {
         tmx_map_free(core->map.tmx_map);
+    }
+
+    if (core->event.map_unloaded_cb)
+    {
+        core->event.map_unloaded_cb(core);
     }
 
     core->map.is_loaded = SDL_FALSE;
@@ -621,9 +725,6 @@ static void CountObjects(tmx_object* tmx_object, Uint16** object_count)
 
 static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 {
-    static Uint16 animated_tile_count  = 0;
-    static double animation_delay      = 0.f;
-
     tmx_layer* layer                 = core->map.tmx_map->ly_head;
     SDL_bool   render_animated_tiles = SDL_FALSE;
     SDL_bool   render_bg_color       = SDL_FALSE;
@@ -635,7 +736,7 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 
     if (ESZ_LAYER_MAX == layer_type)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "1 DrawMap(): Layer type out of range.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): Layer type out of range.\n");
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -649,10 +750,10 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
      * Update and render animated tiles *
      ************************************/
 
-    animation_delay += core->time_between_frames;
+    core->map.animation_delay += core->time_between_frames;
 
-    if (0 < animated_tile_count &&
-        animation_delay > (1.f / core->map.animation_speed - core->time_between_frames) &&
+    if (0 < core->map.animated_tile_count &&
+        core->map.animation_delay > (1.f / core->map.animation_speed - core->time_between_frames) &&
         render_animated_tiles)
     {
         /* Remark: animated tiles are always rendered in the background
@@ -670,17 +771,17 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 
         if (! core->map.animated_tile_texture)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "2 DrawMap(): %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
         if (0 != SDL_SetRenderTarget(core->renderer, core->map.animated_tile_texture))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "3 DrawMap(): %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
-        for (Uint16 index = 0; animated_tile_count > index; index += 1)
+        for (Uint16 index = 0; core->map.animated_tile_count > index; index += 1)
         {
             Uint16       gid          = core->map.animated_tile[index].gid;
             Uint16       tile_id      = core->map.animated_tile[index].id + 1;
@@ -709,19 +810,19 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
             next_tile_id = core->map.tmx_map->tiles[gid]->animation[core->map.animated_tile[index].current_frame].tile_id;
             core->map.animated_tile[index].id = next_tile_id;
 
-            animation_delay = 0.f;
+            core->map.animation_delay = 0.f;
         }
 
         // Switch back to default render target.
         if (0 != SDL_SetRenderTarget(core->renderer, NULL))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "4 DrawMap(): %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
         if (0 != SDL_SetTextureBlendMode(core->map.animated_tile_texture, SDL_BLENDMODE_BLEND))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "5 DrawMap(): %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
     }
@@ -743,7 +844,7 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 
         if (0 > SDL_RenderCopyEx(core->renderer, core->map.map_layer[layer_type], NULL, &dst, 0, NULL, SDL_FLIP_NONE))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "6 DrawMap(): %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
@@ -757,7 +858,7 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
             {
                 if (0 > SDL_RenderCopyEx(core->renderer, core->map.animated_tile_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
                 {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "7 DrawMap(): %s\n", SDL_GetError());
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
                     return ESZ_ERROR_CRITICAL;
                 }
             }
@@ -779,13 +880,13 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 
     if (! core->map.map_layer[layer_type])
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "8 DrawMap(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
     if (0 != SDL_SetRenderTarget(core->renderer, core->map.map_layer[layer_type]))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "9 DrawMap(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -851,14 +952,14 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
                                 Uint8  animation_length = core->map.tmx_map->tiles[gid]->animation_len;
                                 Uint16 id               = core->map.tmx_map->tiles[gid]->animation[0].tile_id;
 
-                                core->map.animated_tile[animated_tile_count].gid              = gid;
-                                core->map.animated_tile[animated_tile_count].id               = id;
-                                core->map.animated_tile[animated_tile_count].dst_x            = dst.x;
-                                core->map.animated_tile[animated_tile_count].dst_y            = dst.y;
-                                core->map.animated_tile[animated_tile_count].current_frame    = 0;
-                                core->map.animated_tile[animated_tile_count].animation_length = animation_length;
+                                core->map.animated_tile[core->map.animated_tile_count].gid              = gid;
+                                core->map.animated_tile[core->map.animated_tile_count].id               = id;
+                                core->map.animated_tile[core->map.animated_tile_count].dst_x            = dst.x;
+                                core->map.animated_tile[core->map.animated_tile_count].dst_y            = dst.y;
+                                core->map.animated_tile[core->map.animated_tile_count].current_frame    = 0;
+                                core->map.animated_tile[core->map.animated_tile_count].animation_length = animation_length;
 
-                                animated_tile_count += 1;
+                                core->map.animated_tile_count += 1;
                             }
                         }
                     }
@@ -879,13 +980,13 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
     // Switch back to default render target.
     if (0 != SDL_SetRenderTarget(core->renderer, NULL))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "10 DrawMap(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
     if (0 != SDL_SetTextureBlendMode(core->map.map_layer[layer_type], SDL_BLENDMODE_BLEND))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "11 DrawMap(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DrawMap(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -1034,7 +1135,9 @@ static esz_Status InitSprites(esz_Core* core)
 
             SDL_snprintf(sprite_sheet_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->string_property);
 
-            if (ESZ_OK != LoadSprite(sprite_sheet_image, core->map.sprite + index, core))
+            core->map.sprite[index].id = index;
+
+            if (ESZ_OK != LoadSprite(sprite_sheet_image, &core->map.sprite[index], core))
             {
                 return ESZ_ERROR_CRITICAL;
             }

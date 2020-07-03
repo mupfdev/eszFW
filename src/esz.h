@@ -3,7 +3,8 @@
  * @file  esz.h
  * @brief eszFW include header
  */
-#pragma once
+#ifndef ESZ_H
+#define ESZ_H
 
 #include <SDL.h>
 #include <tmx.h>
@@ -72,6 +73,7 @@ typedef enum
     EVENT_KEYDOWN,
     EVENT_KEYUP,
     EVENT_MAP_LOADED,
+    EVENT_MAP_UNLOADED,
     EVENT_MULTIGESTURE
 
 } esz_EventType;
@@ -158,6 +160,7 @@ typedef struct esz_Event_t
     void (*key_down_cb)(void* core);
     void (*key_up_cb)(void* core);
     void (*map_loaded_cb)(void* core);
+    void (*map_unloaded_cb)(void* core);
     void (*multi_gesture_cb)(void* core);
 
 } esz_Event;
@@ -185,6 +188,7 @@ typedef struct esz_Object_t
 typedef struct esz_Sprite_t
 {
     SDL_Texture* texture;
+    Uint16       id;
 
 } esz_Sprite;
 
@@ -204,29 +208,18 @@ typedef struct esz_Map_t
     esz_Object*       object;
     esz_Sprite*       sprite;
     double            gravitation;
+    double            animation_delay;
     double            animation_speed;
     double            pos_x;
     double            pos_y;
     size_t            resource_path_length;
+    Uint16            animated_tile_count;
     Uint16            object_count;
     Uint16            width;
     Uint16            height;
     Uint8             meter_in_pixel;
     Uint8             sprite_sheet_count;
     SDL_bool          is_loaded;
-//    SDL_Texture* pstAnimTexture;                   ///< Texture for animated tiles
-//    SDL_Texture* pstTexture[MAP_TEXTURES];         ///< Map textures
-//    double       dPosX;                            ///< Position along the x-axis
-//    double       dPosY;                            ///< Position along the y-axis
-//    double       dGravitation;                     ///< Gravitational constant
-//    Uint8        u8MeterInPixel;                   ///< Definition of meter in pixel
-//    char         acTilesetImage[TS_IMG_PATH_LEN];  ///< Tileset image
-//    double       dAnimDelay;                       ///< Animation delay
-//    double       dAnimSpeed;                       ///< Animation speed
-//    Uint16       u16AnimTileSize;                  ///< Animated tile size
-//    AnimTile     acAnimTile[ANIM_TILE_MAX];        ///< Animated tiles
-//    Uint16       u16ObjectCount;                   ///< Object count
-//    Object       astObject[];                      ///< Objects
 
 } esz_Map;
 
@@ -273,3 +266,5 @@ esz_Status esz_StartCore(const char* window_title, esz_Core* core);
 esz_Status esz_ToggleFullscreen(esz_Core* core);
 void       esz_UnlockCamera(esz_Core* core);
 void       esz_UnloadMap(esz_Core* core);
+
+#endif // ESZ_H

@@ -28,10 +28,9 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 ## Features
 
-- It runs on Windows, Linux, Android and even your Web-browser.
-- It should run on all platforms [supported by
-  SDL2](https://wiki.libsdl.org/Installation#Supported_platforms)
-  including the Nintendo Switch.
+- It runs on all platforms [supported by
+  SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
+- Fully reentrant engine core.
 
 ## Documentation
 
