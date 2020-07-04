@@ -257,10 +257,10 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         "Set gravitational constant to %f (g*%dpx/s^2).\n",
         core->map.gravitation, core->map.meter_in_pixel);
 
-    LoadPropertyByName("animation_speed", core->map.tmx_map->properties, core);
+    LoadPropertyByName("animated_tile_fps", core->map.tmx_map->properties, core);
     if (core->decimal_property)
     {
-        core->map.animation_speed = core->decimal_property;
+        core->map.animated_tile_fps = core->integer_property;
     }
 
     if (core->event.map_loaded_cb)
@@ -417,23 +417,42 @@ esz_Status esz_StartCore(const char* window_title, esz_Core* core)
         goto quit;
     }
 
-    if (0 > SDL_ShowCursor(SDL_DISABLE))
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_StartCore(): %s\n", SDL_GetError());
-        status = ESZ_ERROR_WARNING;
-    }
-
     SDL_GetWindowSize(core->window, &core->window_width, &core->window_height);
 
     core->zoom_level         = (double)core->window_height / (double)core->logical_window_height;
     core->initial_zoom_level = core->zoom_level;
 
-    core->renderer = SDL_CreateRenderer(
-        core->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
+     /* Get index of OpenGL rendering driver and create 2D rendering
+      * context.
+      */
+    for (int driver_index = 0; driver_index < SDL_GetNumRenderDrivers(); driver_index += 1)
+    {
+        SDL_RendererInfo renderer_info = { 0 };
+        SDL_GetRenderDriverInfo(driver_index, &renderer_info );
+
+        if (! SDL_strstr(renderer_info.name, "opengl"))
+        {
+            continue;
+        }
+        else
+        {
+            core->renderer = SDL_CreateRenderer(
+                core->window, driver_index,
+                SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
+
+            if (! core->renderer)
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_StartCore(): %s\n", SDL_GetError());
+                status = ESZ_ERROR_CRITICAL;
+                goto quit;
+            }
+            break;
+        }
+    }
 
     if (! core->renderer)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_StartCore(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_StartCore(): opengl rendering driver not found.\n");
         status = ESZ_ERROR_CRITICAL;
         goto quit;
     }
@@ -537,7 +556,7 @@ esz_Status esz_ToggleFullscreen(esz_Core* core)
 
     if (core->window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
     {
-        SDL_SetWindowPosition(core->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_SetWindowPosition(core->window, core->window_pos_x, core->window_pos_y);
         if (0 > SDL_SetWindowFullscreen(core->window, 0))
         {
             status = ESZ_ERROR_WARNING;
@@ -546,6 +565,8 @@ esz_Status esz_ToggleFullscreen(esz_Core* core)
     }
     else
     {
+        SDL_GetWindowPosition(core->window, &core->window_pos_x, &core->window_pos_y);
+
         if (0 > SDL_SetWindowFullscreen(core->window, SDL_WINDOW_FULLSCREEN_DESKTOP))
         {
             status = ESZ_ERROR_WARNING;
@@ -578,13 +599,13 @@ void esz_UnloadMap(esz_Core* core)
 
     core->map.gravitation         = 0.f;
     core->map.animation_delay     = 0.f;
-    core->map.animation_speed     = 0.f;
     core->map.pos_x               = 0.f;
     core->map.pos_y               = 0.f;
     core->map.animated_tile_count = 0;
     core->map.object_count        = 0;
     core->map.width               = 0;
     core->map.height              = 0;
+    core->map.animated_tile_fps   = 0;
     core->map.meter_in_pixel      = 0;
     core->map.sprite_sheet_count  = 0;
 
@@ -753,7 +774,8 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
     core->map.animation_delay += core->time_between_frames;
 
     if (0 < core->map.animated_tile_count &&
-        core->map.animation_delay > (1.f / core->map.animation_speed - core->time_between_frames) &&
+        core->map.animation_delay >= 
+//        core->map.animation_delay > (1.f / (double)core->map.animated_tile_fps - core->time_between_frames) &&
         render_animated_tiles)
     {
         /* Remark: animated tiles are always rendered in the background

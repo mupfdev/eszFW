@@ -209,7 +209,6 @@ typedef struct esz_Map_t
     esz_Sprite*       sprite;
     double            gravitation;
     double            animation_delay;
-    double            animation_speed;
     double            pos_x;
     double            pos_y;
     size_t            resource_path_length;
@@ -217,6 +216,7 @@ typedef struct esz_Map_t
     Uint16            object_count;
     Uint16            width;
     Uint16            height;
+    Uint8             animated_tile_fps;
     Uint8             meter_in_pixel;
     Uint8             sprite_sheet_count;
     SDL_bool          is_loaded;
@@ -240,6 +240,8 @@ typedef struct esz_Core_t
     Uint32        window_flags;
     Sint32        window_width;
     Sint32        window_height;
+    Sint32        window_pos_x;
+    Sint32        window_pos_y;
     Sint32        refresh_rate;
     Sint32        logical_window_width;
     Sint32        logical_window_height;
