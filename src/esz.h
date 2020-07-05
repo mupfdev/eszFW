@@ -208,7 +208,7 @@ typedef struct esz_Map_t
     esz_Object*       object;
     esz_Sprite*       sprite;
     double            gravitation;
-    double            animation_delay;
+    double            time_since_last_anim_frame;
     double            pos_x;
     double            pos_y;
     size_t            resource_path_length;
@@ -232,7 +232,7 @@ typedef struct esz_Core_t
     double        zoom_level;
     double        initial_zoom_level;
     double        decimal_property;
-    double        time_between_frames;
+    double        time_since_last_frame;
     char          search_pattern[ESZ_MAX_PATTERN_LEN];
     char*         string_property;
     SDL_Renderer* renderer;
