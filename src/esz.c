@@ -258,9 +258,14 @@ void esz_LoadMap(const char* map_file_name, esz_Core* core)
         core->map.gravitation, core->map.meter_in_pixel);
 
     LoadPropertyByName("animated_tile_fps", core->map.tmx_map->properties, core);
-    if (core->decimal_property)
+    if (core->integer_property)
     {
         core->map.animated_tile_fps = core->integer_property;
+    }
+    if (core->map.animated_tile_fps > core->refresh_rate)
+    {
+        // It can't update faster anyway.
+        core->map.animated_tile_fps = core->refresh_rate;
     }
 
     if (core->event.map_loaded_cb)
@@ -514,8 +519,8 @@ esz_Status esz_StartCore(const char* window_title, esz_Core* core)
 
         delta_time = (double)(time_b - time_a) / 1000.f;
 
-        core->time_between_frames =  1000.f / core->refresh_rate - delta_time;
-        core->time_between_frames /= 1000.f;
+        core->time_since_last_frame =  1000.f / core->refresh_rate - delta_time;
+        core->time_since_last_frame /= 1000.f;
 
         SDL_RenderPresent(core->renderer);
         SDL_RenderClear(core->renderer);
@@ -556,11 +561,11 @@ esz_Status esz_ToggleFullscreen(esz_Core* core)
 
     if (core->window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
     {
-        SDL_SetWindowPosition(core->window, core->window_pos_x, core->window_pos_y);
         if (0 > SDL_SetWindowFullscreen(core->window, 0))
         {
             status = ESZ_ERROR_WARNING;
         }
+        SDL_SetWindowPosition(core->window, core->window_pos_x, core->window_pos_y);
         SDL_Log("Set window to windowed mode.\n");
     }
     else
@@ -597,17 +602,17 @@ void esz_UnloadMap(esz_Core* core)
      * Reset base attributes *
      *************************/
 
-    core->map.gravitation         = 0.f;
-    core->map.animation_delay     = 0.f;
-    core->map.pos_x               = 0.f;
-    core->map.pos_y               = 0.f;
-    core->map.animated_tile_count = 0;
-    core->map.object_count        = 0;
-    core->map.width               = 0;
-    core->map.height              = 0;
-    core->map.animated_tile_fps   = 0;
-    core->map.meter_in_pixel      = 0;
-    core->map.sprite_sheet_count  = 0;
+    core->map.gravitation                = 0.f;
+    core->map.time_since_last_anim_frame = 0.f;
+    core->map.pos_x                      = 0.f;
+    core->map.pos_y                      = 0.f;
+    core->map.animated_tile_count        = 0;
+    core->map.object_count               = 0;
+    core->map.width                      = 0;
+    core->map.height                     = 0;
+    core->map.animated_tile_fps          = 0;
+    core->map.meter_in_pixel             = 0;
+    core->map.sprite_sheet_count         = 0;
 
     /****************************************************
      * Destroy textures that where created in DrawMap() *
@@ -771,13 +776,14 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
      * Update and render animated tiles *
      ************************************/
 
-    core->map.animation_delay += core->time_between_frames;
+    core->map.time_since_last_anim_frame += core->time_since_last_frame;
 
     if (0 < core->map.animated_tile_count &&
-        core->map.animation_delay >= 
-//        core->map.animation_delay > (1.f / (double)core->map.animated_tile_fps - core->time_between_frames) &&
+        core->map.time_since_last_anim_frame >= 1.f / (double)(core->map.animated_tile_fps) &&
         render_animated_tiles)
     {
+        core->map.time_since_last_anim_frame = 0.f;
+
         /* Remark: animated tiles are always rendered in the background
          * layer.
          */
@@ -831,8 +837,6 @@ static esz_Status DrawMap(const esz_LayerType layer_type, esz_Core *core)
 
             next_tile_id = core->map.tmx_map->tiles[gid]->animation[core->map.animated_tile[index].current_frame].tile_id;
             core->map.animated_tile[index].id = next_tile_id;
-
-            core->map.animation_delay = 0.f;
         }
 
         // Switch back to default render target.
