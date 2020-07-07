@@ -117,15 +117,15 @@ make
 
 ## Licence and Credits
 
-This project is licenced under the "THE BEER-WARE LICENCE".  See the
+This project is licensed under the "THE BEER-WARE LICENCE".  See the
 file [LICENCE.md](LICENCE.md) for details.
 
-[cwalk](https://github.com/likle/cwalk) by Leonard Iklé is licenced
+[cwalk](https://github.com/likle/cwalk) by Leonard Iklé is licensed
 under the MIT License.  See the file
 [LICENSE.md](https://github.com/likle/cwalk/blob/master/LICENSE.md) for
 details.
 
 [TMX C Loader](https://github.com/baylej/tmx/) by Bayle Jonathan is
-licenced under a BSD 2-Clause "Simplified" Licence.  See the file
+licensed under a BSD 2-Clause "Simplified" Licence.  See the file
 [COPYING](https://raw.githubusercontent.com/baylej/tmx/master/COPYING)
 for details.
