@@ -65,7 +65,7 @@ The abbreviation esz is a tribute to my best friend [Ertugrul
 Söylemez](https://github.com/esoeylemez), who suddenly passed away on
 May 12th, 2018.  We all miss you deeply.
 
-## Why C?
+## C99 is dead, long live C99
 
 A question I hear alot is why I'm using C99 for this project instead of
 a modern language like Rust, Haskell or `[insert your preferred language
