@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file  esz.h
- * @brief eszFW include header
+ * @file    esz.h
+ * @brief   eszFW main include header
+ * @example minimal_application.c
  */
 #ifndef ESZ_H
 #define ESZ_H
@@ -17,9 +18,20 @@
 #define ESZ_MAX_PATH_LEN 64
 #endif
 
+/**
+ * @def   ESZ_MAX_PATTERN_LEN
+ * @brief Maximum length of search pattern
+ */
 #ifndef ESZ_MAX_PATTERN_LEN
 #define ESZ_MAX_PATTERN_LEN 32
 #endif
+
+/**
+ * @brief     Event callback function type
+ * @attention An event callback function always expects a window handle
+ *            as first and a core handle as second parameter!
+ */
+typedef void (*esz_event_callback)(void* window, void* core);
 
 /**
  * @brief An enumeration of alignments.
@@ -297,7 +309,7 @@ esz_status esz_init_core(esz_core** core);
 SDL_bool   esz_is_core_active(esz_core* core);
 void       esz_load_map(const char* map_file_name, esz_window* window, esz_core* core);
 void       esz_lock_camera(esz_core* core);
-void       esz_register_event_callback(const esz_event_type event_type, void (*callback)(void* window, void* core), esz_core* core);
+void       esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core);
 esz_status esz_set_zoom_level(const double factor, esz_window* window);
 esz_status esz_toggle_fullscreen(esz_window* window);
 void       esz_unlock_camera(esz_core* core);
