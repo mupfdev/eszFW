@@ -8,8 +8,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 find_package(LibXml2    REQUIRED)
 find_package(SDL2       REQUIRED)
 find_package(SDL2_image REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-find_package(SDL2_ttf   REQUIRED)
 
 include_directories(
     SYSTEM external/cwalk/include
@@ -40,11 +38,6 @@ target_link_libraries(
     ${SDL2_MIXER_LIBRARIES}
     ${SDL2_TTF_LIBRARY}
 )
-
-target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Wextra -Wno-unused-function)
-target_compile_options(tmx PRIVATE -pedantic-errors -Wall -Wextra)
-
-set_property(TARGET eszFW PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 
 if (UNIX)
     target_link_libraries(eszFW m)
