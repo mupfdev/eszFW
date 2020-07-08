@@ -14,6 +14,10 @@ int main()
     esz_core*         core   = NULL;
 
     status = esz_create_window("eszFW", &config, &window);
+    if (ESZ_OK != status)
+    {
+        goto quit;
+    }
 
     status = esz_init_core(&core);
     if (ESZ_OK != status)
