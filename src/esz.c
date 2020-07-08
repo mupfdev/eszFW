@@ -29,7 +29,7 @@ static esz_status init_objects(esz_core* core);
 static esz_status init_sprites(esz_window* window, esz_core* core);
 static SDL_bool   is_camera_locked(esz_core* core);
 static void       load_property_by_name(const char* property_name, tmx_property* property, esz_core* core);
-static esz_status load_sprite(const char* sprite_sheet_image, esz_sprite* sprite, esz_window* window);
+static esz_status load_texture(const char* image_file, SDL_Texture** texture, esz_window* window);
 static void       move_camera_to_target(esz_core* core);
 static void       poll_events(esz_window* window, esz_core* core);
 static Uint16     remove_gid_flip_bits(Uint16 gid);
@@ -292,7 +292,7 @@ void esz_destroy_window(esz_window* window)
  */
 void esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window* window, esz_core* core)
 {
-    Uint32   delay      = 0;
+    Uint32   delay;
     double   delta_time = 0.f;
     SDL_Rect dst;
 
@@ -333,6 +333,11 @@ void esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window* window, esz_core
 
     if (core->map.is_loaded)
     {
+        if (0 > SDL_RenderCopy(window->renderer, core->map.background.layer[0].texture, NULL, &dst))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
+        }
+
         if (0 > SDL_RenderCopy(window->renderer, core->map.texture, NULL, &dst))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
@@ -749,7 +754,22 @@ void esz_unload_map(esz_window* window, esz_core* core)
      * 7 Backgrounds *
      *****************/
 
-    
+    if (0 < core->map.background_layer_count)
+    {
+        for (Uint16 index = 0; index < core->map.background_layer_count; index += 1)
+        {
+            if (&core->map.background.layer[index].texture)
+            {
+                SDL_DestroyTexture(core->map.background.layer[index].texture);
+                core->map.background.layer[index].texture = NULL;
+            }
+        }
+    }
+
+    if (core->map.background.layer)
+    {
+        SDL_free(core->map.background.layer);
+    }
 
     /********************
      * 6 Animated tiles *
@@ -784,6 +804,7 @@ void esz_unload_map(esz_window* window, esz_core* core)
     /*************
      * 4 Tileset *
      *************/
+
     if (core->map.tileset_texture)
     {
         SDL_DestroyTexture(core->map.tileset_texture);
@@ -1221,7 +1242,7 @@ static esz_status init_animated_tiles(esz_core* core)
      * Allocate memory for animated tiles *
      **************************************/
 
-    if (animated_tile_count)
+    if (0 < animated_tile_count)
     {
         core->map.animated_tile = SDL_calloc(animated_tile_count, sizeof(struct esz_animated_tile_t));
 
@@ -1239,6 +1260,7 @@ static esz_status init_animated_tiles(esz_core* core)
 static esz_status init_background(esz_window* window, esz_core* core)
 {
     load_property_by_name("background_layer_count", core->map.tmx_map->properties, core);
+
     if (core->map.integer_property)
     {
         if (0 <= core->map.integer_property)
@@ -1249,10 +1271,30 @@ static esz_status init_background(esz_window* window, esz_core* core)
 
     core->map.background.layer = SDL_calloc(core->map.background_layer_count, sizeof(struct esz_background_layer_t));
 
-    if (! core->map.sprite)
+    if (! core->map.background.layer)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "init_background(): error allocating memory.\n");
         return ESZ_ERROR_CRITICAL;
+    }
+
+    if (0 < core->map.background_layer_count)
+    {
+        char property_name[21]                        = { 0 };
+        char background_layer_image[ESZ_MAX_PATH_LEN] = { 0 };
+
+        for (Uint16 index = 0; index < core->map.background_layer_count; index += 1)
+        {
+            SDL_snprintf(property_name, 21, "background_layer_%u", index);
+
+            load_property_by_name(property_name, core->map.tmx_map->properties, core);
+
+            SDL_snprintf(background_layer_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->map.string_property);
+
+            if (ESZ_OK != load_texture(background_layer_image, &core->map.background.layer[index].texture, window))
+            {
+                return ESZ_ERROR_CRITICAL;
+            }
+        }
     }
 
     return ESZ_OK;
@@ -1337,7 +1379,7 @@ static esz_status init_sprites(esz_window* window, esz_core* core)
 
             core->map.sprite[index].id = index;
 
-            if (ESZ_OK != load_sprite(sprite_sheet_image, &core->map.sprite[index], window))
+            if (ESZ_OK != load_texture(sprite_sheet_image, &core->map.sprite[index].texture, window))
             {
                 return ESZ_ERROR_CRITICAL;
             }
@@ -1371,17 +1413,17 @@ static void load_property_by_name(const char* property_name, tmx_property* prope
     tmx_property_foreach(property, store_property, (void*)core);
 }
 
-static esz_status load_sprite(const char* sprite_sheet_image, esz_sprite* sprite, esz_window* window)
+static esz_status load_texture(const char* image_file, SDL_Texture** texture, esz_window* window)
 {
-    sprite->texture = IMG_LoadTexture(window->renderer, sprite_sheet_image);
+    *texture = IMG_LoadTexture(window->renderer, image_file);
 
-    if (! sprite->texture)
+    if (! *texture)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "load_sprite(): %s\n", IMG_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "load_texture(): %s\n", IMG_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
-    SDL_Log("Load sprite image file: %s.\n", sprite_sheet_image);
+    SDL_Log("Load image file: %s.\n", image_file);
     return ESZ_OK;
 }
 
@@ -1526,23 +1568,23 @@ static void store_property(tmx_property* property, void* core)
                 // tbd.
                 break;
             case PT_BOOL:
-                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading boolean property '%s': %u\n", core_ptr->map.search_pattern, property->value.boolean);
+                SDL_Log("Loading boolean property '%s': %u\n", core_ptr->map.search_pattern, property->value.boolean);
                 core_ptr->map.boolean_property = property->value.boolean;
                 break;
             case PT_FILE:
-                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading string property '%s': %s\n", core_ptr->map.search_pattern, property->value.file);
+                SDL_Log("Loading string property '%s': %s\n", core_ptr->map.search_pattern, property->value.file);
                 core_ptr->map.string_property  = property->value.file;
                 break;
             case PT_FLOAT:
-                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading floating point property '%s': %f\n", core_ptr->map.search_pattern, property->value.decimal);
+                SDL_Log("Loading floating point property '%s': %f\n", core_ptr->map.search_pattern, property->value.decimal);
                 core_ptr->map.decimal_property = property->value.decimal;
                 break;
             case PT_INT:
-                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading integer property '%s': %d\n", core_ptr->map.search_pattern, property->value.integer);
+                SDL_Log("Loading integer property '%s': %d\n", core_ptr->map.search_pattern, property->value.integer);
                 core_ptr->map.integer_property = property->value.integer;
                 break;
             case PT_STRING:
-                SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "Loading string property '%s': %s\n", core_ptr->map.search_pattern, property->value.string);
+                SDL_Log("Loading string property '%s': %s\n", core_ptr->map.search_pattern, property->value.string);
                 core_ptr->map.string_property  = property->value.string;
                 break;
         }

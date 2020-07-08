@@ -8,7 +8,7 @@ static void key_down_callback(void* window, void* core);
 
 int main()
 {
-    esz_status        status = ESZ_OK;
+    esz_status        status;
     esz_window*       window = NULL;
     esz_window_config config = { 640, 360, 384, 216, SDL_FALSE, SDL_FALSE };
     esz_core*         core   = NULL;

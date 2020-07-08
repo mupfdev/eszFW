@@ -131,12 +131,12 @@ typedef struct esz_animated_tile_t
  */
 typedef struct esz_background_layer_t
 {
-    double       pos_x;
-    double       pos_y;
-    double       velocity;
-    SDL_Texture* texture;
-    Sint32       width;
-    Sint32       height;
+    double        pos_x;
+    double        pos_y;
+    double        velocity;
+    SDL_Texture*  texture;
+    Sint32        width;
+    Sint32        height;
 
 } esz_background_layer;
 
