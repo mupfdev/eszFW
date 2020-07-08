@@ -35,7 +35,7 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 ## Documentation
 
 The documentation can be generated using Doxygen:
-```
+```bash
 doxygen
 ```
 
@@ -94,7 +94,7 @@ case we meet someday.
 ## Dependencies
 
 The program has been successfully compiled and tested with the following libraries:
-```
+```text
 libxml2    2.9.10
 sdl2       2.0.12
 sdl2_image 2.0.5
@@ -105,13 +105,13 @@ zlib       1.2.11
 ## Compiling
 
 First clone the repository including the submodules:
-```
+```bash
 git clone --recurse-submodules -j2 https://github.com/mupfelofen-de/eszFW.git
 cd eszFW
 ```
 
 To compile _eszFW_ under Linux use CMake as follows:
-```
+```bash
 mkdir build
 cd build
 cmake ..
