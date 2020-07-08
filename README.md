@@ -28,8 +28,7 @@ Format](http://doc.mapeditor.org/en/stable/reference/tmx-map-format/)
 
 ## Features
 
-- It runs on all platforms [supported by
-  SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
+- It runs on all platforms [supported by SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
 - Fully reentrant engine core.
 
 ## Documentation
