@@ -10,8 +10,8 @@
 <a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
   <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" alt="Build status" />
 </a>
-<a href="https://lgtm.com/projects/g/mupfelofen-de/eszFW/context:cpp">
-<img alt="Language grade: C/C++" src="https://img.shields.io/lgtm/grade/cpp/g/mupfelofen-de/eszFW.svg?logo=lgtm&logoWidth=18?style=flat?svg=true"/>
+<a href="https://www.codacy.com/manual/mupf/eszFW?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mupfelofen-de/eszFW&amp;utm_campaign=Badge_Grade">
+  <img src=https://app.codacy.com/project/badge/Grade/999c4a824cba43dba68100819699fcfa alt="Codacy Badge" />
 </a>
 </p>
 
