@@ -187,8 +187,7 @@ typedef struct esz_event_t
 } esz_event;
 
 /**
- * @typedef esz_object
- * @brief   A structure that contains a map object
+ * @brief A structure that contains a map object
  */
 typedef struct esz_object_t
 {
@@ -240,11 +239,11 @@ typedef struct esz_map_t
     Sint32             integer_property;
     Sint32             meter_in_pixel;
     Sint32             sprite_sheet_count;
+    Uint32             height;
+    Uint32             width;
     size_t             resource_path_length;
     Uint16             animated_tile_count;
-    Uint16             height;
     Uint16             object_count;
-    Uint16             width;
     SDL_bool           boolean_property;
     SDL_bool           is_loaded;
 
