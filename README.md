@@ -56,6 +56,9 @@ An Android version of Tau Ceti is available on Google Play:
 
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=de.mupfelofen.TauCeti)
 
+Update: The engine is currently being completely rewritten. The engine
+will not be fully functional until the next release!
+
 ### Trivia
 
 The abbreviation esz is a tribute to my best friend [Ertugrul
