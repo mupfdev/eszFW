@@ -1,6 +1,6 @@
 [submodule "external/tmx"]
 	path = external/tmx
-	url = https://github.com/mupfelofen-de/tmx-android.git
-[submodule "external/clang-format"]
-	path = external/clang-format
-	url = https://github.com/mupfelofen-de/clang-format.git
+	url = https://github.com/baylej/tmx.git
+[submodule "external/cwalk"]
+	path = external/cwalk
+	url = https://github.com/likle/cwalk.git
