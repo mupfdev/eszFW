@@ -49,6 +49,7 @@ a tool to my own use.  To see it in action, take a look at [Tau
 Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
 sci-fi themed tech demo which I develop to test this engine.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6c50d49436504b429799bfa96ab65b1c)](https://app.codacy.com/manual/mupf/eszFW?utm_source=github.com&utm_medium=referral&utm_content=mupfelofen-de/eszFW&utm_campaign=Badge_Grade_Dashboard)
 [![Tau Ceti](https://media.eszfw.de/tc-01-tn.png)](https://media.eszfw.de/tc-01.png?raw=true "Tau Ceti 1")
 [![Tau Ceti](https://media.eszfw.de/tc-02-tn.png)](https://media.eszfw.de/tc-02.png?raw=true "Tau Ceti 2")
 
