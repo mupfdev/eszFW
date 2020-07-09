@@ -33,6 +33,7 @@ static esz_status load_texture(const char* image_file, SDL_Texture** texture, es
 static void       move_camera_to_target(esz_core* core);
 static void       poll_events(esz_window* window, esz_core* core);
 static Uint16     remove_gid_flip_bits(Uint16 gid);
+static esz_status render_background_layer(Uint16 index, esz_core* window, esz_core* core);
 static double     round_(double number);
 static SDL_bool   set_camera_boundaries_to_map_size(esz_window* window, esz_core* core);
 static void       set_camera_target(const Uint16 target_entity_id, esz_core* core);
@@ -85,7 +86,7 @@ SDL_bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_
  */
 esz_status esz_create_window(const char* window_title, esz_window_config* config, esz_window** window)
 {
-    esz_status      status;
+    esz_status      status = ESZ_OK;
     SDL_DisplayMode display_mode;
     Uint32          renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
 
@@ -333,19 +334,36 @@ void esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window* window, esz_core
 
     if (core->map.is_loaded)
     {
-        if (0 > SDL_RenderCopy(window->renderer, core->map.background.layer[0].texture, NULL, &dst))
-        {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
-        }
-
         if (0 > SDL_RenderCopy(window->renderer, core->map.texture, NULL, &dst))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
         }
     }
 
+    /************************
+     * Set background color *
+     ************************/
+
+    SDL_SetRenderDrawColor(
+        window->renderer,
+        (core->map.tmx_map->backgroundcolor >> 16) & 0xFF,
+        (core->map.tmx_map->backgroundcolor >> 8)  & 0xFF,
+        (core->map.tmx_map->backgroundcolor)       & 0xFF,
+        0);
+
     SDL_RenderPresent(window->renderer);
     SDL_RenderClear(window->renderer);
+}
+
+/**
+ * @brief  Get the current state of the keyboard
+ * @return Returns a pointer to am array of key states. Indexes into
+ *         this array are obtained by using SDL_Scancode values: See
+ *         https://wiki.libsdl.org/SDL_Scancode
+ */
+const Uint8* esz_get_keyboard_state(void)
+{
+    return SDL_GetKeyboardState(NULL);
 }
 
 /**
@@ -592,12 +610,6 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
 {
     switch (event_type)
     {
-        case EVENT_KEYDOWN:
-            core->event.key_down_cb      = event_callback;
-            break;
-        case EVENT_KEYUP:
-            core->event.key_up_cb        = event_callback;
-            break;
         case EVENT_FINGERDOWN:
             core->event.finger_down_cb   = event_callback;
             break;
@@ -606,6 +618,12 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
             break;
         case EVENT_FINGERMOTION:
             core->event.finger_motion_cb = event_callback;
+            break;
+        case EVENT_KEYDOWN:
+            core->event.key_down_cb      = event_callback;
+            break;
+        case EVENT_KEYUP:
+            core->event.key_up_cb        = event_callback;
             break;
         case EVENT_MAP_LOADED:
             core->event.map_loaded_cb    = event_callback;
@@ -616,6 +634,36 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
         case EVENT_MULTIGESTURE:
             core->event.multi_gesture_cb = event_callback;
             break;
+    }
+}
+
+/**
+ * @brief  Set the position of the camera
+ * @remark The camera has to be unlocked first!
+ * @param  pos_x_offset: Position along the x-axis
+ * @param  pos_y_offset: Position along the y-axis
+ * @param  pos_is_relative: Use relative instead of absolute position
+ * @param  window: Window handle
+ * @param  core: Engine core
+ */
+void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window* window, esz_core* core)
+{
+    if (! is_camera_locked(core))
+    {
+        if (pos_is_relative)
+        {
+            double time_factor = (window->time_since_last_frame * 1000.f);
+
+            core->camera.pos_x += pos_x * time_factor;
+            core->camera.pos_y += pos_y * time_factor;
+        }
+        else
+        {
+            core->camera.pos_x = pos_x;
+            core->camera.pos_y = pos_y;
+        }
+
+        set_camera_boundaries_to_map_size(window, core);
     }
 }
 
@@ -859,7 +907,7 @@ void esz_unlock_camera(esz_core* core)
  * @details This function should be called cyclically in the main loop
  *          of the application.
  * @param   window: Window handle
- * @param   core: engine core
+ * @param   core: Engine core
  */
 void esz_update_core(esz_window* window, esz_core* core)
 {
@@ -901,7 +949,6 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
 {
     tmx_layer* layer                 = core->map.tmx_map->ly_head;
     SDL_bool   render_animated_tiles = SDL_FALSE;
-    //SDL_bool   render_bg_color       = SDL_FALSE;
 
     if (! core->map.is_loaded)
     {
@@ -917,7 +964,6 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
     if (ESZ_BACKGROUND == layer_type)
     {
         render_animated_tiles = SDL_TRUE;
-        //render_bg_color       = SDL_TRUE;
     }
 
     if (! core->map.texture)
@@ -940,6 +986,11 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_map(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
+    }
+
+    if (ESZ_BACKGROUND == layer_type)
+    {
+        SDL_RenderClear(window->renderer);
     }
 
     /************************************
@@ -1085,16 +1136,6 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_map(): %s\n", SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
-
-    /*if (render_bg_color)
-    {
-        SDL_SetRenderDrawColor(
-            window->renderer,
-            (core->map.tmx_map->backgroundcolor >> 16) & 0xFF,
-            (core->map.tmx_map->backgroundcolor >> 8)  & 0xFF,
-            (core->map.tmx_map->backgroundcolor)       & 0xFF,
-            0);
-    }*/
 
     while (layer)
     {
@@ -1296,6 +1337,12 @@ static esz_status init_background(esz_window* window, esz_core* core)
             }
         }
     }
+    else
+    {
+        return ESZ_OK;
+    }
+
+    SDL_Log("Initialise parallax scrolling background with %u layers.\n", core->map.background_layer_count);
 
     return ESZ_OK;
 }
@@ -1429,7 +1476,7 @@ static esz_status load_texture(const char* image_file, SDL_Texture** texture, es
 
 static void move_camera_to_target(esz_core* core)
 {
-    if ((core->camera.flags >> CAMERA_IS_LOCKED) & 1U)
+    if (is_camera_locked(core))
     {
         /*
         Entity* hEntity = &heszFW.hMap->hEntity[heszFW.hCamera->u16TargetEntityID];
@@ -1456,18 +1503,6 @@ static void poll_events(esz_window* window, esz_core* core)
             case SDL_QUIT:
                 esz_deactivate_core(core);
                 return;
-            case SDL_KEYDOWN:
-                if (core->event.key_down_cb)
-                {
-                    core->event.key_down_cb((void*)window, (void*)core);
-                }
-                break;
-            case SDL_KEYUP:
-                if (core->event.key_up_cb)
-                {
-                    core->event.key_up_cb((void*)window, (void*)core);
-                }
-                break;
             case SDL_FINGERDOWN:
                 if (core->event.finger_down_cb)
                 {
@@ -1486,6 +1521,18 @@ static void poll_events(esz_window* window, esz_core* core)
                     core->event.finger_motion_cb((void*)window, (void*)core);
                 }
                 break;
+            case SDL_KEYDOWN:
+                if (core->event.key_down_cb)
+                {
+                    core->event.key_down_cb((void*)window, (void*)core);
+                }
+                break;
+            case SDL_KEYUP:
+                if (core->event.key_up_cb)
+                {
+                    core->event.key_up_cb((void*)window, (void*)core);
+                }
+                break;
             case SDL_MULTIGESTURE:
                 if (core->event.multi_gesture_cb)
                 {
@@ -1499,6 +1546,12 @@ static void poll_events(esz_window* window, esz_core* core)
 static Uint16 remove_gid_flip_bits(Uint16 gid)
 {
     return gid & TMX_FLIP_BITS_REMOVAL;
+}
+
+static esz_status render_background_layer(Uint16 index, esz_core* window, esz_core* core)
+{
+
+    return ESZ_OK;
 }
 
 static double round_(double number)
@@ -1525,21 +1578,21 @@ static SDL_bool set_camera_boundaries_to_map_size(esz_window* window, esz_core* 
     if (0 >= core->camera.pos_x)
     {
         core->camera.pos_x        = 0;
-        camera_reached_boundaries = 1;
+        camera_reached_boundaries = SDL_TRUE;
     }
 
-    if (0 <= core->camera.pos_y)
+    if (0 >= core->camera.pos_y)
     {
         core->camera.pos_y = 0;
     }
 
-    if (core->camera.pos_x > core->camera.max_pos_x)
+    if (core->camera.pos_x >= core->camera.max_pos_x)
     {
         core->camera.pos_x        = core->camera.max_pos_x;
-        camera_reached_boundaries = 1;
+        camera_reached_boundaries = SDL_TRUE;
     }
 
-    if (core->camera.pos_y > core->camera.max_pos_y)
+    if (core->camera.pos_y >= core->camera.max_pos_y)
     {
         core->camera.pos_y = core->camera.max_pos_y;
     }

@@ -148,7 +148,6 @@ typedef struct esz_background_t
     esz_alignment         alignment;
     esz_direction         direction;
     esz_background_layer* layer;
-    Uint8                 layer_count;
 
 } esz_background;
 
@@ -297,23 +296,25 @@ typedef struct esz_window_t
 
 } esz_window;
 
-SDL_bool   esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_b);
-esz_status esz_create_window(const char* window_title, esz_window_config* config, esz_window** window);
-void       esz_deactivate_core(esz_core* core);
-void       esz_destroy_core(esz_core* core);
-void       esz_destroy_window(esz_window* window);
-void       esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window*, esz_core* core);
-Uint32     esz_get_keycode(esz_core* core);
-double     esz_get_time_since_last_frame(esz_window* core);
-esz_status esz_init_core(esz_core** core);
-SDL_bool   esz_is_core_active(esz_core* core);
-void       esz_load_map(const char* map_file_name, esz_window* window, esz_core* core);
-void       esz_lock_camera(esz_core* core);
-void       esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core);
-esz_status esz_set_zoom_level(const double factor, esz_window* window);
-esz_status esz_toggle_fullscreen(esz_window* window);
-void       esz_unlock_camera(esz_core* core);
-void       esz_unload_map(esz_window* window, esz_core* core);
-void       esz_update_core(esz_window* window, esz_core* core);
+SDL_bool     esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_b);
+esz_status   esz_create_window(const char* window_title, esz_window_config* config, esz_window** window);
+void         esz_deactivate_core(esz_core* core);
+void         esz_destroy_core(esz_core* core);
+void         esz_destroy_window(esz_window* window);
+void         esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window*, esz_core* core);
+const Uint8* esz_get_keyboard_state(void);
+Uint32       esz_get_keycode(esz_core* core);
+double       esz_get_time_since_last_frame(esz_window* core);
+esz_status   esz_init_core(esz_core** core);
+SDL_bool     esz_is_core_active(esz_core* core);
+void         esz_load_map(const char* map_file_name, esz_window* window, esz_core* core);
+void         esz_lock_camera(esz_core* core);
+void         esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core);
+void         esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window* window, esz_core* core);
+esz_status   esz_set_zoom_level(const double factor, esz_window* window);
+esz_status   esz_toggle_fullscreen(esz_window* window);
+void         esz_unlock_camera(esz_core* core);
+void         esz_unload_map(esz_window* window, esz_core* core);
+void         esz_update_core(esz_window* window, esz_core* core);
 
 #endif // ESZ_H
