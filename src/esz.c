@@ -1735,7 +1735,7 @@ static esz_status render_background_layer(Uint16 index, esz_window* window, esz_
         goto exit;
     }
 
-    layer_width_factor = SDL_ceil((double)window->width / (double)window->width);
+    layer_width_factor = SDL_ceil((double)window->width / (double)image->width);
     layer_width        = image_width * layer_width_factor;
     layer_height       = image_height;
 
