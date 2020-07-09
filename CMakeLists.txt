@@ -42,3 +42,7 @@ target_link_libraries(
 if (UNIX)
     target_link_libraries(eszFW m)
 endif (UNIX)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(eszFW PRIVATE -pedantic-errors -Wall -Wextra)
+endif()

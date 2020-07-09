@@ -21,6 +21,8 @@
 
 static void       count_map_layers(tmx_layer* layer, Uint16* layer_count);
 static void       count_objects(tmx_object* tmx_object, Uint16** object_count);
+static esz_status draw_background(esz_window* window, esz_core* core);
+static esz_status draw_background_layer(Uint16 index, esz_window* window, esz_core* core);
 static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, esz_core* core);
 static Uint16     get_camera_target(esz_core* core);
 static esz_status init_animated_tiles(esz_core* core);
@@ -28,14 +30,15 @@ static esz_status init_background(esz_window* window, esz_core* core);
 static esz_status init_objects(esz_core* core);
 static esz_status init_sprites(esz_window* window, esz_core* core);
 static SDL_bool   is_camera_locked(esz_core* core);
+static SDL_bool   is_camera_at_horizontal_boundary(esz_core* core);
 static void       load_property_by_name(const char* property_name, tmx_property* property, esz_core* core);
 static esz_status load_texture(const char* image_file, SDL_Texture** texture, esz_window* window);
 static void       move_camera_to_target(esz_core* core);
 static void       poll_events(esz_window* window, esz_core* core);
 static Uint16     remove_gid_flip_bits(Uint16 gid);
-static esz_status render_background_layer(Uint16 index, esz_core* window, esz_core* core);
+static esz_status render_background_layer(Uint16 index, esz_window* window, esz_core* core);
 static double     round_(double number);
-static SDL_bool   set_camera_boundaries_to_map_size(esz_window* window, esz_core* core);
+static void       set_camera_boundaries_to_map_size(esz_window* window, esz_core* core);
 static void       set_camera_target(const Uint16 target_entity_id, esz_core* core);
 static void       store_property(tmx_property* property, void* core);
 static void       update_camera(esz_window* window, esz_core* core);
@@ -144,7 +147,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config* config
 
     if (0 == (*window)->refresh_rate)
     {
-        (*window)->refresh_rate  = 60;
+        (*window)->refresh_rate = 60;
         if ((*window)->vsync_enabled)
         {
             SDL_Log("Couldn't determine the monitor's refresh rate: VSync disabled.\n");
@@ -297,6 +300,7 @@ void esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window* window, esz_core
     double   delta_time = 0.f;
     SDL_Rect dst;
 
+    draw_background(window, core);
     draw_map(ESZ_BACKGROUND, window, core);
 
     // tbd.
@@ -334,6 +338,11 @@ void esz_draw_frame(Uint32* time_a, Uint32* time_b, esz_window* window, esz_core
 
     if (core->map.is_loaded)
     {
+        if (0 > SDL_RenderCopy(window->renderer, core->map.background.texture, NULL, &dst))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
+        }
+
         if (0 > SDL_RenderCopy(window->renderer, core->map.texture, NULL, &dst))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "esz_draw_frame(): %s\n", SDL_GetError());
@@ -665,6 +674,33 @@ void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool po
 
         set_camera_boundaries_to_map_size(window, core);
     }
+
+    if (is_camera_at_horizontal_boundary(core))
+    {
+        /*****************************************************************
+         * Do not move background when camera is at horizontal boundary. *
+         *****************************************************************/
+        core->map.background.velocity = 0.f;
+    }
+    else
+    {
+        /**************************************************************
+         * Synchronize horizontal velocity of the background with the *
+         * horizontal velocity of the tracked entity.                 *
+         **************************************************************/
+
+        // tbd
+        //core->map.background.velocity = core->map.entity[core->camera.target_entity_id].velocity_x;
+    }
+
+    /************************************************
+     * Do not move background when camera is locked *
+     ************************************************/
+
+    if (! is_camera_locked(core))
+    {
+        core->map.background.velocity = 0.f;
+    }
 }
 
 /**
@@ -819,6 +855,12 @@ void esz_unload_map(esz_window* window, esz_core* core)
         SDL_free(core->map.background.layer);
     }
 
+    if (core->map.background.texture)
+    {
+        SDL_DestroyTexture(core->map.background.texture);
+        core->map.background.texture = NULL;
+    }
+
     /********************
      * 6 Animated tiles *
      ********************/
@@ -945,6 +987,124 @@ static void count_objects(tmx_object* tmx_object, Uint16** object_count)
     }
 }
 
+static esz_status draw_background(esz_window* window, esz_core* core)
+{
+    esz_status status;
+    double     factor = (double)core->map.background_layer_count + 1.f;
+
+    if (! core->map.background.texture)
+    {
+        core->map.background.texture = SDL_CreateTexture(
+            window->renderer,
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_TEXTUREACCESS_TARGET,
+            window->width,
+            window->height);
+    }
+
+    if (! core->map.background.texture)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_background(): %s\n", SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    for (Sint32 index = 0; index < core->map.background_layer_count; index += 1)
+    {
+        core->map.background.layer[index].velocity /= factor;
+        factor -= 0.5;
+
+        status = draw_background_layer(index, window, core);
+
+        if (ESZ_OK != status)
+        {
+            break;
+        }
+    }
+
+    return status;
+}
+
+static esz_status draw_background_layer(Uint16 index, esz_window* window, esz_core* core)
+{
+    SDL_Rect dst;
+    double   pos_x_a;
+    double   pos_x_b;
+    Sint32   width = 0;
+
+    if (0 > SDL_QueryTexture(core->map.background.layer[index].texture, NULL, NULL, &width, NULL))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_background_layer(): %s.\n", SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    if (core->map.background.layer[index].pos_x < -width)
+    {
+        core->map.background.layer[index].pos_x = +width;
+    }
+
+    if (core->map.background.layer[index].pos_x > +width)
+    {
+        core->map.background.layer[index].pos_x = -width;
+    }
+
+    pos_x_a = core->map.background.layer[index].pos_x;
+    if (pos_x_a > 0)
+    {
+        pos_x_b = pos_x_a - width;
+    }
+    else
+    {
+        pos_x_b = pos_x_a + width;
+    }
+
+    if (0 < core->map.background.layer[index].velocity)
+    {
+        if (ESZ_RIGHT == core->map.background.direction)
+        {
+            core->map.background.layer[index].pos_x -= core->map.background.layer[index].velocity;
+        }
+        else
+        {
+            core->map.background.layer[index].pos_x += core->map.background.layer[index].velocity;
+        }
+    }
+
+    if (ESZ_TOP == core->map.background.alignment)
+    {
+        dst.y = core->map.background.layer[index].pos_y - core->camera.pos_y;
+    }
+    else
+    {
+        dst.y = core->map.background.layer[index].pos_y + (window->logical_height - core->map.background.layer[index].height);
+    }
+
+    // This isn't working. Why?
+    if (0 > SDL_SetRenderTarget(window->renderer, core->map.background.texture))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_background_layer(): %s\n", SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    dst.x = pos_x_a;
+    dst.w = width;
+    dst.h = core->map.background.layer[index].height;
+
+    if (0 > SDL_RenderCopyEx(window->renderer, core->map.background.layer[index].texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_background_layer(): %s.\n", SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    dst.x = pos_x_b;
+    if (0 > SDL_RenderCopyEx(window->renderer, core->map.background.layer[index].texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_background_layer(): %s.\n", SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    return ESZ_OK;
+}
+
 static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, esz_core* core)
 {
     tmx_layer* layer                 = core->map.tmx_map->ly_head;
@@ -1047,7 +1207,11 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
             dst.x           = core->map.animated_tile[index].dst_x;
             dst.y           = core->map.animated_tile[index].dst_y;
 
-            SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst);
+            if (0 > SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "draw_map(): %s\n", SDL_GetError());
+                return ESZ_ERROR_CRITICAL;
+            }
 
             core->map.animated_tile[index].current_frame += 1;
 
@@ -1149,10 +1313,8 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
         if (L_LAYER == layer->type)
         {
             load_property_by_name("is_in_foreground", layer->properties, core);
-            if (core->map.boolean_property)
-            {
-                is_in_foreground = core->map.boolean_property;
-            }
+
+            is_in_foreground = core->map.boolean_property;
 
             if (ESZ_BACKGROUND == layer_type && SDL_FALSE == is_in_foreground)
             {
@@ -1201,14 +1363,7 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
                         }
                     }
                 }
-                if (ESZ_BACKGROUND == layer_type)
-                {
-                    SDL_Log("Render background layer: %s\n", layer->name);
-                }
-                else
-                {
-                    SDL_Log("Render foreground layer: %s\n", layer->name);
-                }
+                SDL_Log("Render map layer: %s\n", layer->name);
             }
         }
         layer = layer->next;
@@ -1310,6 +1465,17 @@ static esz_status init_background(esz_window* window, esz_core* core)
         }
     }
 
+    load_property_by_name("background_is_top_aligned", core->map.tmx_map->properties, core);
+
+    if (core->map.boolean_property)
+    {
+        core->map.background.alignment = ESZ_TOP;
+    }
+    else
+    {
+        core->map.background.alignment = ESZ_BOTTOM;
+    }
+
     core->map.background.layer = SDL_calloc(core->map.background_layer_count, sizeof(struct esz_background_layer_t));
 
     if (! core->map.background.layer)
@@ -1320,21 +1486,9 @@ static esz_status init_background(esz_window* window, esz_core* core)
 
     if (0 < core->map.background_layer_count)
     {
-        char property_name[21]                        = { 0 };
-        char background_layer_image[ESZ_MAX_PATH_LEN] = { 0 };
-
         for (Uint16 index = 0; index < core->map.background_layer_count; index += 1)
         {
-            SDL_snprintf(property_name, 21, "background_layer_%u", index);
-
-            load_property_by_name(property_name, core->map.tmx_map->properties, core);
-
-            SDL_snprintf(background_layer_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->map.string_property);
-
-            if (ESZ_OK != load_texture(background_layer_image, &core->map.background.layer[index].texture, window))
-            {
-                return ESZ_ERROR_CRITICAL;
-            }
+            render_background_layer(index, window, core);
         }
     }
     else
@@ -1342,7 +1496,7 @@ static esz_status init_background(esz_window* window, esz_core* core)
         return ESZ_OK;
     }
 
-    SDL_Log("Initialise parallax scrolling background with %u layers.\n", core->map.background_layer_count);
+    SDL_Log("Initialise parallax-scrolling background with %u layers.\n", core->map.background_layer_count);
 
     return ESZ_OK;
 }
@@ -1419,9 +1573,7 @@ static esz_status init_sprites(esz_window* window, esz_core* core)
         for (Uint16 index = 0; index < core->map.sprite_sheet_count; index += 1)
         {
             SDL_snprintf(property_name, 17, "sprite_sheet_%u", index);
-
             load_property_by_name(property_name, core->map.tmx_map->properties, core);
-
             SDL_snprintf(sprite_sheet_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->map.string_property);
 
             core->map.sprite[index].id = index;
@@ -1446,6 +1598,11 @@ static SDL_bool is_camera_locked(esz_core* core)
     {
         return SDL_FALSE;
     }
+}
+
+static SDL_bool is_camera_at_horizontal_boundary(esz_core* core)
+{
+    return core->camera.is_at_horizontal_boundary;
 }
 
 static void load_property_by_name(const char* property_name, tmx_property* property, esz_core* core)
@@ -1548,10 +1705,100 @@ static Uint16 remove_gid_flip_bits(Uint16 gid)
     return gid & TMX_FLIP_BITS_REMOVAL;
 }
 
-static esz_status render_background_layer(Uint16 index, esz_core* window, esz_core* core)
+static esz_status render_background_layer(Uint16 index, esz_window* window, esz_core* core)
 {
+    esz_status   status        = ESZ_OK;
+    SDL_Texture* image_texture = NULL;
+    SDL_Rect     dst;
+    Sint32       image_width;
+    Sint32       image_height;
+    Sint32       layer_width;
+    Sint32       layer_height;
+    Sint32       layer_width_factor;
+    char         property_name[21]                        = { 0 };
+    char         background_layer_image[ESZ_MAX_PATH_LEN] = { 0 };
 
-    return ESZ_OK;
+    SDL_snprintf(property_name, 21, "background_layer_%u", index);
+    load_property_by_name(property_name, core->map.tmx_map->properties, core);
+    SDL_snprintf(background_layer_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->map.string_property);
+
+    if (ESZ_OK != load_texture(background_layer_image, &image_texture, window))
+    {
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+    if (0 > SDL_QueryTexture(image_texture, NULL, NULL, &image_width, &image_height))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+    layer_width_factor = SDL_ceil((double)window->width / (double)window->width);
+    layer_width        = image_width * layer_width_factor;
+    layer_height       = image_height;
+
+    core->map.background.layer[index].texture = SDL_CreateTexture(
+        window->renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_TARGET,
+        layer_width,
+        layer_height);
+
+    if (! core->map.background.layer[index].texture)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+    if (0 != SDL_SetRenderTarget(window->renderer, core->map.background.layer[index].texture))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+    dst.x = 0;
+    for (Sint32 pass = 0; pass < layer_width_factor; pass += 1)
+    {
+        dst.y = 0;
+        dst.w = image_width;
+        dst.h = image_height;
+
+        if (0 > SDL_RenderCopy(window->renderer, image_texture, NULL, &dst))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+            status = ESZ_ERROR_CRITICAL;
+            goto exit;
+        }
+
+        dst.x += image_width;
+    }
+
+    if (0 > SDL_SetTextureBlendMode(core->map.background.layer[index].texture, SDL_BLENDMODE_BLEND))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+    if (0 != SDL_SetRenderTarget(window->renderer, NULL))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "render_background_layer(): %s\n", SDL_GetError());
+        status = ESZ_ERROR_CRITICAL;
+        goto exit;
+    }
+
+exit:
+    if (image_texture)
+    {
+        SDL_DestroyTexture(image_texture);
+    }
+
+    SDL_Log("Render background layer %d.\n", index);
+    return status;;
 }
 
 static double round_(double number)
@@ -1568,17 +1815,16 @@ static double round_(double number)
     }
 }
 
-static SDL_bool set_camera_boundaries_to_map_size(esz_window* window, esz_core* core)
+static void set_camera_boundaries_to_map_size(esz_window* window, esz_core* core)
 {
-    SDL_bool camera_reached_boundaries = SDL_FALSE;
-
-    core->camera.max_pos_x = core->map.width  - window->logical_width;
-    core->camera.max_pos_y = core->map.height - window->logical_height;
+    core->camera.is_at_horizontal_boundary = SDL_FALSE;
+    core->camera.max_pos_x                 = core->map.width  - window->logical_width;
+    core->camera.max_pos_y                 = core->map.height - window->logical_height;
 
     if (0 >= core->camera.pos_x)
     {
-        core->camera.pos_x        = 0;
-        camera_reached_boundaries = SDL_TRUE;
+        core->camera.pos_x                     = 0;
+        core->camera.is_at_horizontal_boundary = SDL_TRUE;
     }
 
     if (0 >= core->camera.pos_y)
@@ -1588,16 +1834,14 @@ static SDL_bool set_camera_boundaries_to_map_size(esz_window* window, esz_core* 
 
     if (core->camera.pos_x >= core->camera.max_pos_x)
     {
-        core->camera.pos_x        = core->camera.max_pos_x;
-        camera_reached_boundaries = SDL_TRUE;
+        core->camera.pos_x                     = core->camera.max_pos_x;
+        core->camera.is_at_horizontal_boundary = SDL_TRUE;
     }
 
     if (core->camera.pos_y >= core->camera.max_pos_y)
     {
         core->camera.pos_y = core->camera.max_pos_y;
     }
-
-    return camera_reached_boundaries;
 }
 
 static void set_camera_target(const Uint16 target_entity_id, esz_core* core)
@@ -1641,28 +1885,6 @@ static void store_property(tmx_property* property, void* core)
                 core_ptr->map.string_property  = property->value.string;
                 break;
         }
-    }
-}
-
-static void update_camera(esz_window* window, esz_core* core)
-{
-    //move_camera_to_target(core);
-
-    if (set_camera_boundaries_to_map_size(window, core))
-    {
-        // Do not move background when camera hits boundaries.
-        //dBgVelocityX = 0;
-    }
-    else
-    {
-        //Uint16 u16EntityID = get_camera_target(void);;
-        //dBgVelocityX = pstRes->pstEntity[u16EntityID]->dVelocityX;
-    }
-
-    // Do not move background when camera is locked.
-    if (! is_camera_locked(core))
-    {
-        //dBgVelocityX = 0;
     }
 }
 

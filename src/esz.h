@@ -148,6 +148,8 @@ typedef struct esz_background_t
     esz_alignment         alignment;
     esz_direction         direction;
     esz_background_layer* layer;
+    double                velocity;
+    SDL_Texture*          texture;
 
 } esz_background;
 
@@ -156,12 +158,13 @@ typedef struct esz_background_t
  */
 typedef struct esz_camera_t
 {
-    double pos_x;
-    double pos_y;
-    Sint32 max_pos_x;
-    Sint32 max_pos_y;
-    Uint16 flags;
-    Uint16 target_entity_id;
+    double   pos_x;
+    double   pos_y;
+    Sint32   max_pos_x;
+    Sint32   max_pos_y;
+    Uint16   flags;
+    Uint16   target_entity_id;
+    SDL_bool is_at_horizontal_boundary;
 
 } esz_camera;
 
