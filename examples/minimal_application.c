@@ -31,9 +31,6 @@ int main()
 
     while (esz_is_core_active(core))
     {
-        Uint32 time_a = 0;
-        Uint32 time_b = 0;
-
         esz_update_core(window, core);
         esz_draw_frame(window, core);
     }
