@@ -4,3 +4,6 @@
 [submodule "external/cwalk"]
 	path = external/cwalk
 	url = https://github.com/likle/cwalk.git
+[submodule "external/stb"]
+	path = external/stb
+	url = https://github.com/nothings/stb.git
