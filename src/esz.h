@@ -41,7 +41,7 @@ typedef void (*esz_event_callback)(esz_window* window, esz_core* core);
  */
 typedef enum
 {
-    ESZ_BOTTOM = 0,
+    ESZ_BOT = 0,
     ESZ_TOP
 
 } esz_alignment;
@@ -51,8 +51,8 @@ typedef enum
  */
 typedef enum
 {
-    ESZ_BACKGROUND = 0,
-    ESZ_FOREGROUND,
+    ESZ_BG = 0,
+    ESZ_FG,
     ESZ_LAYER_MAX
 
 } esz_layer_type;
@@ -143,7 +143,9 @@ typedef struct esz_background_t
     esz_direction         direction;
     esz_background_layer* layer;
     double                velocity;
-    SDL_Texture*          texture;
+    double                layer_shift;
+    SDL_Texture*          render_target;
+    Sint32                layer_count;
 
 } esz_background;
 
@@ -235,7 +237,7 @@ typedef struct esz_map_t
     double             time_since_last_anim_frame;
     SDL_Texture*       animated_tile_texture;
     SDL_Texture*       map_layer[ESZ_LAYER_MAX];
-    SDL_Texture*       texture;
+    SDL_Texture*       render_target[ESZ_LAYER_MAX];
     SDL_Texture*       tileset_texture;
     char*              string_property;
     esz_animated_tile* animated_tile;
@@ -244,7 +246,6 @@ typedef struct esz_map_t
     esz_sprite*        sprite;
     tmx_map*           tmx_map;
     Sint32             animated_tile_fps;
-    Sint32             background_layer_count;
     Sint32             integer_property;
     Sint32             meter_in_pixel;
     Sint32             sprite_sheet_count;
@@ -347,8 +348,12 @@ void esz_destroy_window(esz_window* window);
  * @brief  Draw/render the current frame
  * @param  window: Window handle
  * @param  core: Engine core
+ * @return Status code
+ * @retval ESZ_OK: OK
+ * @retval ESZ_ERROR_CRITICAL
+ *         Critical error; the application should be terminated
  */
-void esz_draw_frame(esz_window*, esz_core* core);
+esz_status esz_draw_frame(esz_window* window, esz_core* core);
 
 /**
  * @brief  Get the current state of the keyboard

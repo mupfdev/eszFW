@@ -32,7 +32,12 @@ int main()
     while (esz_is_core_active(core))
     {
         esz_update_core(window, core);
-        esz_draw_frame(window, core);
+
+        status = esz_draw_frame(window, core);
+        if (ESZ_ERROR_CRITICAL == status)
+        {
+            break;
+        }
     }
 
 quit:
