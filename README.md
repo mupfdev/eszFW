@@ -41,8 +41,8 @@ here:  [eszfw.de](https://eszfw.de)
 
 ### Status
 
-**Update**: I am currently completely rewriting this project.  Expect
-  nothing until the next release!
+**Update**: I started by rewriting the entire engine from scratch.
+  Until the next release this project is in an incomplete state.
 
 This project is in development.  I will enhance it gradually, mainly as
 a tool to my own use.  To see it in action, take a look at [Tau
