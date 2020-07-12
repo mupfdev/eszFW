@@ -2,7 +2,7 @@
 /**
  * @file    esz.c
  * @brief   eszFW game engine
- * @details A cross-platform game engine written in C99
+ * @details A cross-platform game engine written in C
  */
 
 #ifdef __EMSCRIPTEN__
@@ -23,28 +23,27 @@
 
 static void         count_map_layers(tmx_layer* layer, Uint16* layer_count);
 static void         count_objects(tmx_object* tmx_object, Uint16** object_count);
-static esz_status   draw_background(esz_window* window, esz_core* core);
-static esz_status   draw_map(const esz_layer_type layer_type, esz_window *window, esz_core *core);
-static Uint16       get_camera_target(esz_core* core);
-static esz_status   init_animated_tiles(esz_core* core);
-static esz_status   init_background(esz_window* window, esz_core* core);
-static esz_status   init_objects(esz_core* core);
-static esz_status   init_sprites(esz_window* window, esz_core* core);
-static SDL_bool     is_camera_locked(esz_core* core);
-static SDL_bool     is_camera_at_horizontal_boundary(esz_core* core);
-static void         load_property_by_name(const char* property_name, tmx_property* property, esz_core* core);
-static esz_status   load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window* window);
-static void         move_camera_to_target(esz_core* core);
-static void         poll_events(esz_window* window, esz_core* core);
+static esz_status   draw_background(esz_window_t* window, esz_core_t* core);
+static esz_status   draw_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t *core);
+static Uint16       get_camera_target(esz_core_t* core);
+static esz_status   init_animated_tiles(esz_core_t* core);
+static esz_status   init_background(esz_window_t* window, esz_core_t* core);
+static esz_status   init_objects(esz_core_t* core);
+static esz_status   init_sprites(esz_window_t* window, esz_core_t* core);
+static SDL_bool     is_camera_locked(esz_core_t* core);
+static SDL_bool     is_camera_at_horizontal_boundary(esz_core_t* core);
+static void         load_property_by_name(const char* property_name, tmx_property* property, esz_core_t* core);
+static esz_status   load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
+static void         move_camera_to_target(esz_core_t* core);
+static void         poll_events(esz_window_t* window, esz_core_t* core);
 static Uint32       remove_gid_flip_bits(Uint32 gid);
-static esz_status   render_background(esz_window* window, esz_core* core);
-static esz_status   render_background_layer(Sint32 index, esz_window* window, esz_core* core);
-static esz_status   render_map(const esz_layer_type layer_type, esz_window *window, esz_core* core);
+static esz_status   render_background(esz_window_t* window, esz_core_t* core);
+static esz_status   render_background_layer(Sint32 index, esz_window_t* window, esz_core_t* core);
+static esz_status   render_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t* core);
 static double       round_(double number);
-static void         set_camera_boundaries_to_map_size(esz_window* window, esz_core* core);
-static void         set_camera_target(const Uint16 target_entity_id, esz_core* core);
+static void         set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core);
+static void         set_camera_target(const Uint16 target_entity_id, esz_core_t* core);
 static void         store_property(tmx_property* property, void* core);
-static void         update_camera(esz_window* window, esz_core* core);
 
 /********************
  * Public functions *
@@ -70,13 +69,13 @@ SDL_bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_
     return SDL_TRUE;
 }
 
-esz_status esz_create_window(const char* window_title, esz_window_config* config, esz_window** window)
+esz_status esz_create_window(const char* window_title, esz_window_config_t* config, esz_window_t** window)
 {
     esz_status      status = ESZ_OK;
     SDL_DisplayMode display_mode;
     Uint32          renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
 
-    *window = SDL_calloc(1, sizeof(struct esz_window_t));
+    *window = SDL_calloc(1, sizeof(struct esz_window));
 
     if (! *window)
     {
@@ -214,18 +213,18 @@ exit:
     return status;
 }
 
-void esz_deactivate_core(esz_core* core)
+void esz_deactivate_core(esz_core_t* core)
 {
     core->is_active = SDL_FALSE;
 }
 
-void esz_destroy_core(esz_core* core)
+void esz_destroy_core(esz_core_t* core)
 {
     SDL_free(core);
     SDL_Log("Destroy engine core.\n");
 }
 
-void esz_destroy_window(esz_window* window)
+void esz_destroy_window(esz_window_t* window)
 {
     if (window->renderer)
     {
@@ -243,7 +242,7 @@ void esz_destroy_window(esz_window* window)
     SDL_Quit();
 }
 
-esz_status esz_draw_frame(esz_window* window, esz_core* core)
+esz_status esz_draw_frame(esz_window_t* window, esz_core_t* core)
 {
     esz_status status;
     double     delta_time = 0.0;
@@ -311,19 +310,19 @@ const Uint8* esz_get_keyboard_state(void)
     return SDL_GetKeyboardState(NULL);
 }
 
-Sint32 esz_get_keycode(esz_core* core)
+Sint32 esz_get_keycode(esz_core_t* core)
 {
     return core->event.handle.key.keysym.sym;
 }
 
-double esz_get_time_since_last_frame(esz_window* window)
+double esz_get_time_since_last_frame(esz_window_t* window)
 {
     return window->time_since_last_frame;
 }
 
-esz_status esz_init_core(esz_core** core)
+esz_status esz_init_core(esz_core_t** core)
 {
-    *core = SDL_calloc(1, sizeof(struct esz_core_t));
+    *core = SDL_calloc(1, sizeof(struct esz_core));
 
     if (! *core)
     {
@@ -336,17 +335,17 @@ esz_status esz_init_core(esz_core** core)
     return ESZ_OK;
 }
 
-SDL_bool esz_is_core_active(esz_core* core)
+SDL_bool esz_is_core_active(esz_core_t* core)
 {
     return core->is_active;
 }
 
-SDL_bool esz_is_map_loaded(esz_core* core)
+SDL_bool esz_is_map_loaded(esz_core_t* core)
 {
     return core->map.is_loaded;
 }
 
-static esz_status load_background_layer(Uint16 index, esz_window* window, esz_core* core)
+static esz_status load_background_layer(Uint16 index, esz_window_t* window, esz_core_t* core)
 {
     esz_status   status        = ESZ_OK;
     SDL_Texture* image_texture = NULL;
@@ -435,7 +434,7 @@ exit:
     return status;
 }
 
-void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core)
+void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core)
 {
     if (esz_is_map_loaded(core))
     {
@@ -590,13 +589,13 @@ void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core)
         map_file_name, core->map.object_count);
 }
 
-void esz_lock_camera(esz_core* core)
+void esz_lock_camera(esz_core_t* core)
 {
     SDL_Log("Enable camera lock.\n");
     core->camera.is_locked = SDL_TRUE;
 }
 
-void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core)
+void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core_t* core)
 {
     switch (event_type)
     {
@@ -627,7 +626,7 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
     }
 }
 
-void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window* window, esz_core* core)
+void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window_t* window, esz_core_t* core)
 {
     if (! is_camera_locked(core))
     {
@@ -648,7 +647,7 @@ void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool po
     }
 }
 
-esz_status esz_set_zoom_level(const double factor, esz_window* window)
+esz_status esz_set_zoom_level(const double factor, esz_window_t* window)
 {
     window->zoom_level     = factor;
     window->logical_width  = (Sint32)((double)window->width  / factor);
@@ -665,7 +664,7 @@ esz_status esz_set_zoom_level(const double factor, esz_window* window)
     }
 }
 
-esz_status esz_toggle_fullscreen(esz_window* window)
+esz_status esz_toggle_fullscreen(esz_window_t* window)
 {
     esz_status status = ESZ_OK;
 
@@ -699,7 +698,7 @@ esz_status esz_toggle_fullscreen(esz_window* window)
     return status;
 }
 
-void esz_unload_map(esz_window* window, esz_core* core)
+void esz_unload_map(esz_window_t* window, esz_core_t* core)
 {
     if (! esz_is_map_loaded(core))
     {
@@ -865,13 +864,13 @@ void esz_unload_map(esz_window* window, esz_core* core)
     SDL_Log("Unload map.\n");
 }
 
-void esz_unlock_camera(esz_core* core)
+void esz_unlock_camera(esz_core_t* core)
 {
     SDL_Log("Disable camera lock.\n");
     core->camera.is_locked = SDL_FALSE;
 }
 
-void esz_update_core(esz_window* window, esz_core* core)
+void esz_update_core(esz_window_t* window, esz_core_t* core)
 {
     poll_events(window, core);
 }
@@ -907,7 +906,7 @@ static void count_objects(tmx_object* tmx_object, Uint16** object_count)
     }
 }
 
-static esz_status draw_background(esz_window* window, esz_core* core)
+static esz_status draw_background(esz_window_t* window, esz_core_t* core)
 {
     SDL_Rect dst;
 
@@ -952,7 +951,7 @@ static esz_status draw_background(esz_window* window, esz_core* core)
     return ESZ_OK;
 }
 
-static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, esz_core *core)
+static esz_status draw_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t *core)
 {
     SDL_Rect dst;
 
@@ -970,12 +969,12 @@ static esz_status draw_map(const esz_layer_type layer_type, esz_window *window, 
     return ESZ_OK;
 }
 
-static Uint16 get_camera_target(esz_core* core)
+static Uint16 get_camera_target(esz_core_t* core)
 {
     return core->camera.target_entity_id;
 }
 
-static esz_status init_animated_tiles(esz_core* core)
+static esz_status init_animated_tiles(esz_core_t* core)
 {
     tmx_layer* layer               = core->map.tmx_map->ly_head;
     Uint32     animated_tile_count = 0;
@@ -1025,7 +1024,7 @@ static esz_status init_animated_tiles(esz_core* core)
 
     if (0 < animated_tile_count)
     {
-        core->map.animated_tile = SDL_calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile_t));
+        core->map.animated_tile = SDL_calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
 
         if (! core->map.animated_tile)
         {
@@ -1038,7 +1037,7 @@ static esz_status init_animated_tiles(esz_core* core)
     return ESZ_OK;
 }
 
-static esz_status init_background(esz_window* window, esz_core* core)
+static esz_status init_background(esz_window_t* window, esz_core_t* core)
 {
     load_property_by_name("background_layer_count", core->map.tmx_map->properties, core);
 
@@ -1065,7 +1064,7 @@ static esz_status init_background(esz_window* window, esz_core* core)
         core->map.background.alignment = ESZ_BOT;
     }
 
-    core->map.background.layer = SDL_calloc((size_t)core->map.background.layer_count, sizeof(struct esz_background_layer_t));
+    core->map.background.layer = SDL_calloc((size_t)core->map.background.layer_count, sizeof(struct esz_background_layer));
 
     if (! core->map.background.layer)
     {
@@ -1090,7 +1089,7 @@ static esz_status init_background(esz_window* window, esz_core* core)
     return ESZ_OK;
 }
 
-static esz_status init_objects(esz_core* core)
+static esz_status init_objects(esz_core_t* core)
 {
     Uint16*    object_count = &core->map.object_count;
     tmx_layer* layer;
@@ -1122,7 +1121,7 @@ static esz_status init_objects(esz_core* core)
 
     if (core->map.object_count)
     {
-        core->map.object = SDL_calloc((size_t)core->map.object_count, sizeof(struct esz_object_t));
+        core->map.object = SDL_calloc((size_t)core->map.object_count, sizeof(struct esz_object));
 
         if (! core->map.object)
         {
@@ -1135,7 +1134,7 @@ static esz_status init_objects(esz_core* core)
     return ESZ_OK;
 }
 
-static esz_status init_sprites(esz_window* window, esz_core* core)
+static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 {
     load_property_by_name("sprite_sheet_count", core->map.tmx_map->properties, core);
     if (core->map.integer_property)
@@ -1146,7 +1145,7 @@ static esz_status init_sprites(esz_window* window, esz_core* core)
         }
     }
 
-    core->map.sprite = SDL_calloc((size_t)core->map.sprite_sheet_count, sizeof(struct esz_sprite_t));
+    core->map.sprite = SDL_calloc((size_t)core->map.sprite_sheet_count, sizeof(struct esz_sprite));
 
     if (! core->map.sprite)
     {
@@ -1178,17 +1177,17 @@ static esz_status init_sprites(esz_window* window, esz_core* core)
     return ESZ_OK;
 }
 
-static SDL_bool is_camera_locked(esz_core* core)
+static SDL_bool is_camera_locked(esz_core_t* core)
 {
     return core->camera.is_locked;
 }
 
-static SDL_bool is_camera_at_horizontal_boundary(esz_core* core)
+static SDL_bool is_camera_at_horizontal_boundary(esz_core_t* core)
 {
     return core->camera.is_at_horizontal_boundary;
 }
 
-static void load_property_by_name(const char* property_name, tmx_property* property, esz_core* core)
+static void load_property_by_name(const char* property_name, tmx_property* property, esz_core_t* core)
 {
     core->map.boolean_property = SDL_FALSE;
     core->map.decimal_property = 0.0;
@@ -1201,7 +1200,7 @@ static void load_property_by_name(const char* property_name, tmx_property* prope
 }
 
 // Based on https://wiki.libsdl.org/SDL_CreateRGBSurfaceWithFormatFrom#Code_Examples
-static esz_status load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window* window)
+static esz_status load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window)
 {
     SDL_Surface*   surface;
     int            width;
@@ -1253,7 +1252,7 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
     return ESZ_OK;
 }
 
-static void move_camera_to_target(esz_core* core)
+static void move_camera_to_target(esz_core_t* core)
 {
     if (is_camera_locked(core))
     {
@@ -1273,7 +1272,7 @@ static void move_camera_to_target(esz_core* core)
     }
 }
 
-static void poll_events(esz_window* window, esz_core* core)
+static void poll_events(esz_window_t* window, esz_core_t* core)
 {
     while (0 != SDL_PollEvent(&core->event.handle))
     {
@@ -1327,7 +1326,7 @@ static Uint32 remove_gid_flip_bits(Uint32 gid)
     return gid & TMX_FLIP_BITS_REMOVAL;
 }
 
-static esz_status render_background(esz_window* window, esz_core* core)
+static esz_status render_background(esz_window_t* window, esz_core_t* core)
 {
     esz_status status = ESZ_OK;
     double     factor = (double)core->map.background.layer_count + 1.0;
@@ -1364,7 +1363,7 @@ static esz_status render_background(esz_window* window, esz_core* core)
     return status;
 }
 
-static esz_status render_background_layer(Sint32 index, esz_window* window, esz_core* core)
+static esz_status render_background_layer(Sint32 index, esz_window_t* window, esz_core_t* core)
 {
     SDL_Rect dst;
     double   pos_x_a;
@@ -1460,7 +1459,7 @@ static esz_status render_background_layer(Sint32 index, esz_window* window, esz_
     return ESZ_OK;
 }
 
-static esz_status render_map(const esz_layer_type layer_type, esz_window *window, esz_core* core)
+static esz_status render_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t* core)
 {
     tmx_layer* layer                 = core->map.tmx_map->ly_head;
     SDL_bool   render_animated_tiles = SDL_FALSE;
@@ -1763,7 +1762,7 @@ static double round_(double number)
     }
 }
 
-static void set_camera_boundaries_to_map_size(esz_window* window, esz_core* core)
+static void set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core)
 {
     core->camera.is_at_horizontal_boundary = SDL_FALSE;
     core->camera.max_pos_x                 = (Sint32)core->map.width  - window->logical_width;
@@ -1792,14 +1791,14 @@ static void set_camera_boundaries_to_map_size(esz_window* window, esz_core* core
     }
 }
 
-static void set_camera_target(const Uint16 target_entity_id, esz_core* core)
+static void set_camera_target(const Uint16 target_entity_id, esz_core_t* core)
 {
     core->camera.target_entity_id = target_entity_id;
 }
 
 static void store_property(tmx_property* property, void* core)
 {
-    esz_core* core_ptr = core;
+    esz_core_t* core_ptr = core;
 
     /* Shouldn't be called repeatedly to minimise performance cost:
      * intended to use for initialisation only.

@@ -17,12 +17,12 @@
 
 ## About
 
-eszFW is a cross-platform game engine written in C99.  It's aimed at
+eszFW is a cross-platform game engine written in C.  It's aimed at
 platformer games. This project is the logical continuation of my older
 projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 [Boondock Sam](https://github.com/mupfelofen-de/boondock-sam).
 
-It is written in C99.
+It is written in C.
 
 ## Features
 
@@ -62,7 +62,7 @@ The abbreviation esz is a tribute to my best friend [Ertugrul
 Söylemez](https://github.com/esoeylemez), who suddenly passed away on
 May 12th, 2018.  We all miss you deeply.
 
-## C99 is dead, long live C99
+## C is dead, long live C
 
 Even though hardly any games are written in C nowadays, there are a few
 noteworthy titles that meet this criterion e.g. Doom, Quake, Quake II,
@@ -71,7 +71,7 @@ and Neverwinter Nights.
 This project should show that it is still possible and that C (and
 procedural programming in general) is often underestimated.
 
-With that in mind: C99 is dead, long live C99!
+With that in mind: C is dead, long live C!
 
 ## Dependencies
 

@@ -7,11 +7,11 @@
 #ifndef ESZ_H
 #define ESZ_H
 
-struct SDL_Texture;
-typedef struct _tmx_map tmx_map;
-typedef struct _tmx_obj tmx_object;
-typedef struct esz_window_t esz_window;
-typedef struct esz_core_t esz_core;
+#include <SDL.h>
+#include <tmx.h>
+
+typedef struct esz_window esz_window_t;
+typedef struct esz_core   esz_core_t;
 
 /**
  * @def   ESZ_MAX_PATH_LEN
@@ -34,7 +34,7 @@ typedef struct esz_core_t esz_core;
  * @attention An event callback function always expects a window handle
  *            as first and a core handle as second parameter!
  */
-typedef void (*esz_event_callback)(esz_window* window, esz_core* core);
+typedef void (*esz_event_callback)(esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief An enumeration of alignments.
@@ -109,7 +109,7 @@ typedef struct esz_aabb_t
 /**
  * @brief A structure that contains an animated tile.
  */
-typedef struct esz_animated_tile_t
+typedef struct esz_animated_tile
 {
     Sint32 dst_x;
     Sint32 dst_y;
@@ -118,12 +118,12 @@ typedef struct esz_animated_tile_t
     Uint32 gid;
     Uint32 id;
 
-} esz_animated_tile;
+} esz_animated_tile_t;
 
 /**
  * @brief A structure that contains a background layer.
  */
-typedef struct esz_background_layer_t
+typedef struct esz_background_layer
 {
     double        pos_x;
     double        pos_y;
@@ -132,28 +132,28 @@ typedef struct esz_background_layer_t
     Sint32        width;
     Sint32        height;
 
-} esz_background_layer;
+} esz_background_layer_t;
 
 /**
  * @brief A structure that contains a parallax-scrolling background.
  */
-typedef struct esz_background_t
+typedef struct esz_background
 {
-    esz_alignment         alignment;
-    esz_direction         direction;
-    esz_background_layer* layer;
-    SDL_Texture*          render_target;
-    double                velocity;
-    double                layer_shift;
-    Sint32                layer_count;
-    char                  reserverd[4];
+    esz_alignment           alignment;
+    esz_direction           direction;
+    esz_background_layer_t* layer;
+    SDL_Texture*            render_target;
+    double                  velocity;
+    double                  layer_shift;
+    Sint32                  layer_count;
+    char                    reserverd[4];
 
-} esz_background;
+} esz_background_t;
 
 /**
  * @brief A structure that contains a camera.
  */
-typedef struct esz_camera_t
+typedef struct esz_camera
 {
     double   pos_x;
     double   pos_y;
@@ -165,12 +165,12 @@ typedef struct esz_camera_t
     SDL_bool is_locked;
     char     reserverd[4];
 
-} esz_camera;
+} esz_camera_t;
 
 /**
  * @brief A structure that contains the initial window configuration.
  */
-typedef struct esz_window_config_t
+typedef struct esz_window_config
 {
     const Sint32   width;
     const Sint32   height;
@@ -179,30 +179,30 @@ typedef struct esz_window_config_t
     const SDL_bool enable_fullscreen;
     const SDL_bool enable_vsync;
 
-} esz_window_config;
+} esz_window_config_t;
 
 /**
  * @brief A structure that contains the event handler.
  */
-typedef struct esz_event_t
+typedef struct esz_event
 {
     SDL_Event handle;
 
-    void (*finger_down_cb)(esz_window* window, esz_core* core);
-    void (*finger_motion_cb)(esz_window* window, esz_core* core);
-    void (*finger_up_cb)(esz_window* window, esz_core* core);
-    void (*key_down_cb)(esz_window* window, esz_core* core);
-    void (*key_up_cb)(esz_window* window, esz_core* core);
-    void (*map_loaded_cb)(esz_window* window, esz_core* core);
-    void (*map_unloaded_cb)(esz_window* window, esz_core* core);
-    void (*multi_gesture_cb)(esz_window* window, esz_core* core);
+    void (*finger_down_cb)(esz_window_t*   window, esz_core_t* core);
+    void (*finger_motion_cb)(esz_window_t* window, esz_core_t* core);
+    void (*finger_up_cb)(esz_window_t*     window, esz_core_t* core);
+    void (*key_down_cb)(esz_window_t*      window, esz_core_t* core);
+    void (*key_up_cb)(esz_window_t*        window, esz_core_t* core);
+    void (*map_loaded_cb)(esz_window_t*    window, esz_core_t* core);
+    void (*map_unloaded_cb)(esz_window_t*  window, esz_core_t* core);
+    void (*multi_gesture_cb)(esz_window_t* window, esz_core_t* core);
 
-} esz_event;
+} esz_event_t;
 
 /**
  * @brief A structure that contains a map object
  */
-typedef struct esz_object_t
+typedef struct esz_object
 {
     esz_aabb    bounding_box;
     tmx_object* tmx_object;
@@ -213,74 +213,74 @@ typedef struct esz_object_t
     Uint16      width;
     char        reserverd[2];
 
-} esz_object;
+} esz_object_t;
 
 /**
  * @brief A structure that contains a sprite.
  */
-typedef struct esz_sprite_t
+typedef struct esz_sprite
 {
     SDL_Texture* render_target;
     Uint16       id;
     char         reserverd[6];
 
-} esz_sprite;
+} esz_sprite_t;
 
 /**
  * @brief A structure that contains a game map.
  */
-typedef struct esz_map_t
+typedef struct esz_map
 {
-    char               resource_path[ESZ_MAX_PATH_LEN];
-    char               search_pattern[ESZ_MAX_PATTERN_LEN];
-    char               tileset_image[ESZ_MAX_PATH_LEN];
-    double             decimal_property;
-    double             gravitation;
-    double             pos_x;
-    double             pos_y;
-    double             time_since_last_anim_frame;
-    SDL_Texture*       animated_tile_texture;
-    SDL_Texture*       map_layer[ESZ_LAYER_MAX];
-    SDL_Texture*       render_target[ESZ_LAYER_MAX];
-    SDL_Texture*       tileset_texture;
-    char*              string_property;
-    esz_animated_tile* animated_tile;
-    esz_background     background;
-    esz_object*        object;
-    esz_sprite*        sprite;
-    tmx_map*           tmx_map;
-    Sint32             animated_tile_fps;
-    Sint32             integer_property;
-    Sint32             meter_in_pixel;
-    Sint32             sprite_sheet_count;
-    Uint32             height;
-    Uint32             width;
-    size_t             resource_path_length;
-    Uint16             animated_tile_count;
-    Uint16             object_count;
-    SDL_bool           boolean_property;
-    SDL_bool           is_loaded;
-    char               reserverd[4];
+    char                  resource_path[ESZ_MAX_PATH_LEN];
+    char                  search_pattern[ESZ_MAX_PATTERN_LEN];
+    char                  tileset_image[ESZ_MAX_PATH_LEN];
+    double                decimal_property;
+    double                gravitation;
+    double                pos_x;
+    double                pos_y;
+    double                time_since_last_anim_frame;
+    SDL_Texture*          animated_tile_texture;
+    SDL_Texture*          map_layer[ESZ_LAYER_MAX];
+    SDL_Texture*          render_target[ESZ_LAYER_MAX];
+    SDL_Texture*          tileset_texture;
+    char*                 string_property;
+    esz_animated_tile_t*  animated_tile;
+    struct esz_background background;
+    esz_object_t*         object;
+    esz_sprite_t*         sprite;
+    tmx_map*              tmx_map;
+    Sint32                animated_tile_fps;
+    Sint32                integer_property;
+    Sint32                meter_in_pixel;
+    Sint32                sprite_sheet_count;
+    Uint32                height;
+    Uint32                width;
+    size_t                resource_path_length;
+    Uint16                animated_tile_count;
+    Uint16                object_count;
+    SDL_bool              boolean_property;
+    SDL_bool              is_loaded;
+    char                  reserverd[4];
 
-} esz_map;
+} esz_map_t;
 
 /**
  * @brief A structure that contains an engine core.
  */
-typedef struct esz_core_t
+typedef struct esz_core
 {
-    esz_camera camera;
-    esz_event  event;
-    esz_map    map;
-    SDL_bool   is_active;
-    SDL_bool   is_paused;
+    struct esz_camera camera;
+    struct esz_event  event;
+    struct esz_map    map;
+    SDL_bool          is_active;
+    SDL_bool          is_paused;
 
-} esz_core;
+} esz_core_t;
 
 /**
  * @brief A structure that contains a window and the rendering context.
  */
-typedef struct esz_window_t
+typedef struct esz_window
 {
     double        initial_zoom_level;
     double        time_since_last_frame;
@@ -300,7 +300,7 @@ typedef struct esz_window_t
     SDL_bool      is_fullscreen;
     SDL_bool      vsync_enabled;
 
-} esz_window;
+} esz_window_t;
 
 /**
  * @brief  Check if two axis-aligned bounding boxes intersect
@@ -324,7 +324,7 @@ SDL_bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_
  * @retval  ESZ_ERROR_CRITICAL
  *          Critical error; the application should be terminated
  */
-esz_status esz_create_window(const char* window_title, esz_window_config* config, esz_window** window);
+esz_status esz_create_window(const char* window_title, esz_window_config_t* config, esz_window_t** window);
 
 /**
  * @brief   Deactivate engine core
@@ -332,7 +332,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config* config
  *          should be terminated.
  * @param   core Engine core
  */
-void esz_deactivate_core(esz_core* core);
+void esz_deactivate_core(esz_core_t* core);
 
 /**
  * @brief     Destroy engine core
@@ -340,14 +340,14 @@ void esz_deactivate_core(esz_core* core);
  *            loaded for this core!
  * @param     core Engine core
  */
-void esz_destroy_core(esz_core* core);
+void esz_destroy_core(esz_core_t* core);
 
 /**
  * @brief   Destroy window and rendering context
  * @details This function should be called when exiting the application.
  * @param   window Window handle
  */
-void esz_destroy_window(esz_window* window);
+void esz_destroy_window(esz_window_t* window);
 
 /**
  * @brief  Draw/render the current frame
@@ -358,7 +358,7 @@ void esz_destroy_window(esz_window* window);
  * @retval ESZ_ERROR_CRITICAL
  *         Critical error; the application should be terminated
  */
-esz_status esz_draw_frame(esz_window* window, esz_core* core);
+esz_status esz_draw_frame(esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief  Get the current state of the keyboard
@@ -374,14 +374,14 @@ const Uint8* esz_get_keyboard_state(void);
  * @return SDL_Keycode value. See https://wiki.libsdl.org/SDL_Keycode
  *         for details
  */
-Sint32 esz_get_keycode(esz_core* core);
+Sint32 esz_get_keycode(esz_core_t* core);
 
 /**
  * @brief  Get the time since the last frame in seconds
  * @param  window Window handle
  * @return Time since last frame in seconds
  */
-double esz_get_time_since_last_frame(esz_window* window);
+double esz_get_time_since_last_frame(esz_window_t* window);
 
 /**
  * @brief  Initialise engine core
@@ -391,7 +391,7 @@ double esz_get_time_since_last_frame(esz_window* window);
  * @retval ESZ_ERROR_CRITICAL
  *         Critical error; the application should be terminated
  */
-esz_status esz_init_core(esz_core** core);
+esz_status esz_init_core(esz_core_t** core);
 
 /**
  * @brief  Check if engine core is currently active
@@ -400,7 +400,7 @@ esz_status esz_init_core(esz_core** core);
  * @retval SDL_TRUE Engine core is active
  * @retval SDL_FALSE Engine core is not active
  */
-SDL_bool esz_is_core_active(esz_core* core);
+SDL_bool esz_is_core_active(esz_core_t* core);
 
 /**
  * @brief  Check if a map is currently loaded
@@ -409,7 +409,7 @@ SDL_bool esz_is_core_active(esz_core* core);
  * @retval SDL_TRUE Map is loaded
  * @retval SDL_FALSE Map is not loaded
  */
-SDL_bool esz_is_map_loaded(esz_core* core);
+SDL_bool esz_is_map_loaded(esz_core_t* core);
 
 /**
  * @brief     Load map file
@@ -419,7 +419,7 @@ SDL_bool esz_is_map_loaded(esz_core* core);
  * @param     window Window handle
  * @param     core Engine core handle
  */
-void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core);
+void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief   Lock camera for engine core
@@ -427,7 +427,7 @@ void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core)
  *          player entity.
  * @param   core Engine core handle
  */
-void esz_lock_camera(esz_core* core);
+void esz_lock_camera(esz_core_t* core);
 
 /**
  * @brief Register callback function which is called when the event
@@ -436,7 +436,7 @@ void esz_lock_camera(esz_core* core);
  * @param event_callback Callback function
  * @param core Engine core handle
  */
-void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core);
+void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core_t* core);
 
 /**
  * @brief  Set the position of the camera
@@ -447,7 +447,7 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
  * @param  window Window handle
  * @param  core Engine core handle
  */
-void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window* window, esz_core* core);
+void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief  Set the window's zoom level
@@ -458,7 +458,7 @@ void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool po
  * @retval ESZ_ERROR_WARNING
  *         The zoom-level could not be set
  */
-esz_status esz_set_zoom_level(const double factor, esz_window* window);
+esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
 
 /**
  * @brief  Toggle between fullscreen and windowed mode
@@ -468,7 +468,7 @@ esz_status esz_set_zoom_level(const double factor, esz_window* window);
  * @retval ESZ_ERROR_WARNING
  *         Fullscreen could not be toggled
  */
-esz_status esz_toggle_fullscreen(esz_window* window);
+esz_status esz_toggle_fullscreen(esz_window_t* window);
 
 /**
  * @brief  Unload current map
@@ -478,14 +478,14 @@ esz_status esz_toggle_fullscreen(esz_window* window);
  * @param  core Engine core handle
  */
 
-void esz_unload_map(esz_window* window, esz_core* core);
+void esz_unload_map(esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief   Unlock camera for engine core
  * @details If the camera is unlocked, it can be moved freely around the map.
  * @param   core Engine core handle
  */
-void esz_unlock_camera(esz_core* core);
+void esz_unlock_camera(esz_core_t* core);
 
 /**
  * @brief   Update engine core
@@ -494,6 +494,6 @@ void esz_unlock_camera(esz_core* core);
  * @param   window Window handle
  * @param   core Engine core handle
  */
-void esz_update_core(esz_window* window, esz_core* core);
+void esz_update_core(esz_window_t* window, esz_core_t* core);
 
 #endif // ESZ_H
