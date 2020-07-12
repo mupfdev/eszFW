@@ -824,7 +824,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = README.md \
-                         LICENCE.md \
+                         LICENSE.md \
                          src/esz.c \
                          src/esz.h
 
