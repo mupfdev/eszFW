@@ -22,8 +22,6 @@ platformer games. This project is the logical continuation of my older
 projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 [Boondock Sam](https://github.com/mupfelofen-de/boondock-sam).
 
-It is written in C.
-
 ## Features
 
 - It runs on all platforms [supported by SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
