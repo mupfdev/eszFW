@@ -38,8 +38,6 @@ if (UNIX)
     target_link_libraries(eszFW m)
 endif (UNIX)
 
-option(USE_CLANG "Build application with clang" OFF)
-
 if(USE_CLANG)
     set (CC "clang")
     target_compile_options(eszFW PRIVATE -Weverything)
