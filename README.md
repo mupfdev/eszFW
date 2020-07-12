@@ -78,8 +78,7 @@ With that in mind: C99 is dead, long live C99!
 The program has been successfully compiled and tested with the following libraries:
 ```text
 libxml2    2.9.10
-sdl2       2.0.12
-sdl2_image 2.0.5
+SDL2       2.0.12
 zlib       1.2.11
 ```
 

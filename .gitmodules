@@ -7,3 +7,6 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb.git
+[submodule "external/cute_headers"]
+	path = external/cute_headers
+	url = https://github.com/RandyGaul/cute_headers.git

@@ -113,10 +113,10 @@ typedef struct esz_animated_tile_t
 {
     Sint32 dst_x;
     Sint32 dst_y;
-    Uint16 gid;
-    Uint16 id;
-    Uint8  current_frame;
-    Uint8  animation_length;
+    Uint32 animation_length;
+    Uint32 current_frame;
+    Uint32 gid;
+    Uint32 id;
 
 } esz_animated_tile;
 
@@ -128,7 +128,7 @@ typedef struct esz_background_layer_t
     double        pos_x;
     double        pos_y;
     double        velocity;
-    SDL_Texture*  texture;
+    SDL_Texture*  render_target;
     Sint32        width;
     Sint32        height;
 
@@ -142,10 +142,11 @@ typedef struct esz_background_t
     esz_alignment         alignment;
     esz_direction         direction;
     esz_background_layer* layer;
+    SDL_Texture*          render_target;
     double                velocity;
     double                layer_shift;
-    SDL_Texture*          render_target;
     Sint32                layer_count;
+    char                  reserverd[4];
 
 } esz_background;
 
@@ -162,6 +163,7 @@ typedef struct esz_camera_t
     Uint16   target_entity_id;
     SDL_bool is_at_horizontal_boundary;
     SDL_bool is_locked;
+    char     reserverd[4];
 
 } esz_camera;
 
@@ -209,6 +211,7 @@ typedef struct esz_object_t
     Uint16      height;
     Uint16      id;
     Uint16      width;
+    char        reserverd[2];
 
 } esz_object;
 
@@ -217,8 +220,9 @@ typedef struct esz_object_t
  */
 typedef struct esz_sprite_t
 {
-    SDL_Texture* texture;
+    SDL_Texture* render_target;
     Uint16       id;
+    char         reserverd[6];
 
 } esz_sprite;
 
@@ -256,6 +260,7 @@ typedef struct esz_map_t
     Uint16             object_count;
     SDL_bool           boolean_property;
     SDL_bool           is_loaded;
+    char               reserverd[4];
 
 } esz_map;
 
@@ -299,11 +304,11 @@ typedef struct esz_window_t
 
 /**
  * @brief  Check if two axis-aligned bounding boxes intersect
- * @param  bb_a: Box A
- * @param  bb_b: Box B
+ * @param  bb_a Box A
+ * @param  bb_b Box B
  * @return Boolean condition
- * @retval SDL_TRUE: the boxes intersect
- * @retval SDL_FALSE: the boxes do not intersect
+ * @retval SDL_TRUE The boxes intersect
+ * @retval SDL_FALSE The boxes do not intersect
  */
 SDL_bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_b);
 
@@ -311,11 +316,11 @@ SDL_bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_
  * @brief   Create window and rendering context
  * @details It tries to use the opengl rendering driver. If the driver
  *          is not found, the system's default driver is used instead.
- * @param   window_title: The window title
- * @param   config: Initial window configuration
- * @param   window: Pointer to window handle
+ * @param   window_title The window title
+ * @param   config Initial window configuration
+ * @param   window Pointer to window handle
  * @return  Status code
- * @retval  ESZ_OK: OK
+ * @retval  ESZ_OK OK
  * @retval  ESZ_ERROR_CRITICAL
  *          Critical error; the application should be terminated
  */
@@ -325,7 +330,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config* config
  * @brief   Deactivate engine core
  * @details Can be used to signal the application that the program
  *          should be terminated.
- * @param   core: Engine core
+ * @param   core Engine core
  */
 void esz_deactivate_core(esz_core* core);
 
@@ -333,23 +338,23 @@ void esz_deactivate_core(esz_core* core);
  * @brief     Destroy engine core
  * @attention Before calling this function, make sure that no map is
  *            loaded for this core!
- * @param     core: Engine core
+ * @param     core Engine core
  */
 void esz_destroy_core(esz_core* core);
 
 /**
  * @brief   Destroy window and rendering context
  * @details This function should be called when exiting the application.
- * @param   window: Window handle
+ * @param   window Window handle
  */
 void esz_destroy_window(esz_window* window);
 
 /**
  * @brief  Draw/render the current frame
- * @param  window: Window handle
- * @param  core: Engine core
+ * @param  window Window handle
+ * @param  core Engine core
  * @return Status code
- * @retval ESZ_OK: OK
+ * @retval ESZ_OK OK
  * @retval ESZ_ERROR_CRITICAL
  *         Critical error; the application should be terminated
  */
@@ -365,24 +370,24 @@ const Uint8* esz_get_keyboard_state(void);
 
 /**
  * @brief  Get the current keycode
- * @param  core: Engine core
+ * @param  core Engine core
  * @return SDL_Keycode value. See https://wiki.libsdl.org/SDL_Keycode
  *         for details
  */
-Uint32 esz_get_keycode(esz_core* core);
+Sint32 esz_get_keycode(esz_core* core);
 
 /**
  * @brief  Get the time since the last frame in seconds
- * @param  window: Window handle
+ * @param  window Window handle
  * @return Time since last frame in seconds
  */
-double esz_get_time_since_last_frame(esz_window* core);
+double esz_get_time_since_last_frame(esz_window* window);
 
 /**
  * @brief  Initialise engine core
- * @param  core: Pointer to engine core handle
+ * @param  core Pointer to engine core handle
  * @return Status code
- * @retval ESZ_OK: OK
+ * @retval ESZ_OK OK
  * @retval ESZ_ERROR_CRITICAL
  *         Critical error; the application should be terminated
  */
@@ -390,19 +395,19 @@ esz_status esz_init_core(esz_core** core);
 
 /**
  * @brief  Check if engine core is currently active
- * @param  core: Engine core
+ * @param  core Engine core
  * @return Boolean condition
- * @retval SDL_TRUE: Engine core is active
- * @retval SDL_FALSE: Engine core is not active
+ * @retval SDL_TRUE Engine core is active
+ * @retval SDL_FALSE Engine core is not active
  */
 SDL_bool esz_is_core_active(esz_core* core);
 
 /**
  * @brief  Check if a map is currently loaded
- * @param  core: Engine core
+ * @param  core Engine core handle
  * @return Boolean condition
- * @retval SDL_TRUE: Map is loaded
- * @retval SDL_FALSE: Map is not loaded
+ * @retval SDL_TRUE Map is loaded
+ * @retval SDL_FALSE Map is not loaded
  */
 SDL_bool esz_is_map_loaded(esz_core* core);
 
@@ -410,9 +415,9 @@ SDL_bool esz_is_map_loaded(esz_core* core);
  * @brief     Load map file
  * @attention Before calling this function, make sure that the engine
  *            core has been initialised!
- * @param     map_file_name: path and file name to the tmx map file
- * @param     window: Window handle
- * @param     core: Engine core
+ * @param     map_file_name Path and file name to the tmx map file
+ * @param     window Window handle
+ * @param     core Engine core handle
  */
 void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core);
 
@@ -420,48 +425,48 @@ void esz_load_map(const char* map_file_name, esz_window* window, esz_core* core)
  * @brief   Lock camera for engine core
  * @details If the camera is locked, it automatically follows the main
  *          player entity.
- * @param   core: Engine core
+ * @param   core Engine core handle
  */
 void esz_lock_camera(esz_core* core);
 
 /**
  * @brief Register callback function which is called when the event
  *        occurs
- * @param event_type: Event type
- * @param event_callback: Callback function
- * @param core: Engine core
+ * @param event_type Event type
+ * @param event_callback Callback function
+ * @param core Engine core handle
  */
 void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core* core);
 
 /**
  * @brief  Set the position of the camera
  * @remark The camera has to be unlocked first!
- * @param  pos_x_offset: Position along the x-axis
- * @param  pos_y_offset: Position along the y-axis
- * @param  pos_is_relative: Use relative instead of absolute position
- * @param  window: Window handle
- * @param  core: Engine core
+ * @param  pos_x Position along the x-axis
+ * @param  pos_y Position along the y-axis
+ * @param  pos_is_relative Use relative instead of absolute position
+ * @param  window Window handle
+ * @param  core Engine core handle
  */
 void esz_set_camera_position(const double pos_x, const double pos_y, SDL_bool pos_is_relative, esz_window* window, esz_core* core);
 
 /**
  * @brief  Set the window's zoom level
- * @param  factor: Zoom factor
- * @param  window: Window handle
+ * @param  factor Zoom factor
+ * @param  window Window handle
  * @return Status code
- * @retval ESZ_OK: OK
+ * @retval ESZ_OK OK
  * @retval ESZ_ERROR_WARNING
- *         Warning: the zoom-level could not be set
+ *         The zoom-level could not be set
  */
 esz_status esz_set_zoom_level(const double factor, esz_window* window);
 
 /**
  * @brief  Toggle between fullscreen and windowed mode
- * @param  window: Window handle
+ * @param  window Window handle
  * @return Status code
- * @retval ESZ_OK: OK
+ * @retval ESZ_OK OK
  * @retval ESZ_ERROR_WARNING
- *         Warning: fullscreen could not be toggled
+ *         Fullscreen could not be toggled
  */
 esz_status esz_toggle_fullscreen(esz_window* window);
 
@@ -469,8 +474,8 @@ esz_status esz_toggle_fullscreen(esz_window* window);
  * @brief  Unload current map
  * @remark It's always safe to call this function; if no map is
  *         currently loaded, the function does nothing.
- * @param  window: Window handle
- * @param  core: Engine core
+ * @param  window Window handle
+ * @param  core Engine core handle
  */
 
 void esz_unload_map(esz_window* window, esz_core* core);
@@ -478,7 +483,7 @@ void esz_unload_map(esz_window* window, esz_core* core);
 /**
  * @brief   Unlock camera for engine core
  * @details If the camera is unlocked, it can be moved freely around the map.
- * @param   core: Engine core
+ * @param   core Engine core handle
  */
 void esz_unlock_camera(esz_core* core);
 
@@ -486,8 +491,8 @@ void esz_unlock_camera(esz_core* core);
  * @brief   Update engine core
  * @details This function should be called cyclically in the main loop
  *          of the application.
- * @param   window: Window handle
- * @param   core: Engine core
+ * @param   window Window handle
+ * @param   core Engine core handle
  */
 void esz_update_core(esz_window* window, esz_core* core);
 
