@@ -1672,7 +1672,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
         Uint32       gid;
         SDL_Rect     dst;
         SDL_Rect     src;
-        tmx_tileset* tileset;
 
         if (L_LAYER == layer->type)
         {
@@ -1700,6 +1699,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
                         if (core->map.tmx_map->tiles[gid])
                         {
+                            tmx_tileset* tileset;
+
                             tileset = core->map.tmx_map->tiles[1]->tileset;
                             src.x   = (int)core->map.tmx_map->tiles[gid]->ul_x;
                             src.y   = (int)core->map.tmx_map->tiles[gid]->ul_y;
