@@ -5,9 +5,8 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
-find_package(LibXml2    REQUIRED)
-find_package(SDL2       REQUIRED)
-find_package(SDL2_image REQUIRED)
+find_package(LibXml2 REQUIRED)
+find_package(SDL2    REQUIRED)
 
 include_directories(
     SYSTEM external/cwalk/include
