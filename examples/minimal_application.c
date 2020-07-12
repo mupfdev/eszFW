@@ -4,14 +4,14 @@
 #include <SDL.h>
 #include <esz.h>
 
-static void key_down_callback(esz_window* window, esz_core* core);
+static void key_down_callback(esz_window_t* window, esz_core_t* core);
 
 int main()
 {
-    esz_status        status;
-    esz_window*       window = NULL;
-    esz_window_config config = { 640, 360, 384, 216, SDL_FALSE, SDL_FALSE };
-    esz_core*         core   = NULL;
+    esz_status          status;
+    esz_window_t*       window = NULL;
+    esz_window_config_t config = { 640, 360, 384, 216, SDL_FALSE, SDL_FALSE };
+    esz_core_t*         core   = NULL;
 
     status = esz_create_window("eszFW", &config, &window);
     if (ESZ_OK != status)
@@ -62,7 +62,7 @@ quit:
     return EXIT_SUCCESS;
 }
 
-static void key_down_callback(esz_window* window, esz_core* core)
+static void key_down_callback(esz_window_t* window, esz_core_t* core)
 {
     switch (esz_get_keycode(core))
     {
