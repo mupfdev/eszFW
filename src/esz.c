@@ -5,10 +5,6 @@
  * @details A cross-platform game engine written in C
  */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#endif
 #include <SDL.h>
 #include <cwalk.h>
 #include <tmx.h>
@@ -22,8 +18,9 @@
  **********************/
 
 static void         count_map_layers(tmx_layer* layer, Uint16* layer_count);
-static void         count_objects(tmx_object* tmx_object, Uint16** object_count);
+static void         count_objects(tmx_object* tmx_object, Uint32** object_count);
 static esz_status   draw_background(esz_window_t* window, esz_core_t* core);
+static esz_status   draw_logo(esz_window_t *window);
 static esz_status   draw_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t *core);
 static Uint16       get_camera_target(esz_core_t* core);
 static esz_status   init_animated_tiles(esz_core_t* core);
@@ -34,6 +31,7 @@ static SDL_bool     is_camera_locked(esz_core_t* core);
 static SDL_bool     is_camera_at_horizontal_boundary(esz_core_t* core);
 static void         load_property_by_name(const char* property_name, tmx_property* property, esz_core_t* core);
 static esz_status   load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
+static esz_status   load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static void         move_camera_to_target(esz_core_t* core);
 static void         poll_events(esz_window_t* window, esz_core_t* core);
 static Uint32       remove_gid_flip_bits(Uint32 gid);
@@ -74,6 +72,30 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_status      status = ESZ_OK;
     SDL_DisplayMode display_mode;
     Uint32          renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+
+    const unsigned char* esz_logo;
+    const unsigned char  esz_logo_pxdata[228] = {
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x07,
+        0x08, 0x02, 0x00, 0x00, 0x00, 0x9d, 0x95, 0x1a, 0xe1, 0x00, 0x00, 0x00,
+        0xab, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x7d, 0x91, 0xa1, 0x19, 0xc2,
+        0x30, 0x10, 0x85, 0x5f, 0xf8, 0xaa, 0x4f, 0x54, 0x44, 0x44, 0x31, 0x42,
+        0x27, 0x40, 0x22, 0x11, 0xd9, 0x81, 0x15, 0x3a, 0x02, 0xa2, 0x2b, 0x74,
+        0x02, 0x4c, 0x45, 0x24, 0x13, 0x44, 0x22, 0x3b, 0x01, 0x22, 0x02, 0x71,
+        0x13, 0x20, 0xae, 0x5c, 0xcb, 0x11, 0x78, 0xf2, 0xcf, 0xbb, 0x97, 0x77,
+        0xdf, 0xb9, 0xeb, 0xfe, 0x70, 0x7e, 0xde, 0xf1, 0xa9, 0xb1, 0xed, 0x00,
+        0x54, 0xf9, 0x37, 0x14, 0x35, 0xf2, 0x50, 0x6e, 0x0c, 0x31, 0x64, 0xf8,
+        0x89, 0xd4, 0x6d, 0xf8, 0x0a, 0x01, 0xe5, 0x00, 0xfc, 0x44, 0x8d, 0xba,
+        0x7d, 0x4f, 0x00, 0x4a, 0xe4, 0x14, 0xf8, 0xf4, 0x20, 0xc3, 0xb7, 0xf2,
+        0xc7, 0x77, 0x62, 0x64, 0x49, 0x01, 0xb0, 0xd3, 0xec, 0x12, 0xb9, 0x44,
+        0xce, 0xd9, 0x0e, 0x08, 0x4f, 0x81, 0x65, 0x59, 0xd9, 0xda, 0xa4, 0x8c,
+        0x6d, 0xe7, 0x88, 0xa8, 0x0c, 0xbc, 0x6d, 0x5e, 0x55, 0x0a, 0x9c, 0x67,
+        0x5c, 0xa8, 0xd2, 0x45, 0xe4, 0x88, 0x96, 0x6f, 0xa5, 0x4b, 0x9e, 0x01,
+        0x2c, 0x03, 0xe2, 0x56, 0x6e, 0x52, 0x8c, 0xdf, 0x55, 0xaf, 0xf6, 0x4b,
+        0x7f, 0xae, 0xf6, 0x02, 0x39, 0xaf, 0x64, 0xb2, 0x37, 0xc2, 0xf0, 0x45,
+        0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
+    };
+    esz_logo = esz_logo_pxdata;
 
     *window = SDL_calloc(1, sizeof(struct esz_window));
 
@@ -209,6 +231,11 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_set_zoom_level((*window)->zoom_level, *window);
     SDL_Log("Set initial zoom-level to factor %f.\n", (*window)->zoom_level);
 
+    if (ESZ_OK != load_texture_from_memory(esz_logo, 228, &(*window)->esz_logo, *window))
+    {
+        status = ESZ_ERROR_CRITICAL;
+    }
+
 exit:
     return status;
 }
@@ -226,6 +253,11 @@ void esz_destroy_core(esz_core_t* core)
 
 void esz_destroy_window(esz_window_t* window)
 {
+    if (window->esz_logo)
+    {
+        SDL_DestroyTexture(window->esz_logo);
+    }
+
     if (window->renderer)
     {
         SDL_DestroyRenderer(window->renderer);
@@ -297,6 +329,10 @@ esz_status esz_draw_frame(esz_window_t* window, esz_core_t* core)
         // tbd.
         draw_map(ESZ_FG, window, core);
     }
+    else
+    {
+        draw_logo(window);
+    }
 
     SDL_RenderPresent(window->renderer);
     SDL_RenderClear(window->renderer);
@@ -360,7 +396,6 @@ static esz_status load_background_layer(Uint16 index, esz_window_t* window, esz_
     load_property_by_name(property_name, core->map.tmx_map->properties, core);
     SDL_snprintf(background_layer_image, ESZ_MAX_PATH_LEN, "%s%s", core->map.resource_path, core->map.string_property);
 
-    //if (ESZ_OK != load_texture(background_layer_image, &image_texture, window))
     if (ESZ_OK != load_texture_from_file(background_layer_image, &image_texture, window))
     {
         status = ESZ_ERROR_CRITICAL;
@@ -706,10 +741,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         return;
     }
 
-    SDL_SetRenderDrawColor(window->renderer, 0xa9, 0x20, 0x3e, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(window->renderer);
-    SDL_RenderPresent(window->renderer);
-
     /*************************
      * Reset base attributes *
      *************************/
@@ -893,7 +924,7 @@ static void count_map_layers(tmx_layer* layer, Uint16* layer_count)
     }
 }
 
-static void count_objects(tmx_object* tmx_object, Uint16** object_count)
+static void count_objects(tmx_object* tmx_object, Uint32** object_count)
 {
     if (tmx_object)
     {
@@ -946,6 +977,30 @@ static esz_status draw_background(esz_window_t* window, esz_core_t* core)
     if (is_camera_locked(core))
     {
         core->map.background.velocity = 0.0;
+    }
+
+    return ESZ_OK;
+}
+
+static esz_status draw_logo(esz_window_t *window)
+{
+    SDL_Rect dst;
+
+    /*****************************************
+     * Display logo in the lower-left corner *
+     *****************************************/
+
+    dst.x = (window->logical_width)  - 53;
+    dst.y = (window->logical_height) - 19;
+    dst.w = 48;
+    dst.h = 14;
+
+    SDL_SetRenderDrawColor(window->renderer, 0xa9, 0x20, 0x3e, SDL_ALPHA_OPAQUE);
+
+    if (0 > SDL_RenderCopy(window->renderer, window->esz_logo, NULL, &dst))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", __func__, SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
     }
 
     return ESZ_OK;
@@ -1091,7 +1146,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
 
 static esz_status init_objects(esz_core_t* core)
 {
-    Uint16*    object_count = &core->map.object_count;
+    Uint32*    object_count = &core->map.object_count;
     tmx_layer* layer;
 
     /*****************
@@ -1166,7 +1221,6 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
             core->map.sprite[index].id = index;
 
-            //if (ESZ_OK != load_texture(sprite_sheet_image, &core->map.sprite[index].render_target, window))
             if (ESZ_OK != load_texture_from_file(sprite_sheet_image, &core->map.sprite[index].render_target, window))
             {
                 return ESZ_ERROR_CRITICAL;
@@ -1248,7 +1302,59 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
     SDL_FreeSurface(surface);
     stbi_image_free(data);
 
-    SDL_Log("Load image file: %s.\n", file_name);
+    SDL_Log("Loading image from file: %s.\n", file_name);
+    return ESZ_OK;
+}
+
+static esz_status load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window)
+{
+    SDL_Surface*   surface;
+    int            width;
+    int            height;
+    int            orig_format;
+    int            req_format = STBI_rgb_alpha;
+    int            depth;
+    int            pitch;
+    Uint32         pixel_format;
+    unsigned char* data;
+
+    data = stbi_load_from_memory(buffer, length, &width, &height, &orig_format, req_format);
+
+    if (NULL == data)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", __func__, stbi_failure_reason());
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    if (STBI_rgb == req_format)
+    {
+        depth        = 24;
+        pitch        = 3 * width; // 3 bytes per pixel * pixels per row
+        pixel_format = SDL_PIXELFORMAT_RGB24;
+    }
+    else
+    {
+        // STBI_rgb_alpha (RGBA)
+        depth        = 32;
+        pitch        = 4 * width;
+        pixel_format = SDL_PIXELFORMAT_RGBA32;
+    }
+
+    surface = SDL_CreateRGBSurfaceWithFormatFrom((void*)data, width, height, depth, pitch, pixel_format);
+
+    if (NULL == surface)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", __func__, SDL_GetError());
+        stbi_image_free(data);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
+
+    SDL_FreeSurface(surface);
+    stbi_image_free(data);
+
+    SDL_Log("Loading image from memory.\n");
     return ESZ_OK;
 }
 

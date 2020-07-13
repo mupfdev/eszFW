@@ -208,10 +208,10 @@ typedef struct esz_object
     tmx_object* tmx_object;
     Uint32      pos_x;
     Uint32      pos_y;
-    Uint16      height;
-    Uint16      id;
-    Uint16      width;
-    char        reserverd[2];
+    Uint32      height;
+    Uint32      id;
+    Uint32      width;
+    char        reserverd[4];
 
 } esz_object_t;
 
@@ -221,8 +221,8 @@ typedef struct esz_object
 typedef struct esz_sprite
 {
     SDL_Texture* render_target;
-    Uint16       id;
-    char         reserverd[6];
+    Uint32       id;
+    char         reserverd[4];
 
 } esz_sprite_t;
 
@@ -256,11 +256,10 @@ typedef struct esz_map
     Uint32                height;
     Uint32                width;
     size_t                resource_path_length;
-    Uint16                animated_tile_count;
-    Uint16                object_count;
+    Uint32                animated_tile_count;
+    Uint32                object_count;
     SDL_bool              boolean_property;
     SDL_bool              is_loaded;
-    char                  reserverd[4];
 
 } esz_map_t;
 
@@ -286,6 +285,7 @@ typedef struct esz_window
     double        time_since_last_frame;
     double        zoom_level;
     SDL_Renderer* renderer;
+    SDL_Texture*  esz_logo;
     SDL_Window*   window;
     Sint32        height;
     Sint32        logical_height;
