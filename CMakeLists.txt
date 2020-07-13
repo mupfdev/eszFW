@@ -9,6 +9,7 @@ find_package(LibXml2 REQUIRED)
 find_package(SDL2    REQUIRED)
 
 include_directories(
+    SYSTEM external/cute_headers
     SYSTEM external/cwalk/include
     SYSTEM external/stb
     SYSTEM external/tmx/src
@@ -25,14 +26,16 @@ set(eszFW_SRCS
     src/esz.c
     )
 
-add_library(eszFW STATIC ${eszFW_SRCS})
+add_library(
+    ${PROJECT_NAME}
+    STATIC
+    ${eszFW_SRCS})
 
 target_link_libraries(
-    eszFW
+    ${PROJECT_NAME}
     tmx
     ${LIBXML2_LIBRARIES}
-    ${SDL2_LIBRARIES}
-)
+    ${SDL2_LIBRARIES})
 
 if (UNIX)
     target_link_libraries(eszFW m)

@@ -8,6 +8,7 @@
 #define ESZ_H
 
 #include <SDL.h>
+#include <cute_tiled.h>
 #include <tmx.h>
 
 typedef struct esz_window esz_window_t;
@@ -204,14 +205,15 @@ typedef struct esz_event
  */
 typedef struct esz_object
 {
-    esz_aabb    bounding_box;
-    tmx_object* tmx_object;
-    Uint32      pos_x;
-    Uint32      pos_y;
-    Uint32      height;
-    Uint32      id;
-    Uint32      width;
-    char        reserverd[4];
+    esz_aabb             bounding_box;
+    cute_tiled_object_t* cute_object;
+    tmx_object*          tmx_object;
+    Uint32               pos_x;
+    Uint32               pos_y;
+    Uint32               height;
+    Uint32               id;
+    Uint32               width;
+    char                 reserverd[4];
 
 } esz_object_t;
 
@@ -243,11 +245,13 @@ typedef struct esz_map
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];
     SDL_Texture*          tileset_texture;
-    char*                 string_property;
+//    char*           string_property;
+    const char*           string_property;
     esz_animated_tile_t*  animated_tile;
     struct esz_background background;
     esz_object_t*         object;
     esz_sprite_t*         sprite;
+    cute_tiled_map_t*     cute_map;
     tmx_map*              tmx_map;
     Sint32                animated_tile_fps;
     Sint32                integer_property;
