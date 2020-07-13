@@ -4,7 +4,7 @@
 <a href="https://github.com/mupfelofen-de/eszFW">
   <img src="https://img.shields.io/badge/project-GitHub-blue?style=flat?svg=true" alt="GitHub project" />
 </a>
-<a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENCE.md">
+<a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENSE.md">
   <img src="https://img.shields.io/badge/licence-MIT-blue?style=flat?svg=true" alt="Licence" />
 </a>
 <a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
