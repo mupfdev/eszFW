@@ -8,8 +8,12 @@
 #define ESZ_H
 
 #include <SDL.h>
-#include <cute_tiled.h>
+
+#ifdef USE_TMXLIB
 #include <tmx.h>
+#else
+#include <cute_tiled.h>
+#endif
 
 typedef struct esz_window esz_window_t;
 typedef struct esz_core   esz_core_t;
@@ -206,8 +210,11 @@ typedef struct esz_event
 typedef struct esz_object
 {
     esz_aabb             bounding_box;
-    cute_tiled_object_t* cute_object;
-    tmx_object*          tmx_object;
+#ifdef USE_TMXLIB
+    tmx_object*          handle;
+#else
+    cute_tiled_object_t* handle;
+#endif
     Uint32               pos_x;
     Uint32               pos_y;
     Uint32               height;
@@ -241,6 +248,12 @@ typedef struct esz_map
     double                pos_x;
     double                pos_y;
     double                time_since_last_anim_frame;
+
+#ifndef USE_TMXLIB
+    unsigned long long    hash_id_objectgroup;
+    unsigned long long    hash_id_tilelayer;
+#endif
+
     SDL_Texture*          animated_tile_texture;
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];
@@ -251,17 +264,25 @@ typedef struct esz_map
     struct esz_background background;
     esz_object_t*         object;
     esz_sprite_t*         sprite;
-    cute_tiled_map_t*     cute_map;
-    tmx_map*              tmx_map;
+#ifdef USE_TMXLIB
+    tmx_map*              handle;
+#else
+    cute_tiled_map_t*     handle;
+#endif
     Sint32                animated_tile_fps;
     Sint32                integer_property;
     Sint32                meter_in_pixel;
     Sint32                sprite_sheet_count;
+#ifndef USE_TMXLIB
+    Sint32                height;
+    Sint32                width;
+#else
     Uint32                height;
     Uint32                width;
-    size_t                resource_path_length;
+#endif
     Uint32                animated_tile_count;
     Uint32                object_count;
+    size_t                resource_path_length;
     SDL_bool              boolean_property;
     SDL_bool              is_loaded;
 
@@ -419,7 +440,7 @@ SDL_bool esz_is_map_loaded(esz_core_t* core);
  * @brief     Load map file
  * @attention Before calling this function, make sure that the engine
  *            core has been initialised!
- * @param     map_file_name Path and file name to the tmx map file
+ * @param     map_file_name Path and file name to the map file
  * @param     window Window handle
  * @param     core Engine core handle
  */

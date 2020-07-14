@@ -18,9 +18,6 @@ include_directories(
     src
 )
 
-add_subdirectory(external/tmx)
-set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 set(eszFW_SRCS
     external/cwalk/src/cwalk.c
     src/esz.c
@@ -31,11 +28,22 @@ add_library(
     STATIC
     ${eszFW_SRCS})
 
-target_link_libraries(
+option(USE_TMXLIB "Use tmxlib instead of cute_tiled" ON)
+
+if(USE_TMXLIB)
+  add_definitions(-DUSE_TMXLIB)
+  add_subdirectory(external/tmx)
+  set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
+  target_link_libraries(
     ${PROJECT_NAME}
     tmx
     ${LIBXML2_LIBRARIES}
     ${SDL2_LIBRARIES})
+else()
+  target_link_libraries(
+    ${PROJECT_NAME}
+    ${SDL2_LIBRARIES})
+endif()
 
 if (UNIX)
     target_link_libraries(eszFW m)
@@ -43,5 +51,5 @@ endif (UNIX)
 
 if(USE_CLANG)
     set (CC "clang")
-    target_compile_options(eszFW PRIVATE -Weverything)
+    target_compile_options(eszFW PRIVATE -Weverything -Wno-unused-function)
 endif(USE_CLANG)
