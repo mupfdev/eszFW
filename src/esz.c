@@ -9,11 +9,17 @@
 #include <cwalk.h>
 #include "esz.h"
 
+#ifndef USE_TMXLIB
+    #ifndef USE_CUTE_TILED
+        #error "Please select a supported Tiled map loader."
+    #endif
+#endif
+
 #ifdef USE_TMXLIB
-#include <tmx.h>
-#else
-#define CUTE_TILED_IMPLEMENTATION
-#include <cute_tiled.h>
+    #include <tmx.h>
+#elif  USE_CUTE_TILED
+    #define CUTE_TILED_IMPLEMENTATION
+    #include <cute_tiled.h>
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -484,9 +490,7 @@ exit:
 
 void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core)
 {
-#ifndef USE_TMXLIB
-    char json_file_name[ESZ_MAX_PATH_LEN];
-#endif
+    char* tileset_image = NULL;
 
     if (esz_is_map_loaded(core))
     {
@@ -504,17 +508,25 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
      **************/
 
     #ifdef USE_TMXLIB
+
     core->map.handle = tmx_load(map_file_name);
     if (! core->map.handle)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, tmx_strerr());
         return;
     }
-    #else
-    // Temporary file name fix: for testing purposes only!
+
+    #elif USE_CUTE_TILED
+
+    /****************************************************************
+     * This is just a hack, designed to allow faster testing during *
+     *           development. It should be removed later!           *
+     ****************************************************************/
+
+    char json_file_name[ESZ_MAX_PATH_LEN];
+
     SDL_strlcpy(json_file_name, map_file_name, strlen(map_file_name) - 2);
     SDL_strlcat(json_file_name, "json", ESZ_MAX_PATH_LEN);
-    // Temporary file name fix: for testing purposes only!
 
     core->map.handle = cute_tiled_load_map_from_file(json_file_name, NULL);
     if (! core->map.handle)
@@ -528,6 +540,7 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
      *************/
 
     #ifdef USE_TMXLIB
+    // tbd.
     if (ESZ_OK != init_objects(core))
     {
         esz_unload_map(window, core);
@@ -590,6 +603,7 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
      ********************/
 
     #ifdef USE_TMXLIB
+    // tbd.
     if (ESZ_OK != init_animated_tiles(core))
     {
         esz_unload_map(window, core);
@@ -616,7 +630,9 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
     #ifdef USE_TMXLIB
     core->map.height = core->map.handle->height * core->map.handle->tile_height;
     core->map.width  = core->map.handle->width  * core->map.handle->tile_width;
-    #else
+
+    #elif  USE_CUTE_TILED
+
     core->map.height = core->map.handle->height * core->map.handle->tileheight;
     core->map.width  = core->map.handle->width  * core->map.handle->tilewidth;
     #endif
@@ -961,7 +977,9 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     {
         tmx_map_free(core->map.handle);
     }
-    #else
+
+    #elif  USE_CUTE_TILED
+
     if (core->map.handle)
     {
         cute_tiled_free_map(core->map.handle);
@@ -1342,7 +1360,7 @@ static void load_map_property_by_name(const char* property_name, esz_core_t* cor
     SDL_strlcpy(core->map.search_pattern, property_name, ESZ_MAX_PATTERN_LEN);
     tmx_property_foreach(property, store_property, (void*)core);
 
-    #else // USE_TMXLIB
+    #elif  USE_CUTE_TILED
 
     int index;
 
@@ -1559,7 +1577,9 @@ static int remove_gid_flip_bits(int gid)
 {
     #ifdef USE_TMXLIB
     return gid & TMX_FLIP_BITS_REMOVAL;
-    #else
+
+    #elif  USE_CUTE_TILED
+
     return cute_tiled_unset_flags(gid);
     #endif
 }
@@ -1703,7 +1723,9 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
     #ifdef USE_TMXLIB
     tmx_layer* layer          = core->map.handle->ly_head;
-    #else
+
+    #elif  USE_CUTE_TILED
+
     cute_tiled_layer_t* layer = core->map.handle->layers;
     #endif
 
@@ -1759,9 +1781,11 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
      * Update and render animated tiles *
      ************************************/
 
+    // Currently not supported by cute_tiled.
+    #ifdef USE_TMXLIB
+
     core->map.time_since_last_anim_frame += window->time_since_last_frame;
 
-    #ifdef USE_TMXLIB
     if (0 < core->map.animated_tile_count &&
         core->map.time_since_last_anim_frame >= 1.0 / (double)(core->map.animated_tile_fps) &&
         render_animated_tiles)
@@ -1777,8 +1801,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                 window->renderer,
                 SDL_PIXELFORMAT_ARGB8888,
                 SDL_TEXTUREACCESS_TARGET,
-                (int)(core->map.handle->width  * core->map.handle->tile_width),
-                (int)(core->map.handle->height * core->map.handle->tile_height));
+                (int)(core->map.width),
+                (int)(core->map.height));
         }
 
         if (! core->map.animated_tile_texture)
@@ -1858,13 +1882,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
         SDL_Rect dst          = {
             (int)render_pos_x,
             (int)render_pos_y,
-            #ifdef USE_TMXLIB
-            (int)(core->map.handle->width  * core->map.handle->tile_width),
-            (int)(core->map.handle->height * core->map.handle->tile_height)
-            #else
-            (int)(core->map.handle->width  * core->map.handle->tilewidth),
-            (int)(core->map.handle->height * core->map.handle->tileheight)
-            #endif
+            (int)core->map.width,
+            (int)core->map.height
         };
 
         if (0 > SDL_RenderCopyEx(window->renderer, core->map.map_layer[layer_type], NULL, &dst, 0, NULL, SDL_FLIP_NONE))
@@ -1877,6 +1896,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
          * Animated tiles *
          ******************/
 
+        // Currently not supported by cute_tiled.
         #ifdef USE_TMXLIB
         if (render_animated_tiles)
         {
@@ -1902,13 +1922,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
         window->renderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
-        #ifdef USE_TMXLIB
-        (int)(core->map.handle->width  * core->map.handle->tile_width),
-        (int)(core->map.handle->height * core->map.handle->tile_height));
-        #else
-        (int)(core->map.handle->width  * core->map.handle->tilewidth),
-        (int)(core->map.handle->height * core->map.handle->tileheight));
-        #endif
+        (int)core->map.width,
+        (int)core->map.height);
 
     if (! core->map.map_layer[layer_type])
     {
@@ -2002,14 +2017,16 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                                 core->map.animated_tile_count += 1;
                             }
                         }
-                        #else // USE_TMXLIB
+
+                        #elif USE_CUTE_TILED
+
                         if (gid)
                         {
                             cute_tiled_tileset_t* tileset;
 
                             tileset = &core->map.handle->tilesets[1];
-                            //src.x   = (int)core->map.handle->tiles[gid]->ul_x;
-                            //src.y   = (int)core->map.handle->tiles[gid]->ul_y;
+                            src.x   = ((gid - 1) % tileset->columns) * tileset->tilewidth;
+                            src.y   = (gid / tileset->columns)       * tileset->tileheight;
                             src.w   = dst.w = (int)tileset->tilewidth;
                             src.h   = dst.h = (int)tileset->tileheight;
                             dst.x           = (int)(index_width  * tileset->tilewidth);
@@ -2017,14 +2034,22 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
                             SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst);
                         }
-                        #endif // USE_TMXLIB
+                        #endif
                     }
                 }
-                #ifdef USE_TMXLIB
-                SDL_Log("Render map layer: %s\n", layer->name);
-                #else
-                SDL_Log("Render map layer: %s\n", layer->name.ptr);
-                #endif
+
+                {
+                    const char* layer_name;
+                    #ifdef USE_TMXLIB
+                    layer_name = layer->name;
+
+                    #elif  USE_CUTE_TILED
+                    layer_name = layer->name.ptr;
+
+                    #endif
+
+                    SDL_Log("Render map layer: %s\n", layer_name);
+                }
             }
         }
         layer = layer->next;

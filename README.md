@@ -75,8 +75,8 @@ With that in mind: C is dead, long live C!
 
 The program has been successfully compiled and tested with the following libraries:
 ```text
-libxml2    2.9.10
 SDL2       2.0.12
+libxml2    2.9.10 (optional)
 zlib       1.2.11 (optional)
 ```
 

@@ -40,6 +40,7 @@ if(USE_TMXLIB)
     ${LIBXML2_LIBRARIES}
     ${SDL2_LIBRARIES})
 else()
+  add_definitions(-DUSE_CUTE_TILED)
   target_link_libraries(
     ${PROJECT_NAME}
     ${SDL2_LIBRARIES})

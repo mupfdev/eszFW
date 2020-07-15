@@ -258,7 +258,6 @@ typedef struct esz_map
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];
     SDL_Texture*          tileset_texture;
-//    char*           string_property;
     const char*           string_property;
     esz_animated_tile_t*  animated_tile;
     struct esz_background background;
