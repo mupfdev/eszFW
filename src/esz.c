@@ -1854,8 +1854,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
     core->map.time_since_last_anim_frame += window->time_since_last_frame;
 
     if (0 < core->map.animated_tile_index &&
-        core->map.time_since_last_anim_frame >= 1.0 / (double)(core->map.animated_tile_fps) &&
-        render_animated_tiles)
+        core->map.time_since_last_anim_frame >= 1.0 / (double)(core->map.animated_tile_fps) && render_animated_tiles)
     {
         core->map.time_since_last_anim_frame = 0.0;
 
@@ -2007,7 +2006,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
     while (layer)
     {
         bool     is_tile_layer = false;
-        int      gid;
         SDL_Rect dst;
         SDL_Rect src;
 
@@ -2046,6 +2044,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                 {
                     for (int index_width = 0; index_width < (int)core->map.handle->width; index_width += 1)
                     {
+                        int  gid;
+
                         #ifdef USE_LIBTMX
                         int* layer_content = layer->content.gids;
                         #elif  USE_CUTE_TILED
