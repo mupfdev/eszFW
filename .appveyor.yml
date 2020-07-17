@@ -8,7 +8,7 @@ before_build:
 build_script:
 - mkdir -p build
 - cd build
-- cmake -DUSE_TMXLIB=ON ..
+- cmake -DUSE_CUTE_TILED=OFF ..
 - make
-- cmake -DUSE_TMXLIB=OFF ..
+- cmake -DUSE_CUTE_TILED=ON ..
 - make
