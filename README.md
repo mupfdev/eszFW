@@ -24,7 +24,8 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 ## Features
 
-- It runs on all platforms [supported by SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
+- It runs on all platforms [supported by
+  SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
 
 - Fully reentrant engine core.
 
