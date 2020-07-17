@@ -25,8 +25,10 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 ## Features
 
 - It runs on all platforms [supported by SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
+
 - Fully reentrant engine core.
-- Can be used without any system dependencies besides SDL2.
+
+- Only depends on SDL2, everything else is in the codebase.
 
 ## Documentation
 
@@ -45,8 +47,11 @@ formatting of the source code, you will find some rules here. All rules
 are of course open for debate:
 
 - Do not use tabs and use a consistent 4 space indentation style.
+
 - Both function and variable names are written in lower snake_case.
+
 - Try to use a consistent style. Use the existing code as a guideline.
+
 - If you encounter a case where it doesn't make sense to follow the
   rules, then don't and do it your way instead.
 

@@ -578,6 +578,12 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
      * 4 Tileset *
      *************/
 
+
+    //
+
+
+
+
     load_map_property_by_name("tileset_image", core);
     if (core->map.string_property)
     {
@@ -1020,7 +1026,6 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
     while (layer)
     {
         bool is_tile_layer = false;
-        int  gid;
 
         #ifdef USE_LIBTMX
         if (L_LAYER == layer->type)
@@ -1040,6 +1045,8 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
             {
                 for (int index_width = 0; index_width < core->map.handle->width; index_width += 1)
                 {
+                    int  gid;
+
                     #ifdef USE_LIBTMX
                     int* layer_content = layer->content.gids;
                     #elif  USE_CUTE_TILED
@@ -1781,7 +1788,7 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 
 static esz_status render_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t* core)
 {
-    bool render_animated_tiles = false;
+    bool render_animated_tiles;
 
     #ifdef USE_LIBTMX
     tmx_layer* layer          = core->map.handle->ly_head;
@@ -1999,9 +2006,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
     while (layer)
     {
-        bool     is_in_foreground = false;
-        bool     is_tile_layer    = false;
-        bool     render_layer     = false;
+        bool     is_tile_layer = false;
         int      gid;
         SDL_Rect dst;
         SDL_Rect src;
@@ -2020,6 +2025,9 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
         if(is_tile_layer)
         {
+            bool is_in_foreground = false;
+            bool render_layer     = false;
+
             load_map_property_by_name("is_in_foreground", core);
             is_in_foreground = core->map.boolean_property;
 
