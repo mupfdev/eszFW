@@ -26,6 +26,7 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 - It runs on all platforms [supported by SDL2](https://wiki.libsdl.org/Installation#Supported_platforms).
 - Fully reentrant engine core.
+- Can be used without any system dependencies besides SDL2.
 
 ## Documentation
 
@@ -37,15 +38,27 @@ doxygen
 A automatically generated version of the documentation can be found
 here:  [eszfw.de](https://eszfw.de)
 
+## Code style
+
+You are invited to contribute to this project. But to ensure a uniform
+formatting of the source code, you will find some rules here. All rules
+are of course open for debate:
+
+- Do not use tabs and use a consistent 4 space indentation style.
+- Both function and variable names are written in lower snake_case.
+- Try to use a consistent style. Use the existing code as a guideline.
+- If you encounter a case where it doesn't make sense to follow the
+  rules, then don't and do it your way instead.
+
+Thank you.
+
 ### Status
 
-**Update**: I started to write the entire engine from scratch.  Until
-  the next release this project is in an incomplete state.
+This project currently undergoes a complete overhaul.
 
-This project is in development.  I will enhance it gradually, mainly as
-a tool to my own use.  To see it in action, take a look at [Tau
-Ceti](https://github.com/mupfelofen-de/TauCeti): a cross-platform 2D
-sci-fi themed tech demo which I develop to test this engine.
+If you wanna see the previous version in action, take a look at [Tau
+Ceti](https://github.com/mupfelofen-de/TauCeti): sci-fi themed tech demo
+which I develop to test this engine.
 
 [![Tau Ceti](https://media.eszfw.de/tc-01-tn.png)](https://media.eszfw.de/tc-01.png?raw=true "Tau Ceti 1")
 [![Tau Ceti](https://media.eszfw.de/tc-02-tn.png)](https://media.eszfw.de/tc-02.png?raw=true "Tau Ceti 2")
@@ -53,12 +66,6 @@ sci-fi themed tech demo which I develop to test this engine.
 An Android version of Tau Ceti is available on Google Play:
 
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=de.mupfelofen.TauCeti)
-
-### Trivia
-
-The abbreviation esz is a tribute to my best friend [Ertugrul
-Söylemez](https://github.com/esoeylemez), who suddenly passed away on
-May 12th, 2018.  We all miss you deeply.
 
 ## C is dead, long live C
 
@@ -70,6 +77,12 @@ This project should show that it is still possible and that C (and
 procedural programming in general) is often underestimated.
 
 With that in mind: C is dead, long live C!
+
+### Trivia
+
+The abbreviation esz is a tribute to my best friend [Ertugrul
+Söylemez](https://github.com/esoeylemez), who suddenly passed away on
+May 12th, 2018.  We all miss you deeply.
 
 ## Dependencies
 
@@ -96,10 +109,22 @@ cmake ..
 make
 ```
 
+You can also use _eszFW_ with _cute_tiled_ instead of _libTMX_.  Just
+enable the respective CMake option:
+
+```bash
+cmake -DUSE_CUTE_TILED=ON ..
+```
+
 ## Licence and Credits
 
 This project is licensed under the "The MIT License".  See the file
 [LICENSE.md](LICENSE.md) for details.
+
+[cute_tiled](https://github.com/RandyGaul/cute_headers) by Randy Gaul is
+licensed under the zlib licence.  See
+[cute_tiled.h](https://github.com/RandyGaul/cute_headers/blob/master/cute_tiled.h)
+for details.
 
 [cwalk](https://github.com/likle/cwalk) by Leonard Iklé is licensed
 under the MIT License.  See the file

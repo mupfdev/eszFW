@@ -1,5 +1,6 @@
 #define SDL_MAIN_HANDLED
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <SDL.h>
 #include <esz.h>
@@ -10,7 +11,7 @@ int main()
 {
     esz_status          status;
     esz_window_t*       window = NULL;
-    esz_window_config_t config = { 640, 360, 384, 216, SDL_FALSE, SDL_FALSE };
+    esz_window_config_t config = { 640, 360, 384, 216, false, false };
     esz_core_t*         core   = NULL;
 
     status = esz_create_window("eszFW", &config, &window);
@@ -26,7 +27,6 @@ int main()
     }
 
     esz_load_map("res/maps/example.tmx", window, core);
-
     esz_register_event_callback(EVENT_KEYDOWN, &key_down_callback, core);
 
     while (esz_is_core_active(core))

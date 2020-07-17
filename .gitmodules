@@ -10,3 +10,6 @@
 [submodule "external/cute_headers"]
 	path = external/cute_headers
 	url = https://github.com/RandyGaul/cute_headers.git
+[submodule "external/lua"]
+	path = external/lua
+	url = https://github.com/lua/lua.git
