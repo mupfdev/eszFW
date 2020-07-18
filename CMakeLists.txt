@@ -31,8 +31,8 @@ add_library(
 target_include_directories(
    ${PROJECT_NAME}
    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
-   PUBLIC ${CUTE_INCLUDE_DIR}
-   PUBLIC ${LIBTMX_INCLUDE_DIR})
+   ${CUTE_INCLUDE_DIR}
+   ${LIBTMX_INCLUDE_DIR})
 
 add_library(
     cwalk

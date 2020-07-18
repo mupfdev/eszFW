@@ -47,16 +47,13 @@ You are invited to contribute to this project. But to ensure a uniform
 formatting of the source code, you will find some rules here. All rules
 are of course open for debate:
 
+- Follow the C11 standard.
+
 - Do not use tabs and use a consistent 4 space indentation style.
 
-- Both function and variable names are written in lower snake_case.
+- Use lower snake_case for both function and variable names.
 
-- Try to use a consistent style. Use the existing code as a guideline.
-
-- If you encounter a case where it doesn't make sense to follow the
-  rules, then don't and do it your way instead.
-
-Thank you.
+- Try to use a consistent style.  Use the existing code as a guideline.
 
 ### Status
 

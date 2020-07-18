@@ -10,12 +10,7 @@
 #include <SDL.h>
 #include <cwalk.h>
 #include "esz.h"
-
-#ifndef USE_LIBTMX
-    #ifndef USE_CUTE_TILED
-        #error "Please select a supported Tiled map loader."
-    #endif
-#endif
+#include "esz_types.h"
 
 #ifdef USE_LIBTMX
     #include <tmx.h>
@@ -513,7 +508,7 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
 
     #ifdef USE_LIBTMX
 
-    core->map.handle = tmx_load(map_file_name);
+    core->map.handle = (esz_map_handle_t*)tmx_load(map_file_name);
     if (! core->map.handle)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, tmx_strerr());
@@ -577,12 +572,6 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
     /*************
      * 4 Tileset *
      *************/
-
-
-    //
-
-
-
 
     load_map_property_by_name("tileset_image", core);
     if (core->map.string_property)
@@ -657,9 +646,9 @@ void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* c
     core->map.width  = core->map.handle->width  * core->map.handle->tile_width;
 
     #elif  USE_CUTE_TILED
-
     core->map.height = core->map.handle->height * core->map.handle->tileheight;
     core->map.width  = core->map.handle->width  * core->map.handle->tilewidth;
+
     #endif
 
     load_map_property_by_name("gravitation", core);
@@ -978,7 +967,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     }
 
     #elif  USE_CUTE_TILED
-
     if (core->map.handle)
     {
         cute_tiled_free_map(core->map.handle);
@@ -1019,6 +1007,7 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
     // Currently not supported by cute_tiled.
     *animated_tile_count      = 0;
     return;
+
     #endif
 
     *animated_tile_count = 0;
@@ -1032,7 +1021,7 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
         {
             is_tile_layer = true;
         }
-        #else
+        #elif  USE_CUTE_TILED
         if (core->map.hash_id_tilelayer == layer->type.hash_id)
         {
             is_tile_layer = true;
@@ -1065,7 +1054,6 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
                     }
 
                     #elif USE_CUTE_TILED
-
                     // tbd.
                     return;
 
@@ -1124,6 +1112,7 @@ static void count_objects(int32_t* object_count, esz_core_t* core)
     #elif  USE_CUTE_TILED
     cute_tiled_layer_t*  layer = core->map.handle->layers;
     cute_tiled_object_t* object;
+
     #endif
 
     while (layer)
@@ -1138,12 +1127,12 @@ static void count_objects(int32_t* object_count, esz_core_t* core)
         }
 
         #elif USE_CUTE_TILED
-
         if (core->map.hash_id_objectgroup == layer->type.hash_id)
         {
             is_object_layer = true;
             object          = layer->objects;
         }
+
         #endif
 
         if (is_object_layer)
@@ -1648,8 +1637,8 @@ static int remove_gid_flip_bits(int gid)
     return gid & TMX_FLIP_BITS_REMOVAL;
 
     #elif  USE_CUTE_TILED
-
     return cute_tiled_unset_flags(gid);
+
     #endif
 }
 
@@ -2014,7 +2003,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
         {
             is_tile_layer = true;
         }
-        #else
+        #elif  USE_CUTE_TILED
         if (core->map.hash_id_tilelayer == layer->type.hash_id)
         {
             is_tile_layer = true;
