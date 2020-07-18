@@ -48,11 +48,8 @@ formatting of the source code, you will find some rules here. All rules
 are of course open for debate:
 
 - Follow the C11 standard.
-
 - Do not use tabs and use a consistent 4 space indentation style.
-
 - Use lower snake_case for both function and variable names.
-
 - Try to use a consistent style.  Use the existing code as a guideline.
 
 ### Status
