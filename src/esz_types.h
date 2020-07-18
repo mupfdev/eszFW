@@ -1,3 +1,9 @@
+// SPDX-License-Identifier: MIT
+/**
+ * @file  esz_types.h
+ * @brief eszFW types
+ */
+
 #ifndef ESZ_TYPES_H
 #define ESZ_TYPES_H
 
