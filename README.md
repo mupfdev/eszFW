@@ -44,8 +44,7 @@ here:  [eszfw.de](https://eszfw.de)
 ## Code style
 
 You are invited to contribute to this project. But to ensure a uniform
-formatting of the source code, you will find some rules here. All rules
-are of course open for debate:
+formatting of the source code, you will find some rules here:
 
 - Follow the C11 standard.
 - Do not use tabs and use a consistent 4 space indentation style.
@@ -57,8 +56,8 @@ are of course open for debate:
 This project currently undergoes a complete overhaul.
 
 If you wanna see the previous version in action, take a look at [Tau
-Ceti](https://github.com/mupfelofen-de/TauCeti): sci-fi themed tech demo
-which I develop to test this engine.
+Ceti](https://github.com/mupfelofen-de/TauCeti): a sci-fi themed tech
+demo which I develop to test this engine.
 
 [![Tau Ceti](https://media.eszfw.de/tc-01-tn.png)](https://media.eszfw.de/tc-01.png?raw=true "Tau Ceti 1")
 [![Tau Ceti](https://media.eszfw.de/tc-02-tn.png)](https://media.eszfw.de/tc-02.png?raw=true "Tau Ceti 2")
