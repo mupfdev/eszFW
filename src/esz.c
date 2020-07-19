@@ -1444,10 +1444,10 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
     if (0 < core->map.sprite_sheet_count)
     {
         char property_name[17] = { 0 };
-        char* sprite_sheet_image_source;
 
         for (int32_t index = 0; index < core->map.sprite_sheet_count; index += 1)
         {
+            char*  sprite_sheet_image_source;
             size_t source_length;
 
             SDL_snprintf(property_name, 17, "sprite_sheet_%u", index);
