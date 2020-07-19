@@ -498,7 +498,7 @@ exit:
 
 esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core)
 {
-    char* tileset_image = NULL;
+    char* tileset_image_source;
 
     if (esz_is_map_loaded(core))
     {
@@ -592,8 +592,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         source_length += SDL_strlen(core->map.handle->tiles[firstgid]->tileset->image->source);
         source_length += ts_path_length + 1;
 
-        core->map.tileset_image_source = SDL_calloc(1, source_length);
-        if (! core->map.tileset_image_source)
+        tileset_image_source = SDL_calloc(1, source_length);
+        if (! tileset_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
             SDL_free(ts_path);
@@ -608,7 +608,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
          */
 
         SDL_strlcpy(ts_path, core->map.handle->ts_head->source, ts_path_length + 1);
-        SDL_snprintf(core->map.tileset_image_source, source_length, "%s%s%s",
+        SDL_snprintf(tileset_image_source, source_length, "%s%s%s",
                      core->map.path,
                      ts_path,
                      core->map.handle->tiles[firstgid]->tileset->image->source);
@@ -619,6 +619,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         if (! core->map.handle->tilesets)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: no embedded tileset found.\n", __func__);
+            SDL_free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -627,19 +628,22 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         source_length += SDL_strlen(core->map.handle->tilesets->image.ptr);
         source_length += 1;
 
-        core->map.tileset_image_source = SDL_calloc(1, source_length);
-        if (! core->map.tileset_image_source)
+        tileset_image_source = SDL_calloc(1, source_length);
+        if (! tileset_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
+            SDL_free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
 
-        SDL_snprintf(core->map.tileset_image_source, source_length, "%s%s",
+        SDL_snprintf(tileset_image_source, source_length, "%s%s",
                      core->map.path,
                      core->map.handle->tilesets->image.ptr);
 
         #endif // USE_LIBTMX
+
+
     }
 
     /*************
@@ -648,6 +652,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     if (ESZ_OK != init_objects(core))
     {
+        SDL_free(tileset_image_source);
         esz_unload_map(window, core);
         return ESZ_WARNING;
     }
@@ -662,11 +667,12 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
      * 5 Tileset *
      *************/
 
-    if (core->map.tileset_image_source)
+    if (tileset_image_source)
     {
-        if (ESZ_OK != load_texture_from_file(core->map.tileset_image_source, &core->map.tileset_texture, window))
+        if (ESZ_OK != load_texture_from_file(tileset_image_source, &core->map.tileset_texture, window))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: Error loading image '%s'.\n", __func__, core->map.tileset_image_source);
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: Error loading image '%s'.\n", __func__, tileset_image_source);
+            SDL_free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -677,6 +683,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         esz_unload_map(window, core);
         return ESZ_WARNING;
     }
+
+    SDL_free(tileset_image_source);
 
     /*************
      * 6 Sprites *
@@ -1023,7 +1031,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
      * 2 Paths and file locations *
      ******************************/
 
-    SDL_free(core->map.tileset_image_source);
     SDL_free(core->map.path);
 
     /**************

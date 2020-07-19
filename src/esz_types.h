@@ -245,9 +245,7 @@ typedef struct esz_map
     #endif
 
     char*                 path;
-    char*                 tileset_image_source;
     char                  search_pattern[32];
-
     SDL_Texture*          animated_tile_texture;
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];
