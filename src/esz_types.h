@@ -33,22 +33,6 @@ typedef struct esz_window esz_window_t;
 typedef struct esz_core   esz_core_t;
 
 /**
- * @def   ESZ_MAX_PATH_LEN
- * @brief Maximum length of resource path
- */
-#ifndef ESZ_MAX_PATH_LEN
-#define ESZ_MAX_PATH_LEN 64
-#endif
-
-/**
- * @def   ESZ_MAX_PATTERN_LEN
- * @brief Maximum length of search pattern
- */
-#ifndef ESZ_MAX_PATTERN_LEN
-#define ESZ_MAX_PATTERN_LEN 32
-#endif
-
-/**
  * @brief     Event callback function type
  * @attention An event callback function always expects a window handle
  *            as first and a core handle as second parameter!
@@ -109,7 +93,7 @@ typedef enum
 {
     ESZ_OK             =  0,
     ESZ_ERROR_CRITICAL = -1,
-    ESZ_ERROR_WARNING  = -2
+    ESZ_WARNING        = -2
 
 } esz_status;
 
@@ -249,9 +233,6 @@ typedef struct esz_sprite
  */
 typedef struct esz_map
 {
-    char                  resource_path[ESZ_MAX_PATH_LEN];
-    char                  search_pattern[ESZ_MAX_PATTERN_LEN];
-    char                  tileset_image[ESZ_MAX_PATH_LEN];
     double                decimal_property;
     double                gravitation;
     double                pos_x;
@@ -262,6 +243,10 @@ typedef struct esz_map
     unsigned long long    hash_id_objectgroup;
     unsigned long long    hash_id_tilelayer;
     #endif
+
+    char*                 path;
+    char*                 tileset_image_source;
+    char                  search_pattern[32];
 
     SDL_Texture*          animated_tile_texture;
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
@@ -282,7 +267,7 @@ typedef struct esz_map
     int32_t               sprite_sheet_count;
     int32_t               height;
     int32_t               width;
-    size_t                resource_path_length;
+    size_t                path_length;
     bool                  boolean_property;
     bool                  is_loaded;
 

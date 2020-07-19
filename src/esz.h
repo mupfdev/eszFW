@@ -133,8 +133,11 @@ bool esz_is_map_loaded(esz_core_t* core);
  * @param     map_file_name Path and file name to the map file
  * @param     window Window handle
  * @param     core Engine core handle
+ * @return    Status code
+ * @retval    ESZ_OK OK
+ * @retval    ESZ_WARNING Map could not be loaded
  */
-void esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core);
+esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief   Lock camera for engine core
@@ -170,7 +173,7 @@ void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is
  * @param  window Window handle
  * @return Status code
  * @retval ESZ_OK OK
- * @retval ESZ_ERROR_WARNING
+ * @retval ESZ_WARNING
  *         The zoom-level could not be set
  */
 esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
@@ -180,7 +183,7 @@ esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
  * @param  window Window handle
  * @return Status code
  * @retval ESZ_OK OK
- * @retval ESZ_ERROR_WARNING
+ * @retval ESZ_WARNING
  *         Fullscreen could not be toggled
  */
 esz_status esz_toggle_fullscreen(esz_window_t* window);

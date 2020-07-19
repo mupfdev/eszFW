@@ -26,8 +26,14 @@ int main()
         goto quit;
     }
 
-    esz_load_map("res/maps/example.tmx", window, core);
-    esz_register_event_callback(EVENT_KEYDOWN, &key_down_callback, core);
+    if (ESZ_OK == esz_load_map("res/maps/example.tmx", window, core))
+    {
+        esz_register_event_callback(EVENT_KEYDOWN, &key_down_callback, core);
+    }
+    else
+    {
+        esz_deactivate_core(core);
+    }
 
     while (esz_is_core_active(core))
     {
@@ -66,11 +72,11 @@ static void key_down_callback(esz_window_t* window, esz_core_t* core)
 {
     switch (esz_get_keycode(core))
     {
-        case SDLK_f:
-            esz_toggle_fullscreen(window);
-            break;
         case SDLK_q:
             esz_deactivate_core(core);
+            break;
+        case SDLK_F11:
+            esz_toggle_fullscreen(window);
             break;
     }
 }
