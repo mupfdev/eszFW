@@ -25,7 +25,7 @@
  * @retval true The boxes intersect
  * @retval false The boxes do not intersect
  */
-bool esz_bounding_boxes_do_intersect(const esz_aabb bb_a, const esz_aabb bb_b);
+bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_b);
 
 /**
  * @brief   Create window and rendering context

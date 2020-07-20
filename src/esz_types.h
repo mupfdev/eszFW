@@ -54,6 +54,16 @@ typedef enum
 } esz_alignment;
 
 /**
+ * @brief An enumeration of directional constants.
+ */
+typedef enum
+{
+    ESZ_LEFT = 0,
+    ESZ_RIGHT
+
+} esz_direction;
+
+/**
  * @brief An enumeration of background types.
  */
 typedef enum
@@ -63,16 +73,6 @@ typedef enum
     ESZ_LAYER_MAX
 
 } esz_layer_type;
-
-/**
- * @brief An enumeration of directional constants.
- */
-typedef enum
-{
-    ESZ_LEFT = 0,
-    ESZ_RIGHT
-
-} esz_direction;
 
 /**
  * @brief An enumeration of event types
@@ -104,14 +104,14 @@ typedef enum
 /**
  * @brief A structure that contains a axis-aligned bounding box.
  */
-typedef struct esz_aabb_t
+typedef struct esz_aabb
 {
     double bottom;
     double left;
     double right;
     double top;
 
-} esz_aabb;
+} esz_aabb_t;
 
 /**
  * @brief A structure that contains an animated tile.
@@ -210,7 +210,7 @@ typedef struct esz_event
  */
 typedef struct esz_object
 {
-    esz_aabb             bounding_box;
+    esz_aabb_t           bounding_box;
     esz_object_handle_t* handle;
     uint32_t             pos_x;
     uint32_t             pos_y;
@@ -243,13 +243,14 @@ typedef struct esz_map
     double                pos_y;
     double                time_since_last_anim_frame;
 
-    #ifndef USE_LIBTMX
+    #ifdef USE_LIBTMX
+    unsigned long         hash_query;
+    #elif  USE_CUTE_TILED
     unsigned long long    hash_id_objectgroup;
     unsigned long long    hash_id_tilelayer;
     #endif
 
     char*                 path;
-    char                  search_pattern[32];
     SDL_Texture*          animated_tile_texture;
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];

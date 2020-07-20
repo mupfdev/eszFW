@@ -32,7 +32,7 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 - The dependencies can be limited to SDL2.
 
 - Support for two different TMX loaders:
-  [libtmx](https://github.com/baylej/tmx) and
+  [libTMX](https://github.com/baylej/tmx) and
   [cute_tiled](https://github.com/RandyGaul/cute_headers).
 
 ## Documentation
