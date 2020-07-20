@@ -12,18 +12,22 @@
 #ifdef USE_LIBTMX
 typedef struct _tmx_map tmx_map;
 typedef struct _tmx_obj tmx_object;
+typedef struct _tmx_prop tmx_property;
 
-typedef tmx_map    esz_map_handle_t;
-typedef tmx_object esz_object_handle_t;
+typedef tmx_map      esz_map_handle_t;
+typedef tmx_object   esz_object_handle_t;
+typedef tmx_property esz_property_handle_t;
 
 #include <tmx.h>
 
 #elif  USE_CUTE_TILED
 struct cute_tiled_map_t;
 struct cute_tiled_object_t;
+struct cute_tiled_property_t;
 
-typedef struct cute_tiled_map_t    esz_map_handle_t;
-typedef struct cute_tiled_object_t esz_object_handle_t;
+typedef struct cute_tiled_map_t      esz_map_handle_t;
+typedef struct cute_tiled_object_t   esz_object_handle_t;
+typedef struct cute_tiled_property_t esz_property_handle_t;
 
 #include <cute_tiled.h>
 

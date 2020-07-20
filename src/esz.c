@@ -32,7 +32,6 @@ static void       count_tile_layers(int32_t* layer_count, esz_core_t* core);
 static esz_status draw_background(esz_window_t* window, esz_core_t* core);
 static esz_status draw_logo(esz_window_t *window);
 static esz_status draw_map(const esz_layer_type layer_type, esz_window_t *window, esz_core_t *core);
-static int32_t    get_animated_tile_count(esz_core_t* core);
 static uint16_t   get_camera_target(esz_core_t* core);
 static esz_status init_animated_tiles(esz_core_t* core);
 static esz_status init_background(esz_window_t* window, esz_core_t* core);
@@ -41,7 +40,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core);
 static bool       is_camera_locked(esz_core_t* core);
 static bool       is_camera_at_horizontal_boundary(esz_core_t* core);
 static esz_status load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static void       load_map_property_by_name(const char* property_name, esz_core_t* core);
+static void       load_property_by_name(const char* name, esz_property_handle_t* properties, esz_core_t* core);
 static esz_status load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static void       move_camera_to_target(esz_core_t* core);
@@ -409,7 +408,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
     SDL_snprintf(property_name, 21, "background_layer_%u", index);
 
-    load_map_property_by_name(property_name, core);
+    load_property_by_name(property_name, core->map.handle->properties, core);
     source_length = SDL_strlen(core->map.path) + SDL_strlen(core->map.string_property) + 1;
 
     background_layer_image_source = SDL_calloc(1, source_length);
@@ -574,7 +573,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         size_t source_length;
 
         #ifdef USE_LIBTMX
-        int    firstgid = core->map.handle->ts_head->firstgid;
+        int    first_gid = core->map.handle->ts_head->firstgid;
         char*  ts_path;
         size_t ts_path_length;
 
@@ -589,7 +588,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         }
 
         source_length  = SDL_strlen(core->map.path);
-        source_length += SDL_strlen(core->map.handle->tiles[firstgid]->tileset->image->source);
+        source_length += SDL_strlen(core->map.handle->tiles[first_gid]->tileset->image->source);
         source_length += ts_path_length + 1;
 
         tileset_image_source = SDL_calloc(1, source_length);
@@ -611,7 +610,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         SDL_snprintf(tileset_image_source, source_length, "%s%s%s",
                      core->map.path,
                      ts_path,
-                     core->map.handle->tiles[firstgid]->tileset->image->source);
+                     core->map.handle->tiles[first_gid]->tileset->image->source);
 
         SDL_free(ts_path);
 
@@ -641,7 +640,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
                      core->map.path,
                      core->map.handle->tilesets->image.ptr);
 
-        #endif // USE_LIBTMX
+        #endif // USE_CUTE_TILED
 
 
     }
@@ -732,13 +731,13 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     #endif
 
-    load_map_property_by_name("gravitation", core);
+    load_property_by_name("gravitation", core->map.handle->properties, core);
     if (0 < core->map.decimal_property)
     {
         core->map.gravitation = (double)core->map.decimal_property;
     }
 
-    load_map_property_by_name("meter_in_pixel", core);
+    load_property_by_name("meter_in_pixel", core->map.handle->properties, core);
     if (core->map.integer_property)
     {
         if (0 <= core->map.integer_property)
@@ -751,7 +750,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         "Set gravitational constant to %f (g*%dpx/s^2).\n",
         core->map.gravitation, core->map.meter_in_pixel);
 
-    load_map_property_by_name("animated_tile_fps", core);
+    load_property_by_name("animated_tile_fps", core->map.handle->properties, core);
     if (core->map.integer_property)
     {
         if (0 <= core->map.integer_property)
@@ -1081,10 +1080,6 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
     #elif  USE_CUTE_TILED
     cute_tiled_layer_t* layer = core->map.handle->layers;
 
-    // Currently not supported by cute_tiled.
-    *animated_tile_count      = 0;
-    return;
-
     #endif
 
     *animated_tile_count = 0;
@@ -1111,7 +1106,7 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
             {
                 for (int index_width = 0; index_width < core->map.handle->width; index_width += 1)
                 {
-                    int  gid;
+                    int gid;
 
                     #ifdef USE_LIBTMX
                     int* layer_content = layer->content.gids;
@@ -1131,10 +1126,29 @@ static void count_animated_tiles(int32_t* animated_tile_count, esz_core_t* core)
                     }
 
                     #elif USE_CUTE_TILED
-                    // tbd.
-                    return;
+                    {
+                        cute_tiled_tileset_t*         tileset   = core->map.handle->tilesets;
+                        cute_tiled_tile_descriptor_t* tile      = tileset->tiles;
+                        int                           first_gid = core->map.handle->tilesets->firstgid;
+                        int                           local_id  = gid - first_gid;
 
-                    #endif
+                        if (gid)
+                        {
+                            while (tile)
+                            {
+                                if (tile->tile_index == local_id)
+                                {
+                                    if (tile->animation)
+                                    {
+                                        *animated_tile_count += 1;
+                                        break;
+                                    }
+                                }
+                                tile = tile->next;
+                            }
+                        }
+                    }
+                    #endif // USE_CUTE_TILED
                 }
             }
         }
@@ -1346,19 +1360,19 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
 static esz_status init_background(esz_window_t* window, esz_core_t* core)
 {
-    load_map_property_by_name("background_layer_count", core);
+    load_property_by_name("background_layer_count", core->map.handle->properties, core);
     if (core->map.integer_property)
     {
         core->map.background.layer_count = core->map.integer_property;
     }
 
-    load_map_property_by_name("background_layer_shift", core);
+    load_property_by_name("background_layer_shift", core->map.handle->properties, core);
     if (0 < core->map.decimal_property)
     {
         core->map.background.layer_shift = (double)core->map.decimal_property;
     }
 
-    load_map_property_by_name("background_is_top_aligned", core);
+    load_property_by_name("background_is_top_aligned", core->map.handle->properties, core);
     if (core->map.boolean_property)
     {
         core->map.background.alignment = ESZ_TOP;
@@ -1425,7 +1439,7 @@ static esz_status init_objects(esz_core_t* core)
 
 static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 {
-    load_map_property_by_name("sprite_sheet_count", core);
+    load_property_by_name("sprite_sheet_count", core->map.handle->properties, core);
     if (core->map.integer_property)
     {
         if (0 <= core->map.integer_property)
@@ -1452,7 +1466,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
             SDL_snprintf(property_name, 17, "sprite_sheet_%u", index);
 
-            load_map_property_by_name(property_name, core);
+            load_property_by_name(property_name, core->map.handle->properties, core);
             source_length = SDL_strlen(core->map.path) + SDL_strlen(core->map.string_property) + 1;
 
             sprite_sheet_image_source = SDL_calloc(1, source_length);
@@ -1488,7 +1502,7 @@ static bool is_camera_at_horizontal_boundary(esz_core_t* core)
     return core->camera.is_at_horizontal_boundary;
 }
 
-static void load_map_property_by_name(const char* property_name, esz_core_t* core)
+static void load_property_by_name(const char* name, esz_property_handle_t* properties, esz_core_t* core)
 {
     core->map.boolean_property = false;
     core->map.decimal_property = 0.0;
@@ -1496,25 +1510,23 @@ static void load_map_property_by_name(const char* property_name, esz_core_t* cor
     core->map.string_property  = NULL;
 
     #ifdef USE_LIBTMX
-
-    tmx_property* property = core->map.handle->properties;
-
-    SDL_strlcpy(core->map.search_pattern, property_name, 32);
-    tmx_property_foreach(property, tmxlib_store_property, (void*)core);
+    SDL_strlcpy(core->map.search_pattern, name, 32);
+    tmx_property_foreach(properties, tmxlib_store_property, (void*)core);
 
     #elif  USE_CUTE_TILED
+    int index = 0;
 
-    int index;
-
-    for (index = 0; index < core->map.handle->property_count; index += 1)
+    while (properties[index].name.ptr)
     {
-        if (0 == SDL_strncmp(core->map.handle->properties[index].name.ptr, property_name, SDL_strlen(property_name)))
+        if (0 == SDL_strncmp(properties[index].name.ptr, name, SDL_strlen(name)))
         {
             break;
         }
+
+        index += 1;
     }
 
-    switch (core->map.handle->properties[index].type)
+    switch (properties[index].type)
     {
         case CUTE_TILED_PROPERTY_COLOR:
         case CUTE_TILED_PROPERTY_FILE:
@@ -1522,23 +1534,23 @@ static void load_map_property_by_name(const char* property_name, esz_core_t* cor
             // tbd.
             break;
 	case CUTE_TILED_PROPERTY_INT:
-            SDL_Log("Loading integer property '%s': %d\n", property_name, core->map.handle->properties[index].data.integer);
-            core->map.integer_property = core->map.handle->properties[index].data.integer;
+            SDL_Log("Loading integer property '%s': %d\n", name, properties[index].data.integer);
+            core->map.integer_property = properties[index].data.integer;
             break;
 	case CUTE_TILED_PROPERTY_BOOL:
-            SDL_Log("Loading boolean property '%s': %u\n", property_name, core->map.handle->properties[index].data.boolean);
-            core->map.boolean_property = (bool)core->map.handle->properties[index].data.boolean;
+            SDL_Log("Loading boolean property '%s': %u\n", name, properties[index].data.boolean);
+            core->map.boolean_property = (bool)properties[index].data.boolean;
             break;
 	case CUTE_TILED_PROPERTY_FLOAT:
-            SDL_Log("Loading floating point property '%s': %f\n", property_name, (double)core->map.handle->properties[index].data.floating);
-            core->map.decimal_property = (double)core->map.handle->properties[index].data.floating;
+            SDL_Log("Loading floating point property '%s': %f\n", name, (double)properties[index].data.floating);
+            core->map.decimal_property = (double)properties[index].data.floating;
             break;
 	case CUTE_TILED_PROPERTY_STRING:
-            SDL_Log("Loading string property '%s': %s\n", property_name,core->map.handle->properties[index].data.string.ptr);
-            core->map.string_property  = core->map.handle->properties[index].data.string.ptr;
+            SDL_Log("Loading string property '%s': %s\n", name,properties[index].data.string.ptr);
+            core->map.string_property  = properties[index].data.string.ptr;
             break;
     }
-    #endif // USE_LIBTMX
+    #endif // USE_CUTE_TILED
 }
 
 // Based on https://wiki.libsdl.org/SDL_CreateRGBSurfaceWithFormatFrom#Code_Examples
@@ -1921,9 +1933,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
      * Update and render animated tiles *
      ************************************/
 
-    // Currently not supported by cute_tiled.
-    #ifdef USE_LIBTMX
-
     core->map.time_since_last_anim_frame += window->time_since_last_frame;
 
     if (0 < core->map.animated_tile_index &&
@@ -1958,21 +1967,45 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
 
         for (int32_t index = 0; core->map.animated_tile_index > index; index += 1)
         {
-            int          gid          = core->map.animated_tile[index].gid;
-            int          firstgid     = core->map.handle->ts_head->firstgid;
-            uint32_t     tile_id      = core->map.animated_tile[index].id + 1;
-            uint32_t     next_tile_id = 0;
-            SDL_Rect     dst;
-            SDL_Rect     src;
-            tmx_tileset* tileset;
+            int      gid          = core->map.animated_tile[index].gid;
+            uint32_t tile_id      = core->map.animated_tile[index].id + 1;
+            uint32_t next_tile_id = 0;
+            SDL_Rect dst;
+            SDL_Rect src;
 
-            tileset = core->map.handle->tiles[firstgid]->tileset;
-            src.x   = (int)core->map.handle->tiles[tile_id]->ul_x;
-            src.y   = (int)core->map.handle->tiles[tile_id]->ul_y;
-            src.w   = dst.w = (int)tileset->tile_width;
-            src.h   = dst.h = (int)tileset->tile_height;
-            dst.x           = (int)core->map.animated_tile[index].dst_x;
-            dst.y           = (int)core->map.animated_tile[index].dst_y;
+            #ifdef USE_LIBTMX
+            tmx_tileset* tileset;
+            int          first_gid = core->map.handle->ts_head->firstgid;
+
+            tileset   = core->map.handle->tiles[first_gid]->tileset;
+            src.x     = (int)core->map.handle->tiles[tile_id]->ul_x;
+            src.y     = (int)core->map.handle->tiles[tile_id]->ul_y;
+            src.w     = dst.w = (int)tileset->tile_width;
+            src.h     = dst.h = (int)tileset->tile_height;
+            dst.x             = (int)core->map.animated_tile[index].dst_x;
+            dst.y             = (int)core->map.animated_tile[index].dst_y;
+
+            #elif  USE_CUTE_TILED
+            cute_tiled_tileset_t*         tileset = core->map.handle->tilesets;
+            cute_tiled_tile_descriptor_t* tile    = tileset->tiles;
+
+            src.w = dst.w = (int)tileset->tilewidth;
+            src.h = dst.h = (int)tileset->tileheight;
+            dst.x             = (int)core->map.animated_tile[index].dst_x;
+            dst.y             = (int)core->map.animated_tile[index].dst_y;
+
+            while (tile)
+            {
+                if (tile->tile_index == gid)
+                {
+                    src.x  = (gid % tileset->columns) * tileset->tilewidth;
+                    src.y  = (gid / tileset->columns) * tileset->tileheight;
+                    break;
+                }
+                tile = tile->next;
+            }
+
+            #endif // USE_CUTE_TILED
 
             if (0 > SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst))
             {
@@ -1987,7 +2020,23 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                 core->map.animated_tile[index].current_frame = 0;
             }
 
+            #ifdef USE_LIBTMX
             next_tile_id = core->map.handle->tiles[gid]->animation[core->map.animated_tile[index].current_frame].tile_id;
+
+            #elif  USE_CUTE_TILED
+            tile = tileset->tiles;
+            while (tile)
+            {
+                if (tile->tile_index == gid)
+                {
+                    next_tile_id = tile->animation[core->map.animated_tile[index].current_frame].tileid;
+                    break;
+                }
+                tile = tile->next;
+            }
+
+            #endif // USE_CUTE_TILED
+
             core->map.animated_tile[index].id = next_tile_id;
         }
 
@@ -2009,7 +2058,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
             return ESZ_ERROR_CRITICAL;
         }
     }
-    #endif
 
     /**************************************
      * Texture has already been rendered. *
@@ -2036,8 +2084,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
          * Animated tiles *
          ******************/
 
-        // Currently not supported by cute_tiled.
-        #ifdef USE_LIBTMX
         if (render_animated_tiles)
         {
             if (core->map.animated_tile_texture)
@@ -2049,7 +2095,6 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                 }
             }
         }
-        #endif
 
         return ESZ_OK;
     }
@@ -2100,7 +2145,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
             bool is_in_foreground = false;
             bool render_layer     = false;
 
-            load_map_property_by_name("is_in_foreground", core);
+            load_property_by_name("is_in_foreground", layer->properties, core);
             is_in_foreground = core->map.boolean_property;
 
             if (ESZ_BG == layer_type && false == is_in_foreground)
@@ -2131,10 +2176,10 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                         #ifdef USE_LIBTMX
                         if (core->map.handle->tiles[gid])
                         {
-                            int          firstgid = core->map.handle->ts_head->firstgid;
+                            int          first_gid = core->map.handle->ts_head->firstgid;
                             tmx_tileset* tileset;
 
-                            tileset = core->map.handle->tiles[firstgid]->tileset;
+                            tileset = core->map.handle->tiles[first_gid]->tileset;
                             src.x   = (int)core->map.handle->tiles[gid]->ul_x;
                             src.y   = (int)core->map.handle->tiles[gid]->ul_y;
                             src.w   = dst.w = (int)tileset->tile_width;
@@ -2164,18 +2209,52 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
                         if (gid)
                         {
                             cute_tiled_tileset_t* tileset;
+                            int                   first_gid = core->map.handle->tilesets->firstgid;
+                            int                   local_id  = gid - first_gid;
 
-                            tileset = &core->map.handle->tilesets[0];
-                            src.x   = ((gid - 1) % tileset->columns) * tileset->tilewidth;
-                            src.y   = (gid / tileset->columns)       * tileset->tileheight;
+                            tileset = core->map.handle->tilesets;
+                            src.x   = (local_id % tileset->columns) * tileset->tilewidth;
+                            src.y   = (gid / tileset->columns)      * tileset->tileheight;
                             src.w   = dst.w = (int)tileset->tilewidth;
                             src.h   = dst.h = (int)tileset->tileheight;
                             dst.x           = (int)(index_width  * tileset->tilewidth);
                             dst.y           = (int)(index_height * tileset->tileheight);
 
                             SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst);
+
+                            if (render_animated_tiles)
+                            {
+                                cute_tiled_tileset_t*         tileset   = core->map.handle->tilesets;
+                                cute_tiled_tile_descriptor_t* tile      = tileset->tiles;
+
+                                while (tile)
+                                {
+                                    if (tile->tile_index == local_id)
+                                    {
+                                        if (tile->animation)
+                                        {
+                                            uint32_t animation_length = tile->frame_count;
+                                            uint32_t id               = tile->animation->tileid;
+                                            int      first_gid        = core->map.handle->tilesets->firstgid;
+                                            int      local_id         = gid - first_gid;
+
+                                            core->map.animated_tile[core->map.animated_tile_index].gid              = local_id;
+                                            core->map.animated_tile[core->map.animated_tile_index].id               = id;
+                                            core->map.animated_tile[core->map.animated_tile_index].dst_x            = dst.x;
+                                            core->map.animated_tile[core->map.animated_tile_index].dst_y            = dst.y;
+                                            core->map.animated_tile[core->map.animated_tile_index].current_frame    = 0;
+                                            core->map.animated_tile[core->map.animated_tile_index].animation_length = animation_length;
+
+                                            core->map.animated_tile_index += 1;
+
+                                            break;
+                                        }
+                                    }
+                                    tile = tile->next;
+                                }
+                            }
                         }
-                        #endif
+                        #endif // USE_CUTE_TILED
                     }
                 }
 
