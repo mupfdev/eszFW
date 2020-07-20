@@ -29,7 +29,11 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 - Fully reentrant engine core.
 
-- Only depends on SDL2, everything else is in the codebase.
+- The dependencies can be limited to SDL2.
+
+- Support for two different TMX loaders:
+  [libtmx](https://github.com/baylej/tmx) and
+  [cute_tiled](https://github.com/RandyGaul/cute_headers).
 
 ## Documentation
 
@@ -108,11 +112,11 @@ cmake ..
 make
 ```
 
-You can also use _eszFW_ with _cute_tiled_ instead of _libTMX_.  Just
+You can also use _eszFW_ with _libTMX_ instead of _cute_tiled_.  Just
 enable the respective CMake option:
 
 ```bash
-cmake -DUSE_CUTE_TILED=ON ..
+cmake -DUSE_LIBTMX=ON ..
 ```
 
 ## Licence and Credits

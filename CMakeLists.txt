@@ -79,16 +79,14 @@ add_library(
     ${LUA_INCLUDE_DIR}/onelua.c
 )
 
-option(USE_CUTE_TILED "Use cute_tiled instead of libTMX" OFF)
+option(USE_LIBTMX "Use libTMX instead of cute_tiled" OFF)
 
 target_link_libraries(
   ${PROJECT_NAME}
   ${SDL2_LIBRARIES}
   cwalk)
 
-if(USE_CUTE_TILED)
-  add_definitions(-DUSE_CUTE_TILED)
-else()
+if(USE_LIBTMX)
   add_definitions(-DUSE_LIBTMX)
   add_subdirectory(external/tmx)
   set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -96,7 +94,9 @@ else()
     ${PROJECT_NAME}
     ${LIBXML2_LIBRARIES}
     tmx)
-endif(USE_CUTE_TILED)
+else()
+  add_definitions(-DUSE_CUTE_TILED)
+endif(USE_LIBTMX)
 
 if(UNIX)
     target_link_libraries(eszFW m)

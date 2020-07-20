@@ -1968,7 +1968,7 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
         for (int32_t index = 0; core->map.animated_tile_index > index; index += 1)
         {
             int      gid          = core->map.animated_tile[index].gid;
-            uint32_t tile_id      = core->map.animated_tile[index].id + 1;
+            uint32_t tile_id;
             uint32_t next_tile_id = 0;
             SDL_Rect dst;
             SDL_Rect src;
@@ -1977,11 +1977,12 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
             tmx_tileset* tileset;
             int          first_gid = core->map.handle->ts_head->firstgid;
 
-            tileset   = core->map.handle->tiles[first_gid]->tileset;
-            src.x     = (int)core->map.handle->tiles[tile_id]->ul_x;
-            src.y     = (int)core->map.handle->tiles[tile_id]->ul_y;
-            src.w     = dst.w = (int)tileset->tile_width;
-            src.h     = dst.h = (int)tileset->tile_height;
+            tile_id  = core->map.animated_tile[index].id + 1;
+            tileset  = core->map.handle->tiles[first_gid]->tileset;
+            src.x    = (int)core->map.handle->tiles[tile_id]->ul_x;
+            src.y    = (int)core->map.handle->tiles[tile_id]->ul_y;
+            src.w    = dst.w = (int)tileset->tile_width;
+            src.h    = dst.h = (int)tileset->tile_height;
             dst.x             = (int)core->map.animated_tile[index].dst_x;
             dst.y             = (int)core->map.animated_tile[index].dst_y;
 
@@ -1989,8 +1990,9 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
             cute_tiled_tileset_t*         tileset = core->map.handle->tilesets;
             cute_tiled_tile_descriptor_t* tile    = tileset->tiles;
 
-            src.w = dst.w = (int)tileset->tilewidth;
-            src.h = dst.h = (int)tileset->tileheight;
+            tile_id  = core->map.animated_tile[index].id;
+            src.w    = dst.w = (int)tileset->tilewidth;
+            src.h    = dst.h = (int)tileset->tileheight;
             dst.x             = (int)core->map.animated_tile[index].dst_x;
             dst.y             = (int)core->map.animated_tile[index].dst_y;
 
@@ -1998,8 +2000,8 @@ static esz_status render_map(const esz_layer_type layer_type, esz_window_t *wind
             {
                 if (tile->tile_index == gid)
                 {
-                    src.x  = (gid % tileset->columns) * tileset->tilewidth;
-                    src.y  = (gid / tileset->columns) * tileset->tileheight;
+                    src.x  = (tile_id % tileset->columns) * tileset->tilewidth;
+                    src.y  = (tile_id / tileset->columns) * tileset->tileheight;
                     break;
                 }
                 tile = tile->next;
