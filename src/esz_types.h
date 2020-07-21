@@ -237,7 +237,6 @@ typedef struct esz_sprite
  */
 typedef struct esz_map
 {
-    double                decimal_property;
     double                gravitation;
     double                pos_x;
     double                pos_y;
@@ -255,7 +254,6 @@ typedef struct esz_map
     SDL_Texture*          map_layer[ESZ_LAYER_MAX];
     SDL_Texture*          render_target[ESZ_LAYER_MAX];
     SDL_Texture*          tileset_texture;
-    const char*           string_property;
     esz_animated_tile_t*  animated_tile;
     struct esz_background background;
     esz_object_t*         object;
@@ -263,7 +261,6 @@ typedef struct esz_map
     esz_map_handle_t*     handle;
     int32_t               animated_tile_index;
     int32_t               animated_tile_fps;
-    int32_t               integer_property;
     int32_t               meter_in_pixel;
     int32_t               animated_tile_count;
     int32_t               object_count;
@@ -271,7 +268,6 @@ typedef struct esz_map
     int32_t               height;
     int32_t               width;
     size_t                path_length;
-    bool                  boolean_property;
     bool                  is_loaded;
 
 } esz_map_t;
@@ -284,6 +280,10 @@ typedef struct esz_core
     struct esz_camera camera;
     struct esz_event  event;
     struct esz_map    map;
+    double            decimal_property;
+    const char*       string_property;
+    int32_t           integer_property;
+    bool              boolean_property;
     bool              is_active;
     bool              is_paused;
 
