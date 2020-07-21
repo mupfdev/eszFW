@@ -104,5 +104,5 @@ endif(UNIX)
 
 if(USE_CLANG)
     set (CC "clang")
-    target_compile_options(eszFW PRIVATE -Weverything -Wno-unused-function)
+    target_compile_options(eszFW PRIVATE -Weverything)
 endif(USE_CLANG)
