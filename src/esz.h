@@ -119,10 +119,10 @@ const uint8_t* esz_get_keyboard_state(void);
  * @brief   Generate hash
  * @details djb2 by Dan Bernstein.  See
  *          http://www.cse.yorku.ca/~oz/hash.html for details
- * @param   The name from which a hash is to be generated
+ * @param   name The name from which a hash is to be generated
  * @return  Hash value
  */
-const unsigned long esz_hash(const unsigned char* name);
+unsigned long esz_hash(const unsigned char* name);
 
 /**
  * @brief  Get the current keycode

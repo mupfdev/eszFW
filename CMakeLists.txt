@@ -99,10 +99,13 @@ else()
 endif(USE_LIBTMX)
 
 if(UNIX)
-    target_link_libraries(eszFW m)
+    target_link_libraries(${PROJECT_NAME} m)
 endif(UNIX)
 
-if(USE_CLANG)
-    set (CC "clang")
-    target_compile_options(eszFW PRIVATE -Weverything)
-endif(USE_CLANG)
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  target_compile_options(${PROJECT_NAME} PRIVATE
+    -Weverything
+    -Wno-unused-function
+    -Wno-padded
+    -Wno-strict-prototypes)
+endif()

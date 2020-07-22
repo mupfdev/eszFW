@@ -118,12 +118,12 @@ typedef struct esz_aabb
  */
 typedef struct esz_animated_tile
 {
-    int32_t  dst_x;
-    int32_t  dst_y;
-    uint32_t animation_length;
-    uint32_t current_frame;
-    uint32_t gid;
-    uint32_t id;
+    int32_t dst_x;
+    int32_t dst_y;
+    int32_t animation_length;
+    int32_t current_frame;
+    int32_t gid;
+    int32_t id;
 
 } esz_animated_tile_t;
 
@@ -154,7 +154,6 @@ typedef struct esz_background
     double                  layer_shift;
     int32_t                 layer_count;
     bool                    velocity_is_constant;
-    char                    reserverd[4];
 
 } esz_background_t;
 
@@ -163,14 +162,13 @@ typedef struct esz_background
  */
 typedef struct esz_camera
 {
-    double   pos_x;
-    double   pos_y;
-    int32_t  max_pos_x;
-    int32_t  max_pos_y;
-    uint16_t target_entity_id;
-    bool     is_at_horizontal_boundary;
-    bool     is_locked;
-    char     reserverd[4];
+    double  pos_x;
+    double  pos_y;
+    int32_t max_pos_x;
+    int32_t max_pos_y;
+    int32_t target_entity_id;
+    bool    is_at_horizontal_boundary;
+    bool    is_locked;
 
 } esz_camera_t;
 
@@ -213,12 +211,13 @@ typedef struct esz_object
 {
     esz_aabb_t           bounding_box;
     esz_object_handle_t* handle;
-    uint32_t             pos_x;
-    uint32_t             pos_y;
-    uint32_t             height;
-    uint32_t             id;
-    uint32_t             width;
-    char                 reserverd[4];
+    int32_t              pos_x;
+    int32_t              pos_y;
+    int32_t              width;
+    int32_t              height;
+    int32_t              id;
+    bool                 is_entity;
+    bool                 is_invisible;
 
 } esz_object_t;
 
@@ -228,8 +227,7 @@ typedef struct esz_object
 typedef struct esz_sprite
 {
     SDL_Texture* render_target;
-    uint32_t     id;
-    char         reserverd[4];
+    int32_t      id;
 
 } esz_sprite_t;
 
@@ -251,6 +249,7 @@ typedef struct esz_map
     unsigned long long    hash_id_tilelayer;
     #endif
 
+    size_t                path_length;
     const char*           string_property;
     char*                 path;
     SDL_Texture*          animated_tile_texture;
@@ -262,16 +261,15 @@ typedef struct esz_map
     esz_object_t*         object;
     esz_sprite_t*         sprite;
     esz_map_handle_t*     handle;
-    int32_t               animated_tile_index;
+    int32_t               animated_tile_count;
     int32_t               animated_tile_fps;
+    int32_t               animated_tile_index;
+    int32_t               height;
     int32_t               integer_property;
     int32_t               meter_in_pixel;
-    int32_t               animated_tile_count;
     int32_t               object_count;
     int32_t               sprite_sheet_count;
-    int32_t               height;
     int32_t               width;
-    size_t                path_length;
     bool                  boolean_property;
     bool                  is_loaded;
 
@@ -301,6 +299,9 @@ typedef struct esz_window
     SDL_Renderer* renderer;
     SDL_Texture*  esz_logo;
     SDL_Window*   window;
+    uint32_t      flags;
+    uint32_t      time_a;
+    uint32_t      time_b;
     int32_t       height;
     int32_t       logical_height;
     int32_t       logical_width;
@@ -308,9 +309,6 @@ typedef struct esz_window
     int32_t       pos_y;
     int32_t       refresh_rate;
     int32_t       width;
-    uint32_t      flags;
-    uint32_t      time_a;
-    uint32_t      time_b;
     bool          is_fullscreen;
     bool          vsync_enabled;
 
