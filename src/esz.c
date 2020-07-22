@@ -37,6 +37,26 @@
 #define H_meter_in_pixel               0x4a407cf9
 #define H_opengl                       0x12ef9eea
 #define H_sprite_sheet_count           0xcc08d6fc
+#define H_acceleration                 0x186a848f
+#define H_animation_first_frame        0x64e2c3f6
+#define H_animation_fps                0xc29d61ed
+#define H_animation_last_frame         0xc600a9e2
+#define H_connect_horizontal_map_ends  0x88cb679e
+#define H_connect_vertical_map_ends    0x92bca50e
+#define H_entity                       0xfb7ffdc2
+#define H_frame_offset_x               0x39dffc2d
+#define H_frame_offset_y               0x39dffc2e
+#define H_height                       0x01d688de
+#define H_id                           0x00597832
+#define H_is_affected_by_gravity       0xf228f6d1
+#define H_is_animated                  0x3eae4983
+#define H_is_in_background             0x5b4839b6
+#define H_is_left_oriented             0xc7d179a4
+#define H_is_moving                    0x71f37f30
+#define H_is_visible                   0x56fa18ae
+#define H_max_velocity_x               0x96163590
+#define H_sprite_sheet_id              0xe50cd180
+#define H_width                        0x10a3b0a5
 
 #ifdef USE_CUTE_TILED
 #define H_objectgroup                  0x970be349
@@ -928,6 +948,8 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     {
         for (int32_t index = 0; index < core->map.sprite_sheet_count; index += 1)
         {
+            core->map.sprite[index].id = 0;
+
             if (core->map.sprite[index].render_target)
             {
                 SDL_DestroyTexture(core->map.sprite[index].render_target);
@@ -1304,6 +1326,11 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     core->map.background.layer_shift = esz_get_decimal_map_property(H_background_layer_shift, core);
     core->map.background.velocity    = esz_get_decimal_map_property(H_background_constant_velocity, core);
 
+    if (0 == core->map.background.layer_count)
+    {
+        return ESZ_OK;
+    }
+
     if (0.0 < core->map.background.velocity)
     {
         core->map.background.velocity_is_constant = true;
@@ -1369,6 +1396,12 @@ static esz_status init_objects(esz_core_t* core)
         }
     }
 
+
+    // tbd.
+    
+
+
+
     SDL_Log("Initialise %u object(s).\n", core->map.object_count);
     return ESZ_OK;
 }
@@ -1398,7 +1431,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
             char*  sprite_sheet_image_source;
             size_t source_length;
 
-            SDL_snprintf(property_name, 17, "sprite_sheet_%u", index);
+            SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
 
             const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
             // Todo: error handling.
@@ -1412,7 +1445,8 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
             }
 
             SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map.path, file_name);
-            core->map.sprite[index].id = index;
+
+            core->map.sprite[index].id = index + 1;
 
             if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].render_target, window))
             {
@@ -1449,7 +1483,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     char*        background_layer_image_source;
     size_t       source_length = 0;
 
-    SDL_snprintf(property_name, 21, "background_layer_%u", index);
+    SDL_snprintf(property_name, 21, "background_layer_%u", index + 1);
 
     const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
     source_length = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
@@ -1534,7 +1568,7 @@ exit:
         SDL_DestroyTexture(image_texture);
     }
 
-    SDL_Log("Load background layer %d.\n", index);
+    SDL_Log("Load background layer %d.\n", index + 1);
     return status;
 }
 

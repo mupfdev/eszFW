@@ -106,6 +106,7 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
   target_compile_options(${PROJECT_NAME} PRIVATE
     -Weverything
     -Wno-unused-function
+    -Wno-unused-macros
     -Wno-padded
     -Wno-strict-prototypes)
 endif()

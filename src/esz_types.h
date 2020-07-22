@@ -210,14 +210,35 @@ typedef struct esz_event
 typedef struct esz_object
 {
     esz_aabb_t           bounding_box;
+    esz_direction        direction;
+    double               max_velocity_x;
+    double               time_since_last_anim_frame;
+    double               velocity_x;
+    double               velocity_y;
     esz_object_handle_t* handle;
-    int32_t              pos_x;
-    int32_t              pos_y;
-    int32_t              width;
+    int32_t              acceleration;
+    int32_t              current_frame;
+    int32_t              first_frame;
+    int32_t              fps;
+    int32_t              frame_offset_x;
+    int32_t              frame_offset_y;
     int32_t              height;
     int32_t              id;
-    bool                 is_entity;
-    bool                 is_invisible;
+    int32_t              index;
+    int32_t              last_frame;
+    int32_t              pos_x;
+    int32_t              pos_y;
+    int32_t              spawn_pos_x;
+    int32_t              spawn_pos_y;
+    int32_t              sprite_sheet_id;
+    int32_t              width;
+    bool                 connect_horizontal_map_ends;
+    bool                 connect_vertical_map_ends;
+    bool                 is_affected_by_gravity;
+    bool                 is_in_background;
+    bool                 is_jumping;
+    bool                 is_moving;
+    bool                 is_visible;
 
 } esz_object_t;
 
