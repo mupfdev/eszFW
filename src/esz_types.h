@@ -10,10 +10,12 @@
 #include <SDL.h>
 
 #ifdef USE_LIBTMX
-typedef struct _tmx_map tmx_map;
-typedef struct _tmx_obj tmx_object;
-typedef struct _tmx_prop tmx_property;
+typedef struct _tmx_layer tmx_layer;
+typedef struct _tmx_map   tmx_map;
+typedef struct _tmx_obj   tmx_object;
+typedef struct _tmx_prop  tmx_property;
 
+typedef tmx_layer    esz_layer_handle_t;
 typedef tmx_map      esz_map_handle_t;
 typedef tmx_object   esz_object_handle_t;
 typedef tmx_property esz_property_handle_t;
@@ -21,10 +23,12 @@ typedef tmx_property esz_property_handle_t;
 #include <tmx.h>
 
 #elif  USE_CUTE_TILED
+struct cute_tiled_layer_t;
 struct cute_tiled_map_t;
 struct cute_tiled_object_t;
 struct cute_tiled_property_t;
 
+typedef struct cute_tiled_layer_t    esz_layer_handle_t;
 typedef struct cute_tiled_map_t      esz_map_handle_t;
 typedef struct cute_tiled_object_t   esz_object_handle_t;
 typedef struct cute_tiled_property_t esz_property_handle_t;
@@ -64,13 +68,23 @@ typedef enum
 } esz_direction;
 
 /**
- * @brief An enumeration of background types.
+ * @brief An enumeration of layer levels.
  */
 typedef enum
 {
     ESZ_BG = 0,
     ESZ_FG,
     ESZ_LAYER_MAX
+
+} esz_layer_level;
+
+/**
+ * @brief An enumeration of layer types.
+ */
+typedef enum
+{
+    ESZ_TILE_LAYER = 0,
+    ESZ_OBJECT_GROUP
 
 } esz_layer_type;
 
@@ -205,40 +219,49 @@ typedef struct esz_event
 } esz_event_t;
 
 /**
+ * @brief A structure that contains a structure extension for objects of
+ *        type entity
+ */
+typedef struct esz_entity_ext
+{
+    double        max_velocity_x;
+    double        time_since_last_anim_frame;
+    double        velocity_x;
+    double        velocity_y;
+    esz_direction direction;
+    int32_t       acceleration;
+    int32_t       current_frame;
+    int32_t       first_frame;
+    int32_t       fps;
+    int32_t       frame_offset_x;
+    int32_t       frame_offset_y;
+    int32_t       last_frame;
+    int32_t       spawn_pos_x;
+    int32_t       spawn_pos_y;
+    int32_t       sprite_sheet_id;
+    bool          connect_horizontal_map_ends;
+    bool          connect_vertical_map_ends;
+    bool          is_affected_by_gravity;
+    bool          is_in_background;
+    bool          is_jumping;
+    bool          is_moving;
+
+} esz_entity_ext_t;
+
+/**
  * @brief A structure that contains a map object
  */
 typedef struct esz_object
 {
     esz_aabb_t           bounding_box;
-    esz_direction        direction;
-    double               max_velocity_x;
-    double               time_since_last_anim_frame;
-    double               velocity_x;
-    double               velocity_y;
+    esz_entity_ext_t*    entity;
     esz_object_handle_t* handle;
-    int32_t              acceleration;
-    int32_t              current_frame;
-    int32_t              first_frame;
-    int32_t              fps;
-    int32_t              frame_offset_x;
-    int32_t              frame_offset_y;
     int32_t              height;
     int32_t              id;
     int32_t              index;
-    int32_t              last_frame;
     int32_t              pos_x;
     int32_t              pos_y;
-    int32_t              spawn_pos_x;
-    int32_t              spawn_pos_y;
-    int32_t              sprite_sheet_id;
     int32_t              width;
-    bool                 connect_horizontal_map_ends;
-    bool                 connect_vertical_map_ends;
-    bool                 is_affected_by_gravity;
-    bool                 is_in_background;
-    bool                 is_jumping;
-    bool                 is_moving;
-    bool                 is_visible;
 
 } esz_object_t;
 
@@ -282,7 +305,6 @@ typedef struct esz_map
     esz_object_t*         object;
     esz_sprite_t*         sprite;
     esz_map_handle_t*     handle;
-    int32_t               animated_tile_count;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
     int32_t               height;
