@@ -1762,8 +1762,7 @@ static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
 {
     if (is_camera_locked(core))
     {
-        /*
-        esz_object_handle_t* target = &core->map.object[core->camera.target_entity_id];
+        esz_object_t* target = &core->map.object[core->camera.target_entity_id];
 
         core->camera.pos_x  = target->pos_x;
         core->camera.pos_x -= (double)window->logical_width  / 2.0;
@@ -1774,7 +1773,6 @@ static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
         {
             core->camera.pos_x = 0;
         }
-        */
     }
 }
 
