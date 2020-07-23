@@ -27,9 +27,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-/* ╔════════════╗
- * ║ Hash table ║
- * ╚════════════╝ */
+// Hash table
+// -----------------------------------------------------------------------------
 
 #define H_animated_tile_fps            0xde2debdd
 #define H_background_is_top_aligned    0x00773f85
@@ -66,9 +65,8 @@
 #define H_tilelayer                    0x0e844fb0
 #endif
 
-/* ╔════════════════════╗
- * ║ Private prototypes ║
- * ╚════════════════════╝ */
+// Private prototypes
+// -----------------------------------------------------------------------------
 
 static esz_status           draw_background(esz_window_t* window, esz_core_t* core);
 static esz_status           draw_logo(esz_window_t *window);
@@ -104,9 +102,8 @@ static void                 set_camera_target(const int32_t target_entity_id, es
 static void                 tmxlib_store_property(tmx_property* property, void* core);
 #endif
 
-/* ╔═══════════════════╗
- * ║ Publich functions ║
- * ╚═══════════════════╝ */
+// Public functions
+// -----------------------------------------------------------------------------
 
 bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_b)
 {
@@ -485,11 +482,11 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     }
     core->map.is_loaded = true;
 
-    /* ╔═╦═╦════════════════════════════════════════════╗
-     * ╠═╬═╣ Load map file and allocate required memory ║
-     * ╠═╩═╬══════════╦═════════════════════════════════╝
-     * ║ 1 ║ Map file ║
-     * ╚═══╩══════════╝ */
+    // Load map file and allocate required memory
+    // -------------------------------------------------------------------------
+
+    // 1. Map file
+    // -------------------------------------------------------------------------
 
     #ifdef USE_LIBTMX
 
@@ -529,11 +526,9 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     }
     #endif
 
-    /* ╔═══╦══════════════════════════╗
-     * ║ 2 ║ Paths and file locations ║
-     * ╚═══╩══════════════════════════╝ */
+    // 2. Paths and file locations
+    // -------------------------------------------------------------------------
 
-    // Map file path.
     core->map.path = SDL_calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
     if (! core->map.path)
     {
@@ -545,7 +540,6 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     cwk_path_get_dirname(map_file_name, &core->map.path_length);
     SDL_strlcpy(core->map.path, map_file_name, core->map.path_length + 1);
 
-    // Tileset image source.
     {
         size_t source_length;
 
@@ -620,9 +614,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         #endif // USE_CUTE_TILED
     }
 
-    /* ╔═══╦═════════╗
-     * ║ 3 ║ Objects ║
-     * ╚═══╩═════════╝ */
+    // 3. Objects
+    // -------------------------------------------------------------------------
 
     if (ESZ_OK != init_objects(core))
     {
@@ -631,9 +624,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    /* ╔═══╦═════════╗
-     * ║ 4 ║ Tileset ║
-     * ╚═══╩═════════╝ */
+    // 4. Tileset
+    // -------------------------------------------------------------------------
 
     if (tileset_image_source)
     {
@@ -654,9 +646,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     SDL_free(tileset_image_source);
 
-    /* ╔═══╦═════════╗
-     * ║ 5 ║ Sprites ║
-     * ╚═══╩═════════╝ */
+    // 5. Sprites
+    // -------------------------------------------------------------------------
 
     if (ESZ_OK != init_sprites(window, core))
     {
@@ -664,9 +655,9 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    /* ╔═══╦════════════════╗
-     * ║ 6 ║ Animated tiles ║
-     * ╚═══╩════════════════╝ */
+    // 6. Animated tiles
+    // -------------------------------------------------------------------------
+
 
     if (ESZ_OK != init_animated_tiles(core))
     {
@@ -674,9 +665,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    /* ╔═══╦═════════════╗
-     * ║ 3 ║ Background  ║
-     * ╚═══╩═════════════╝ */
+    // 7. Background
+    // -------------------------------------------------------------------------
 
     if (ESZ_OK != init_background(window, core))
     {
@@ -684,7 +674,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    // Set base attributes.
+    // -------------------------------------------------------------------------
+
     core->map.animated_tile_index = 0;
 
     #ifdef USE_LIBTMX
@@ -843,7 +834,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         return;
     }
 
-    // Reset base attributes.
     core->map.animated_tile_fps               = 0;
     core->map.animated_tile_index             = 0;
     core->map.background.alignment            = ESZ_BOT;
@@ -867,7 +857,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     core->map.time_since_last_anim_frame      = 0.0;
     core->map.width                           = 0;
 
-    // Destroy textures that where previously created in render_map().
     for (int layer_index = 0; ESZ_LAYER_MAX > layer_index; layer_index += 1)
     {
         if (core->map.map_layer[layer_index])
@@ -891,11 +880,12 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     }
     #endif
 
-    /* ╔═╦═╦══════════════════════════════════════════╗
-     * ╠═╬═╣ Free up allocated memory in reverse oder ║
-     * ╠═╩═╬════════════╦═════════════════════════════╝
-     * ║ 7 ║ Background ║
-     * ╚═══╩════════════╝ */
+    // Free up allocated memory in reverse order
+    // -------------------------------------------------------------------------
+
+
+    // 7. Background
+    // -------------------------------------------------------------------------
 
     if (0 < core->map.background.layer_count)
     {
@@ -917,15 +907,13 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         core->map.background.render_target = NULL;
     }
 
-    /* ╔═══╦════════════════╗
-     * ║ 6 ║ Animated tiles ║
-     * ╚═══╩════════════════╝ */
+    // 6. Animated tiles
+    // -------------------------------------------------------------------------
 
     SDL_free(core->map.animated_tile);
 
-    /* ╔═══╦═════════╗
-     * ║ 5 ║ Sprites ║
-     * ╚═══╩═════════╝ */
+    // 5. Sprites
+    // -------------------------------------------------------------------------
 
     if (0 < core->map.sprite_sheet_count)
     {
@@ -943,9 +931,8 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
 
     SDL_free(core->map.sprite);
 
-    /* ╔═══╦═════════╗
-     * ║ 4 ║ Tileset ║
-     * ╚═══╩═════════╝ */
+    // 4. Tileset
+    // -------------------------------------------------------------------------
 
     if (core->map.tileset_texture)
     {
@@ -953,9 +940,8 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         core->map.tileset_texture = NULL;
     }
 
-    /* ╔═══╦═════════╗
-     * ║ 3 ║ Objects ║
-     * ╚═══╩═════════╝ */
+    // 3. Objects
+    // -------------------------------------------------------------------------
 
     layer = get_head_layer(core);
     while (layer)
@@ -987,15 +973,13 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     }
     SDL_free(core->map.object);
 
-    /* ╔═══╦══════════════════════════╗
-     * ║ 2 ║ Paths and file locations ║
-     * ╚═══╩══════════════════════════╝ */
+    // 2. Paths and file locations
+    // -------------------------------------------------------------------------
 
     SDL_free(core->map.path);
 
-    /* ╔═══╦══════════╗
-     * ║ 1 ║ Map file ║
-     * ╚═══╩══════════╝ */
+    // 1. Map file
+    // -------------------------------------------------------------------------
 
     #ifdef USE_CUTE_TILED
     core->map.hash_id_objectgroup = 0;
@@ -1034,9 +1018,8 @@ void esz_update_core(esz_window_t* window, esz_core_t* core)
     poll_events(window, core);
 }
 
-/* ╔═══════════════════╗
- * ║ Private functions ║
- * ╚═══════════════════╝ */
+// Private functions
+// -----------------------------------------------------------------------------
 
 static esz_status draw_background(esz_window_t* window, esz_core_t* core)
 {
@@ -1055,7 +1038,6 @@ static esz_status draw_background(esz_window_t* window, esz_core_t* core)
 
     if (is_camera_at_horizontal_boundary(core))
     {
-        // Do not move background when camera is at horizontal boundary.
         if (! core->map.background.velocity_is_constant)
         {
             core->map.background.velocity = 0.0;
@@ -1063,15 +1045,10 @@ static esz_status draw_background(esz_window_t* window, esz_core_t* core)
     }
     else
     {
-        /* Synchronise horizontal velocity of the background with the
-         * horizontal velocity of the tracked entity.
-         */
-
         // tbd.
         //core->map.background.velocity = core->map.entity[core->camera.target_entity_id].velocity_x;
     }
 
-    // Do not move background when camera is locked.
     if (is_camera_locked(core))
     {
         if (! core->map.background.velocity_is_constant)
@@ -1193,7 +1170,6 @@ static esz_status init_animated_tiles(esz_core_t* core)
     esz_layer_handle_t* layer               = get_head_layer(core);
     int32_t             animated_tile_count = 0;
 
-    // Count animated tiles.
     while (layer)
     {
         if (is_layer_of_type(ESZ_TILE_LAYER, layer, core) && layer->visible)
@@ -1620,7 +1596,6 @@ exit:
     return status;
 }
 
-// This function should not be used directly.
 static void load_property(const unsigned long name_hash, esz_property_handle_t* properties, esz_core_t* core)
 {
     core->map.boolean_property = false;
@@ -1962,7 +1937,6 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 
     if (0 == index)
     {
-        // Set background color.
         SDL_SetRenderDrawColor(
             window->renderer,
             (core->map.handle->backgroundcolor >> 16) & 0xFF,
@@ -2193,7 +2167,6 @@ static esz_status render_map(const esz_layer_level layer_level, esz_window_t *wi
             return ESZ_ERROR_CRITICAL;
         }
 
-        // Animated tiles.
         if (render_animated_tiles)
         {
             if (core->map.animated_tile_texture)
