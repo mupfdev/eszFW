@@ -1723,24 +1723,32 @@ static void load_property(const unsigned long name_hash, esz_tiled_property_t* p
             // tbd.
             break;
 	case CUTE_TILED_PROPERTY_INT:
+            #ifdef DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading integer property '%s': %d\n", properties[index].name.ptr, properties[index].data.integer);
+            #endif
             core->map.integer_property = properties[index].data.integer;
             break;
 	case CUTE_TILED_PROPERTY_BOOL:
+            #ifdef DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading boolean property '%s': %u\n", properties[index].name.ptr, properties[index].data.boolean);
+            #endif
             core->map.boolean_property = (bool)properties[index].data.boolean;
             break;
 	case CUTE_TILED_PROPERTY_FLOAT:
+            #ifdef DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading decimal property '%s': %f\n", properties[index].name.ptr, (double)properties[index].data.floating);
             core->map.decimal_property = (double)properties[index].data.floating;
+            #endif
             break;
 	case CUTE_TILED_PROPERTY_STRING:
+            #ifdef DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading string property '%s': %s\n", properties[index].name.ptr, properties[index].data.string.ptr);
             core->map.string_property  = properties[index].data.string.ptr;
+            #endif
             break;
     }
     #endif // USE_CUTE_TILED
@@ -2518,28 +2526,43 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 // tbd.
                 break;
             case PT_BOOL:
+                #ifdef DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading boolean property '%s': %u\n", property->name, property->value.boolean);
+                #endif
+
                 core_ptr->map.boolean_property = (bool)property->value.boolean;
                 break;
             case PT_FILE:
+                #ifdef DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading string property '%s': %s\n", property->name, property->value.file);
+                #endif
+
                 core_ptr->map.string_property  = property->value.file;
                 break;
             case PT_FLOAT:
+                #ifdef DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading decimal property '%s': %f\n", property->name, (double)property->value.decimal);
+                #endif
+
                 core_ptr->map.decimal_property = (double)property->value.decimal;
                 break;
             case PT_INT:
+                #ifdef DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading integer property '%s': %d\n", property->name, property->value.integer);
+                #endif
+
                 core_ptr->map.integer_property = property->value.integer;
                 break;
             case PT_STRING:
+                #ifdef DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading string property '%s': %s\n", property->name, property->value.string);
+                #endif
+
                 core_ptr->map.string_property  = property->value.string;
                 break;
         }
