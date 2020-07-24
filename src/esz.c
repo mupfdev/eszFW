@@ -32,14 +32,12 @@
 
 #define H_animated_tile_fps            0xde2debdd
 #define H_background_is_top_aligned    0x00773f85
-#define H_background_layer_count       0xc1378329
 #define H_background_layer_shift       0xc255007e
 #define H_background_constant_velocity 0x5ad8b7fc
 #define H_gravitation                  0x12404d2d
 #define H_is_in_foreground             0xd43eb8f1
 #define H_meter_in_pixel               0x4a407cf9
 #define H_opengl                       0x12ef9eea
-#define H_sprite_sheet_count           0xcc08d6fc
 #define H_acceleration                 0x186a848f
 #define H_animation_first_frame        0x64e2c3f6
 #define H_animation_fps                0xc29d61ed
@@ -1247,14 +1245,11 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
 static esz_status init_background(esz_window_t* window, esz_core_t* core)
 {
-    core->map.background.layer_count = esz_get_integer_map_property(H_background_layer_count, core);
+    char property_name[21] = { 0 };
+    bool search_is_running = true;
+
     core->map.background.layer_shift = esz_get_decimal_map_property(H_background_layer_shift, core);
     core->map.background.velocity    = esz_get_decimal_map_property(H_background_constant_velocity, core);
-
-    if (0 == core->map.background.layer_count)
-    {
-        return ESZ_OK;
-    }
 
     if (0.0 < core->map.background.velocity)
     {
@@ -1268,6 +1263,26 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     else
     {
         core->map.background.alignment = ESZ_BOT;
+    }
+
+    core->map.background.layer_count = 0;
+    while (search_is_running)
+    {
+        SDL_snprintf(property_name, 21, "background_layer_%u", core->map.background.layer_count + 1);
+
+        if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
+        {
+            core->map.background.layer_count += 1;
+        }
+        else
+        {
+            search_is_running = false;
+        }
+    }
+
+    if (0 == core->map.background.layer_count)
+    {
+        return ESZ_OK;
     }
 
     core->map.background.layer = SDL_calloc((size_t)core->map.background.layer_count, sizeof(struct esz_background_layer));
@@ -1391,7 +1406,23 @@ static esz_status init_objects(esz_core_t* core)
 
 static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 {
-    core->map.sprite_sheet_count = esz_get_integer_map_property(H_sprite_sheet_count, core);
+    char property_name[17] = { 0 };
+    bool search_is_running = true;
+
+    core->map.sprite_sheet_count = 0;
+    while (search_is_running)
+    {
+        SDL_snprintf(property_name, 17, "sprite_sheet_%u", core->map.sprite_sheet_count + 1);
+
+        if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
+        {
+            core->map.sprite_sheet_count += 1;
+        }
+        else
+        {
+            search_is_running = false;
+        }
+    }
 
     if (0 == core->map.sprite_sheet_count)
     {
@@ -1405,40 +1436,35 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         return ESZ_ERROR_CRITICAL;
     }
 
-    if (0 < core->map.sprite_sheet_count)
+    for (int32_t index = 0; index < core->map.sprite_sheet_count; index += 1)
     {
-        char property_name[17] = { 0 };
+        char*  sprite_sheet_image_source;
+        size_t source_length;
 
-        for (int32_t index = 0; index < core->map.sprite_sheet_count; index += 1)
+        SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
+
+        const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
+        // Todo: error handling.
+        source_length         = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
+
+        sprite_sheet_image_source = SDL_calloc(1, source_length);
+        if (! sprite_sheet_image_source)
         {
-            char*  sprite_sheet_image_source;
-            size_t source_length;
-
-            SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
-
-            const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
-            // Todo: error handling.
-            source_length         = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
-
-            sprite_sheet_image_source = SDL_calloc(1, source_length);
-            if (! sprite_sheet_image_source)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
-                return ESZ_ERROR_CRITICAL;
-            }
-
-            SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map.path, file_name);
-
-            core->map.sprite[index].id = index + 1;
-
-            if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].render_target, window))
-            {
-                SDL_free(sprite_sheet_image_source);
-                return ESZ_ERROR_CRITICAL;
-            }
-
-            SDL_free(sprite_sheet_image_source);
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
+            return ESZ_ERROR_CRITICAL;
         }
+
+        SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map.path, file_name);
+
+        core->map.sprite[index].id = index + 1;
+
+        if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].render_target, window))
+        {
+            SDL_free(sprite_sheet_image_source);
+            return ESZ_ERROR_CRITICAL;
+        }
+
+        SDL_free(sprite_sheet_image_source);
     }
 
     return ESZ_OK;
