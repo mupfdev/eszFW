@@ -15,10 +15,10 @@ typedef struct _tmx_map   tmx_map;
 typedef struct _tmx_obj   tmx_object;
 typedef struct _tmx_prop  tmx_property;
 
-typedef tmx_layer    esz_layer_handle_t;
-typedef tmx_map      esz_map_handle_t;
-typedef tmx_object   esz_object_handle_t;
-typedef tmx_property esz_property_handle_t;
+typedef tmx_layer    esz_tiled_layer_t;
+typedef tmx_map      esz_tiled_map_t;
+typedef tmx_object   esz_tiled_object_t;
+typedef tmx_property esz_tiled_property_t;
 
 #include <tmx.h>
 
@@ -28,10 +28,10 @@ struct cute_tiled_map_t;
 struct cute_tiled_object_t;
 struct cute_tiled_property_t;
 
-typedef struct cute_tiled_layer_t    esz_layer_handle_t;
-typedef struct cute_tiled_map_t      esz_map_handle_t;
-typedef struct cute_tiled_object_t   esz_object_handle_t;
-typedef struct cute_tiled_property_t esz_property_handle_t;
+typedef struct cute_tiled_layer_t    esz_tiled_layer_t;
+typedef struct cute_tiled_map_t      esz_tiled_map_t;
+typedef struct cute_tiled_object_t   esz_tiled_object_t;
+typedef struct cute_tiled_property_t esz_tiled_property_t;
 
 #include <cute_tiled.h>
 
@@ -224,20 +224,20 @@ typedef struct esz_event
  */
 typedef struct esz_entity_ext
 {
+    double        acceleration;
     double        max_velocity_x;
+    double        spawn_pos_x;
+    double        spawn_pos_y;
     double        time_since_last_anim_frame;
     double        velocity_x;
     double        velocity_y;
     esz_direction direction;
-    int32_t       acceleration;
     int32_t       current_frame;
     int32_t       first_frame;
     int32_t       fps;
     int32_t       frame_offset_x;
     int32_t       frame_offset_y;
     int32_t       last_frame;
-    int32_t       spawn_pos_x;
-    int32_t       spawn_pos_y;
     int32_t       sprite_sheet_id;
     bool          connect_horizontal_map_ends;
     bool          connect_vertical_map_ends;
@@ -253,15 +253,15 @@ typedef struct esz_entity_ext
  */
 typedef struct esz_object
 {
-    esz_aabb_t           bounding_box;
-    esz_entity_ext_t*    entity;
-    esz_object_handle_t* handle;
-    int32_t              height;
-    int32_t              id;
-    int32_t              index;
-    int32_t              pos_x;
-    int32_t              pos_y;
-    int32_t              width;
+    struct esz_aabb     bounding_box;
+    double              pos_x;
+    double              pos_y;
+    esz_entity_ext_t*   entity;
+    esz_tiled_object_t* handle;
+    int32_t             height;
+    int32_t             id;
+    int32_t             index;
+    int32_t             width;
 
 } esz_object_t;
 
@@ -304,7 +304,7 @@ typedef struct esz_map
     struct esz_background background;
     esz_object_t*         object;
     esz_sprite_t*         sprite;
-    esz_map_handle_t*     handle;
+    esz_tiled_map_t*      handle;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
     int32_t               height;
