@@ -65,17 +65,6 @@ void esz_destroy_core(esz_core_t* core);
 void esz_destroy_window(esz_window_t* window);
 
 /**
- * @brief  Draw/render the current frame
- * @param  window Window handle
- * @param  core Engine core
- * @return Status code
- * @retval ESZ_OK OK
- * @retval ESZ_ERROR_CRITICAL
- *         Critical error; the application should be terminated
- */
-esz_status esz_draw_frame(esz_window_t* window, esz_core_t* core);
-
-/**
  * @brief  Get boolean map property
  * @param  name_hash Hash of the property name.  @see esz_hash()
  * @param  core Engine core
@@ -219,6 +208,17 @@ void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is
  *         The zoom-level could not be set
  */
 esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
+
+/**
+ * @brief  Render and draw the current scene
+ * @param  window Window handle
+ * @param  core Engine core
+ * @return Status code
+ * @retval ESZ_OK OK
+ * @retval ESZ_ERROR_CRITICAL
+ *         Critical error; the application should be terminated
+ */
+esz_status esz_show_scene(esz_window_t* window, esz_core_t* core);
 
 /**
  * @brief  Toggle between fullscreen and windowed mode

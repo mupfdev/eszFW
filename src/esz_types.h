@@ -68,15 +68,29 @@ typedef enum
 } esz_direction;
 
 /**
- * @brief An enumeration of layer levels.
+ * @brief An enumeration of plane types.
  */
 typedef enum
 {
     ESZ_BG = 0,
     ESZ_FG,
-    ESZ_LAYER_MAX
+    ESZ_PLANE_TYPE_MAX
 
-} esz_layer_level;
+} esz_plane_type;
+
+/**
+ * @brief An enumeration of render layer levels.
+ */
+typedef enum
+{
+    ESZ_BACKGROUND = 0,
+//    ESZ_ENTITY_BG,
+    ESZ_MAP_BG,
+//    ESZ_ENTITY_FG,
+    ESZ_MAP_FG,
+    ESZ_RENDER_LAYER_MAX
+
+} esz_render_layer;
 
 /**
  * @brief An enumeration of layer types.
@@ -149,7 +163,8 @@ typedef struct esz_background_layer
     double       pos_x;
     double       pos_y;
     double       velocity;
-    SDL_Texture* render_target; // rename?
+    //SDL_Texture* render_target; // rename?
+    SDL_Texture* texture;
     int32_t      width;
     int32_t      height;
 
@@ -163,7 +178,7 @@ typedef struct esz_background
     esz_alignment           alignment;
     esz_direction           direction;
     esz_background_layer_t* layer;
-    SDL_Texture*            render_target; // rename?
+    //SDL_Texture*            render_target; // rename?
     double                  velocity;
     double                  layer_shift;
     int32_t                 layer_count;
@@ -297,8 +312,8 @@ typedef struct esz_map
     const char*           string_property;
     char*                 path;
     SDL_Texture*          animated_tile_texture;
-    SDL_Texture*          map_layer[ESZ_LAYER_MAX];
-    SDL_Texture*          render_target[ESZ_LAYER_MAX];
+    SDL_Texture*          layer_texture[ESZ_PLANE_TYPE_MAX];
+    SDL_Texture*          render_target[ESZ_RENDER_LAYER_MAX];
     SDL_Texture*          tileset_texture;
     esz_animated_tile_t*  animated_tile;
     struct esz_background background;
