@@ -163,7 +163,6 @@ typedef struct esz_background_layer
     double       pos_x;
     double       pos_y;
     double       velocity;
-    //SDL_Texture* render_target; // rename?
     SDL_Texture* texture;
     int32_t      width;
     int32_t      height;
@@ -178,7 +177,6 @@ typedef struct esz_background
     esz_alignment           alignment;
     esz_direction           direction;
     esz_background_layer_t* layer;
-    //SDL_Texture*            render_target; // rename?
     double                  velocity;
     double                  layer_shift;
     int32_t                 layer_count;
