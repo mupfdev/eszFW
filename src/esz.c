@@ -91,6 +91,7 @@ static esz_status          load_background_layer(int32_t index, esz_window_t* wi
 static void                load_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static esz_status          load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status          load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
+static esz_tiled_map_t*    load_tiled_map(const char* map_file_name);
 static void                move_camera_to_target(esz_window_t* window, esz_core_t* core);
 static void                poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t             remove_gid_flip_bits(int32_t gid);
@@ -384,7 +385,6 @@ esz_status esz_draw_frame(esz_window_t* window, esz_core_t* core)
     {
         draw_background(window, core);
         draw_map(ESZ_BG, window, core);
-        // tbd.
         draw_map(ESZ_FG, window, core);
     }
     else
@@ -492,24 +492,13 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 1. Map file
     // -------------------------------------------------------------------------
 
-    #ifdef USE_LIBTMX
-
-    core->map.handle = (esz_tiled_map_t*)tmx_load(map_file_name);
+    core->map.handle = load_tiled_map(map_file_name);
     if (! core->map.handle)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, tmx_strerr());
         return ESZ_WARNING;
     }
 
-    #elif USE_CUTE_TILED
-
-    core->map.handle = (esz_tiled_map_t*)cute_tiled_load_map_from_file(map_file_name, NULL);
-    if (! core->map.handle)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, cute_tiled_error_reason);
-        return ESZ_WARNING;
-    }
-
+    #ifdef USE_CUTE_TILED
     {
         esz_tiled_layer_t* layer = core->map.handle->layers;
         while (layer)
@@ -916,10 +905,10 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         {
             core->map.sprite[index].id = 0;
 
-            if (core->map.sprite[index].render_target)
+            if (core->map.sprite[index].texture)
             {
-                SDL_DestroyTexture(core->map.sprite[index].render_target);
-                core->map.sprite[index].render_target = NULL;
+                SDL_DestroyTexture(core->map.sprite[index].texture);
+                core->map.sprite[index].texture = NULL;
             }
         }
     }
@@ -1527,7 +1516,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
         core->map.sprite[index].id = index + 1;
 
-        if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].render_target, window))
+        if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].texture, window))
         {
             SDL_free(sprite_sheet_image_source);
             return ESZ_ERROR_CRITICAL;
@@ -1723,32 +1712,36 @@ static void load_property(const unsigned long name_hash, esz_tiled_property_t* p
             // tbd.
             break;
 	case CUTE_TILED_PROPERTY_INT:
-            #ifdef DEBUG
+            #ifdef ESZ_DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading integer property '%s': %d\n", properties[index].name.ptr, properties[index].data.integer);
             #endif
+
             core->map.integer_property = properties[index].data.integer;
             break;
 	case CUTE_TILED_PROPERTY_BOOL:
-            #ifdef DEBUG
+            #ifdef ESZ_DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading boolean property '%s': %u\n", properties[index].name.ptr, properties[index].data.boolean);
             #endif
+
             core->map.boolean_property = (bool)properties[index].data.boolean;
             break;
 	case CUTE_TILED_PROPERTY_FLOAT:
-            #ifdef DEBUG
+            #ifdef ESZ_DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading decimal property '%s': %f\n", properties[index].name.ptr, (double)properties[index].data.floating);
-            core->map.decimal_property = (double)properties[index].data.floating;
             #endif
+
+            core->map.decimal_property = (double)properties[index].data.floating;
             break;
 	case CUTE_TILED_PROPERTY_STRING:
-            #ifdef DEBUG
+            #ifdef ESZ_DEBUG
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                            "Loading string property '%s': %s\n", properties[index].name.ptr, properties[index].data.string.ptr);
-            core->map.string_property  = properties[index].data.string.ptr;
             #endif
+
+            core->map.string_property  = properties[index].data.string.ptr;
             break;
     }
     #endif // USE_CUTE_TILED
@@ -1859,6 +1852,29 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
 
     SDL_Log("Loading image from memory.\n");
     return ESZ_OK;
+}
+
+static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
+{
+    esz_tiled_map_t* tiled_map;
+
+    #ifdef USE_LIBTMX
+    tiled_map = (esz_tiled_map_t*)tmx_load(map_file_name);
+    if (! tiled_map)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, tmx_strerr());
+    }
+
+    #elif USE_CUTE_TILED
+    tiled_map = (esz_tiled_map_t*)cute_tiled_load_map_from_file(map_file_name, NULL);
+    if (! tiled_map)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, cute_tiled_error_reason);
+    }
+
+    #endif
+
+    return tiled_map;
 }
 
 static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
@@ -2526,7 +2542,7 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 // tbd.
                 break;
             case PT_BOOL:
-                #ifdef DEBUG
+                #ifdef ESZ_DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading boolean property '%s': %u\n", property->name, property->value.boolean);
                 #endif
@@ -2534,7 +2550,7 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 core_ptr->map.boolean_property = (bool)property->value.boolean;
                 break;
             case PT_FILE:
-                #ifdef DEBUG
+                #ifdef ESZ_DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading string property '%s': %s\n", property->name, property->value.file);
                 #endif
@@ -2542,7 +2558,7 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 core_ptr->map.string_property  = property->value.file;
                 break;
             case PT_FLOAT:
-                #ifdef DEBUG
+                #ifdef ESZ_DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading decimal property '%s': %f\n", property->name, (double)property->value.decimal);
                 #endif
@@ -2550,7 +2566,7 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 core_ptr->map.decimal_property = (double)property->value.decimal;
                 break;
             case PT_INT:
-                #ifdef DEBUG
+                #ifdef ESZ_DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading integer property '%s': %d\n", property->name, property->value.integer);
                 #endif
@@ -2558,7 +2574,7 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 core_ptr->map.integer_property = property->value.integer;
                 break;
             case PT_STRING:
-                #ifdef DEBUG
+                #ifdef ESZ_DEBUG
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                                "Loading string property '%s': %s\n", property->name, property->value.string);
                 #endif
