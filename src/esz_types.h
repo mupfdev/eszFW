@@ -68,15 +68,15 @@ typedef enum
 } esz_direction;
 
 /**
- * @brief An enumeration of plane types.
+ * @brief An enumeration of layer levels.
  */
 typedef enum
 {
-    ESZ_BG = 0,
-    ESZ_FG,
-    ESZ_PLANE_TYPE_MAX
+    ESZ_LAYER_BG = 0,
+    ESZ_LAYER_FG,
+    ESZ_LAYER_LEVEL_MAX
 
-} esz_plane_type;
+} esz_layer_level;
 
 /**
  * @brief An enumeration of render layer levels.
@@ -84,23 +84,23 @@ typedef enum
 typedef enum
 {
     ESZ_BACKGROUND = 0,
-//    ESZ_ENTITY_BG,
+    ESZ_ENTITY_BG,
     ESZ_MAP_BG,
-//    ESZ_ENTITY_FG,
+    ESZ_ENTITY_FG,
     ESZ_MAP_FG,
     ESZ_RENDER_LAYER_MAX
 
 } esz_render_layer;
 
 /**
- * @brief An enumeration of layer types.
+ * @brief An enumeration of Tiled layer types.
  */
 typedef enum
 {
     ESZ_TILE_LAYER = 0,
     ESZ_OBJECT_GROUP
 
-} esz_layer_type;
+} esz_tiled_layer_type;
 
 /**
  * @brief An enumeration of event types
@@ -310,7 +310,7 @@ typedef struct esz_map
     const char*           string_property;
     char*                 path;
     SDL_Texture*          animated_tile_texture;
-    SDL_Texture*          layer_texture[ESZ_PLANE_TYPE_MAX];
+    SDL_Texture*          layer_texture[ESZ_LAYER_LEVEL_MAX];
     SDL_Texture*          render_target[ESZ_RENDER_LAYER_MAX];
     SDL_Texture*          tileset_texture;
     esz_animated_tile_t*  animated_tile;

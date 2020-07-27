@@ -66,6 +66,7 @@
 // Private function prototypes
 // -----------------------------------------------------------------------------
 
+static esz_status          create_and_set_render_target(SDL_Texture** target, esz_window_t* window);
 static esz_status          draw_scene(esz_window_t* window, esz_core_t* core);
 static bool                get_boolean_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static double              get_decimal_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
@@ -84,7 +85,7 @@ static esz_status          init_objects(esz_core_t* core);
 static esz_status          init_sprites(esz_window_t* window, esz_core_t* core);
 static bool                is_camera_locked(esz_core_t* core);
 static bool                is_camera_at_horizontal_boundary(esz_core_t* core);
-static bool                is_layer_of_type(const esz_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core);
+static bool                is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core);
 static esz_status          load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
 static void                load_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static esz_status          load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
@@ -95,7 +96,8 @@ static void                poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t             remove_gid_flip_bits(int32_t gid);
 static esz_status          render_background(esz_window_t* window, esz_core_t* core);
 static esz_status          render_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static esz_status          render_map(bool is_in_background, esz_window_t* window, esz_core_t* core);
+static esz_status          render_entities(esz_layer_level level, esz_window_t* window, esz_core_t* core);
+static esz_status          render_map(esz_layer_level level, esz_window_t* window, esz_core_t* core);
 static esz_status          render_scene(esz_window_t* window, esz_core_t* core);
 static double              round_(double number);
 static void                set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core);
@@ -737,7 +739,7 @@ esz_status esz_show_scene(esz_window_t* window, esz_core_t* core)
         goto exit;
     }
 
-    draw_scene(window, core);
+    status = draw_scene(window, core);
 
 exit:
     return status;
@@ -811,12 +813,12 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     core->map.time_since_last_anim_frame      = 0.0;
     core->map.width                           = 0;
 
-    for (esz_plane_type plane_type = 0; ESZ_PLANE_TYPE_MAX > plane_type; plane_type += 1)
+    for (esz_layer_level level = 0; ESZ_LAYER_LEVEL_MAX > level; level += 1)
     {
-        if (core->map.layer_texture[plane_type])
+        if (core->map.layer_texture[level])
         {
-            SDL_DestroyTexture(core->map.layer_texture[plane_type]);
-            core->map.layer_texture[plane_type] = NULL;
+            SDL_DestroyTexture(core->map.layer_texture[level]);
+            core->map.layer_texture[level] = NULL;
         }
     }
 
@@ -897,7 +899,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     layer = get_head_tiled_layer(core);
     while (layer)
     {
-        if (is_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
             tiled_object = get_head_tiled_object(layer, core);
 
@@ -972,6 +974,45 @@ void esz_update_core(esz_window_t* window, esz_core_t* core)
 // Private functions (for internal use only)
 // -----------------------------------------------------------------------------
 
+static esz_status create_and_set_render_target(SDL_Texture** target, esz_window_t* window)
+{
+    if (! (*target))
+    {
+        (*target) = SDL_CreateTexture(
+            window->renderer,
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_TEXTUREACCESS_TARGET,
+            window->width,
+            window->height);
+    }
+
+    if (! (*target))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
+        return ESZ_ERROR_CRITICAL;
+    }
+    else
+    {
+        if (0 > SDL_SetTextureBlendMode((*target), SDL_BLENDMODE_BLEND))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
+            SDL_DestroyTexture((*target));
+            return ESZ_ERROR_CRITICAL;
+        }
+    }
+
+    if (0 > SDL_SetRenderTarget(window->renderer, (*target)))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
+        SDL_DestroyTexture((*target));
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    SDL_RenderClear(window->renderer);
+
+    return ESZ_OK;
+}
+
 static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
 {
     SDL_Rect dst;
@@ -1013,7 +1054,7 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
         if (0 > SDL_RenderCopy(window->renderer, core->map.render_target[render_layer_idx], NULL, &dst))
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
-            return ESZ_WARNING;
+            return ESZ_ERROR_CRITICAL;
         }
     }
 
@@ -1059,7 +1100,7 @@ static esz_tiled_layer_t* get_head_tiled_layer(esz_core_t* core)
 
 static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_core_t* core)
 {
-    if (is_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+    if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
     {
         #ifdef USE_LIBTMX
         return layer->content.objgr->head;
@@ -1141,7 +1182,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
     while (layer)
     {
-        if (is_layer_of_type(ESZ_TILE_LAYER, layer, core) && layer->visible)
+        if (is_tiled_layer_of_type(ESZ_TILE_LAYER, layer, core) && layer->visible)
         {
             for (int32_t index_height = 0; index_height < (int32_t)core->map.handle->height; index_height += 1)
             {
@@ -1284,6 +1325,7 @@ static esz_status init_objects(esz_core_t* core)
 {
     esz_tiled_layer_t*  layer        = get_head_tiled_layer(core);
     esz_tiled_object_t* tiled_object = NULL;
+    int32_t             index        = 0;
 
     if (core->map.object_count)
     {
@@ -1292,7 +1334,7 @@ static esz_status init_objects(esz_core_t* core)
 
     while (layer)
     {
-        if (is_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
             tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
@@ -1320,12 +1362,11 @@ static esz_status init_objects(esz_core_t* core)
     layer = get_head_tiled_layer(core);
     while (layer)
     {
-        if (is_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
             tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
             {
-                int32_t               index      = 0;
                 unsigned long         type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t*         object     = &core->map.object[index];
                 esz_tiled_property_t* properties = tiled_object->properties;
@@ -1337,40 +1378,40 @@ static esz_status init_objects(esz_core_t* core)
                 {
                     case H_entity:
                     {
-                        esz_entity_ext_t*     entity     = object->entity;
+                        esz_entity_ext_t** entity = &object->entity;
 
-                        entity = SDL_calloc(1, sizeof(struct esz_entity_ext));
+                        (*entity) = SDL_calloc(1, sizeof(struct esz_entity_ext));
                         if (! entity)
                         {
                             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory for entity.\n", __func__);
                             return ESZ_ERROR_CRITICAL;
                         }
 
-                        entity->acceleration           = get_decimal_property(H_acceleration, properties, core);
-                        entity->first_frame            = get_integer_property(H_animation_first_frame, properties, core);
-                        entity->fps                    = get_integer_property(H_animation_fps, properties, core);
-                        entity->last_frame             = get_integer_property(H_animation_last_frame, properties, core);
-                        entity->frame_offset_x         = get_integer_property(H_frame_offset_x, properties, core);
-                        entity->frame_offset_y         = get_integer_property(H_frame_offset_y, properties, core);
-                        entity->is_affected_by_gravity = get_boolean_property(H_is_affected_by_gravity, properties, core);
-                        entity->is_in_background       = get_boolean_property(H_is_in_background, properties, core);
-                        entity->is_moving              = get_boolean_property(H_is_moving, properties, core);
-                        entity->max_velocity_x         = get_decimal_property(H_max_velocity_x, properties, core);
-                        entity->sprite_sheet_id        = get_integer_property(H_sprite_sheet_id, properties, core);
+                        (*entity)->acceleration           = get_decimal_property(H_acceleration, properties, core);
+                        (*entity)->first_frame            = get_integer_property(H_animation_first_frame, properties, core);
+                        (*entity)->fps                    = get_integer_property(H_animation_fps, properties, core);
+                        (*entity)->last_frame             = get_integer_property(H_animation_last_frame, properties, core);
+                        (*entity)->frame_offset_x         = get_integer_property(H_frame_offset_x, properties, core);
+                        (*entity)->frame_offset_y         = get_integer_property(H_frame_offset_y, properties, core);
+                        (*entity)->is_affected_by_gravity = get_boolean_property(H_is_affected_by_gravity, properties, core);
+                        (*entity)->is_in_background       = get_boolean_property(H_is_in_background, properties, core);
+                        (*entity)->is_moving              = get_boolean_property(H_is_moving, properties, core);
+                        (*entity)->max_velocity_x         = get_decimal_property(H_max_velocity_x, properties, core);
+                        (*entity)->sprite_sheet_id        = get_integer_property(H_sprite_sheet_id, properties, core);
 
-                        entity->spawn_pos_x            = core->map.object[index].pos_x;
-                        entity->spawn_pos_y            = core->map.object[index].pos_y;
+                        (*entity)->spawn_pos_x            = core->map.object[index].pos_x;
+                        (*entity)->spawn_pos_y            = core->map.object[index].pos_y;
 
-                        entity->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, core);
-                        entity->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, core);
+                        (*entity)->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, core);
+                        (*entity)->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, core);
 
                         if (get_boolean_property(H_is_left_oriented, properties, core))
                         {
-                            entity->direction = ESZ_LEFT;
+                            (*entity)->direction = ESZ_LEFT;
                         }
                         else
                         {
-                            entity->direction = ESZ_RIGHT;
+                            (*entity)->direction = ESZ_RIGHT;
                         }
                     }
                     break;
@@ -1478,7 +1519,7 @@ static bool is_camera_at_horizontal_boundary(esz_core_t* core)
     return core->camera.is_at_horizontal_boundary;
 }
 
-static bool is_layer_of_type(const esz_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core)
+static bool is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core)
 {
     switch (type)
     {
@@ -1962,6 +2003,11 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
     double           pos_x_a;
     double           pos_x_b;
 
+    if (! core->map.is_loaded)
+    {
+        return ESZ_OK;
+    }
+
     if (0 > SDL_QueryTexture(core->map.background.layer[index].texture, NULL, NULL, &width, NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
@@ -2047,22 +2093,118 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
     return ESZ_OK;
 }
 
-static esz_status render_map(bool is_in_background, esz_window_t* window, esz_core_t* core)
+static esz_status render_entities(esz_layer_level level, esz_window_t* window, esz_core_t* core)
 {
-    esz_tiled_layer_t* layer                 = get_head_tiled_layer(core);
-    bool               render_animated_tiles = false;
-    esz_render_layer   render_layer          = ESZ_MAP_FG;
-    esz_plane_type     plane_type            = ESZ_FG;
+    esz_tiled_layer_t* layer        = get_head_tiled_layer(core);
+    esz_render_layer   render_layer = ESZ_ENTITY_FG;
+    int32_t            index        = 0;
 
     if (! core->map.is_loaded)
     {
         return ESZ_OK;
     }
 
-    if (is_in_background)
+    if (ESZ_LAYER_LEVEL_MAX == level)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    if (ESZ_LAYER_BG == level)
+    {
+        render_layer = ESZ_ENTITY_BG;
+    }
+
+    if (ESZ_OK != create_and_set_render_target(&core->map.render_target[render_layer], window))
+    {
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    while (layer)
+    {
+        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+        {
+            esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
+            while (tiled_object)
+            {
+                unsigned long type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                esz_object_t* object    = &core->map.object[index];
+
+                switch (type_hash)
+                {
+                    case H_entity:
+                    {
+                        esz_entity_ext_t** entity = &object->entity;
+                        double             pos_x  = object->pos_x - core->camera.pos_x;
+                        double             pos_y  = object->pos_y - core->camera.pos_y;
+                        SDL_RendererFlip   flip   = SDL_FLIP_NONE;
+                        SDL_Rect           dst;
+                        SDL_Rect           src;
+
+                        if (ESZ_LAYER_BG == level && false == (*entity)->is_in_background)
+                        {
+                            break;
+                        }
+
+                        if (ESZ_LAYER_FG == level && (*entity)->is_in_background)
+                        {
+                            break;
+                        }
+
+                        if (ESZ_LEFT == (*entity)->direction)
+                        {
+                            flip = SDL_FLIP_HORIZONTAL;
+                        }
+
+                        src.x  = (*entity)->frame_offset_x * object->width;
+                        src.x += (*entity)->current_frame  * object->width;
+                        src.y  = (*entity)->frame_offset_y * object->height;
+                        src.w  = object->width;
+                        src.h  = object->height;
+                        dst.x  = (int32_t)pos_x - (object->width  / 2);
+                        dst.y  = (int32_t)pos_y - (object->height / 2);
+                        dst.w  = object->width;
+                        dst.h  = object->height;
+
+                        if (0 > SDL_RenderCopyEx(window->renderer, core->map.sprite[(*entity)->sprite_sheet_id].texture, &src, &dst, 0, NULL, flip))
+                        {
+                            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
+                            return ESZ_ERROR_CRITICAL;
+                        }
+                        break;
+                    }
+                }
+                index        += 1;
+                tiled_object  = tiled_object->next;
+            }
+        }
+
+        layer = layer->next;
+    }
+
+    return ESZ_OK;
+}
+
+static esz_status render_map(esz_layer_level level, esz_window_t* window, esz_core_t* core)
+{
+    esz_tiled_layer_t* layer                 = get_head_tiled_layer(core);
+    bool               render_animated_tiles = false;
+    esz_render_layer   render_layer          = ESZ_MAP_FG;
+
+    if (! core->map.is_loaded)
+    {
+        return ESZ_OK;
+    }
+
+    if (ESZ_LAYER_LEVEL_MAX == level)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    if (ESZ_LAYER_BG == level)
     {
         render_layer = ESZ_MAP_BG;
-        plane_type   = ESZ_BG;
 
         if (0 < core->map.animated_tile_fps)
         {
@@ -2070,37 +2212,10 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
         }
     }
 
-    if (! core->map.render_target[render_layer])
+    if (ESZ_OK != create_and_set_render_target(&core->map.render_target[render_layer], window))
     {
-        core->map.render_target[render_layer] = SDL_CreateTexture(
-            window->renderer,
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_TEXTUREACCESS_TARGET,
-            window->width,
-            window->height);
-    }
-
-    if (! core->map.render_target[render_layer])
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
-    else
-    {
-        if (0 > SDL_SetTextureBlendMode(core->map.render_target[render_layer], SDL_BLENDMODE_BLEND))
-        {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
-            return ESZ_ERROR_CRITICAL;
-        }
-    }
-
-    if (0 > SDL_SetRenderTarget(window->renderer, core->map.render_target[render_layer]))
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
-        return ESZ_ERROR_CRITICAL;
-    }
-
-    SDL_RenderClear(window->renderer);
 
     // Update and render animated tiles.
     core->map.time_since_last_anim_frame += window->time_since_last_frame;
@@ -2212,7 +2327,7 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
             core->map.animated_tile[index].id = next_tile_id;
         }
 
-        if (0 > SDL_SetRenderTarget(window->renderer, core->map.layer_texture[plane_type]))
+        if (0 > SDL_SetRenderTarget(window->renderer, core->map.layer_texture[level]))
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
@@ -2232,7 +2347,7 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
     }
 
     // Texture has already been rendered.
-    if (core->map.layer_texture[plane_type])
+    if (core->map.layer_texture[level])
     {
         double   render_pos_x = core->map.pos_x - core->camera.pos_x;
         double   render_pos_y = core->map.pos_y - core->camera.pos_y;
@@ -2243,7 +2358,7 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
             (int32_t)core->map.height
         };
 
-        if (0 > SDL_RenderCopyEx(window->renderer, core->map.layer_texture[plane_type], NULL, &dst, 0, NULL, SDL_FLIP_NONE))
+        if (0 > SDL_RenderCopyEx(window->renderer, core->map.layer_texture[level], NULL, &dst, 0, NULL, SDL_FLIP_NONE))
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
@@ -2265,20 +2380,20 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
     }
 
     // Texture does not yet exist. Render it!
-    core->map.layer_texture[plane_type] = SDL_CreateTexture(
+    core->map.layer_texture[level] = SDL_CreateTexture(
         window->renderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
         (int32_t)core->map.width,
         (int32_t)core->map.height);
 
-    if (! core->map.layer_texture[plane_type])
+    if (! core->map.layer_texture[level])
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
-    if (0 > SDL_SetRenderTarget(window->renderer, core->map.layer_texture[plane_type]))
+    if (0 > SDL_SetRenderTarget(window->renderer, core->map.layer_texture[level]))
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
@@ -2289,18 +2404,18 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
         SDL_Rect dst;
         SDL_Rect src;
 
-        if (is_layer_of_type(ESZ_TILE_LAYER, layer, core))
+        if (is_tiled_layer_of_type(ESZ_TILE_LAYER, layer, core))
         {
             bool is_in_foreground  = false;
             bool is_layer_rendered = false;
 
             is_in_foreground = get_boolean_property(H_is_in_foreground, layer->properties, core);
 
-            if (is_in_background && false == is_in_foreground)
+            if (ESZ_LAYER_BG == level && false == is_in_foreground)
             {
                 is_layer_rendered = true;
             }
-            else if (is_in_foreground && false == is_in_background)
+            else if (ESZ_LAYER_FG == level && is_in_foreground)
             {
                 is_layer_rendered = true;
             }
@@ -2418,7 +2533,7 @@ static esz_status render_map(bool is_in_background, esz_window_t* window, esz_co
         return ESZ_ERROR_CRITICAL;
     }
 
-    if (0 > SDL_SetTextureBlendMode(core->map.layer_texture[plane_type], SDL_BLENDMODE_BLEND))
+    if (0 > SDL_SetTextureBlendMode(core->map.layer_texture[level], SDL_BLENDMODE_BLEND))
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
@@ -2437,13 +2552,20 @@ static esz_status render_scene(esz_window_t* window, esz_core_t* core)
         return status;
     }
 
-    status = render_map(true, window, core);
-    if (ESZ_OK != status)
+    for (esz_layer_level level = 0; ESZ_LAYER_LEVEL_MAX > level; level += 1)
     {
-        return status;
-    }
+        status = render_map(level, window, core);
+        if (ESZ_OK != status)
+        {
+            return status;
+        }
 
-    status = render_map(false, window, core);
+        status = render_entities(level, window, core);
+        if (ESZ_OK != status)
+        {
+            return status;
+        }
+    }
 
     return status;
 }
