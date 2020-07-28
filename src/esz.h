@@ -214,6 +214,13 @@ void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is
 void esz_set_camera_target(const int32_t id, esz_core_t* core);
 
 /**
+ * @brief Set animation of active player entity
+ * @param id Animation ID
+ * @param core Engine core
+ */
+void esz_set_player_animation(int32_t id, esz_core_t* core);
+
+/**
  * @brief  Set the window's zoom level
  * @param  factor Zoom factor
  * @param  window Window handle

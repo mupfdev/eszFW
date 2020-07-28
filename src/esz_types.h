@@ -169,6 +169,18 @@ typedef struct esz_animated_tile
 } esz_animated_tile_t;
 
 /**
+ * @brief A structure that contains animation settings.
+ */
+typedef struct esz_animation
+{
+    int32_t first_frame;
+    int32_t fps;
+    int32_t length;
+    int32_t offset_y;
+
+} esz_animation_t;
+
+/**
  * @brief A structure that contains a background layer.
  */
 typedef struct esz_background_layer
@@ -245,41 +257,34 @@ typedef struct esz_event
 } esz_event_t;
 
 /**
- * @brief A structure that contains a structure extension for objects of
- *        type entity
+ * @brief A structure that contains entity information.
  */
-typedef struct esz_entity_ext
+typedef struct esz_entity
 {
-    double        acceleration;
-    double        jumping_power;
-    double        max_velocity_x;
-    double        spawn_pos_x;
-    double        spawn_pos_y;
-    double        time_since_last_anim_frame;
-    double        velocity_x;
-    double        velocity_y;
-    esz_direction direction;
-    int32_t       current_frame;
-    int32_t       first_frame;
-    int32_t       fps;
-    int32_t       frame_offset_x;
-    int32_t       frame_offset_y;
-    int32_t       idle_first_frame;
-    int32_t       idle_last_frame;
-    int32_t       idle_frame_offset_x;
-    int32_t       idle_frame_offset_y;
-    int32_t       last_frame;
-    int32_t       sprite_sheet_id;
-    bool          connect_horizontal_map_ends;
-    bool          connect_vertical_map_ends;
-    bool          is_affected_by_gravity;
-    bool          is_animated;
-    bool          is_in_background;
-    bool          is_in_midground;
-    bool          is_jumping;
-    bool          is_moving;
+    double           acceleration;
+    double           jumping_power;
+    double           max_velocity_x;
+    double           spawn_pos_x;
+    double           spawn_pos_y;
+    double           time_since_last_anim_frame;
+    double           velocity_x;
+    double           velocity_y;
+    esz_direction    direction;
+    esz_animation_t* animation;
+    int32_t          animation_count;
+    int32_t          current_animation;
+    int32_t          current_frame;
+    int32_t          sprite_sheet_id;
+    bool             connect_horizontal_map_ends;
+    bool             connect_vertical_map_ends;
+    bool             is_affected_by_gravity;
+    bool             is_animated;
+    bool             is_in_background;
+    bool             is_in_midground;
+    bool             is_jumping;
+    bool             is_moving;
 
-} esz_entity_ext_t;
+} esz_entity_t;
 
 /**
  * @brief A structure that contains a map object
@@ -289,7 +294,7 @@ typedef struct esz_object
     struct esz_aabb     bounding_box;
     double              pos_x;
     double              pos_y;
-    esz_entity_ext_t*   entity;
+    esz_entity_t*       entity;
     esz_tiled_object_t* handle;
     int32_t             height;
     int32_t             id;
