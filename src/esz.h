@@ -188,8 +188,15 @@ void esz_lock_camera(esz_core_t* core);
 void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core_t* core);
 
 /**
+ * @brief  Set active player entity
+ * @param  id Entity ID
+ * @param  core Engine core handle
+ */
+void esz_set_active_player_entity(int32_t id, esz_core_t* core);
+
+/**
  * @brief  Set the position of the camera
- * @remark The camera has to be unlocked first!
+ * @remark The camera has to be unlocked.
  * @param  pos_x Position along the x-axis
  * @param  pos_y Position along the y-axis
  * @param  pos_is_relative Use relative instead of absolute position
@@ -197,6 +204,14 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
  * @param  core Engine core handle
  */
 void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is_relative, esz_window_t* window, esz_core_t* core);
+
+/**
+ * @brief  Set the position of the camera
+ * @remark The camera has to be locked.
+ * @param  id Entity ID
+ * @param  core Engine core handle
+ */
+void esz_set_camera_target(const int32_t id, esz_core_t* core);
 
 /**
  * @brief  Set the window's zoom level

@@ -251,6 +251,7 @@ typedef struct esz_event
 typedef struct esz_entity_ext
 {
     double        acceleration;
+    double        jumping_power;
     double        max_velocity_x;
     double        spawn_pos_x;
     double        spawn_pos_y;
@@ -263,11 +264,16 @@ typedef struct esz_entity_ext
     int32_t       fps;
     int32_t       frame_offset_x;
     int32_t       frame_offset_y;
+    int32_t       idle_first_frame;
+    int32_t       idle_last_frame;
+    int32_t       idle_frame_offset_x;
+    int32_t       idle_frame_offset_y;
     int32_t       last_frame;
     int32_t       sprite_sheet_id;
     bool          connect_horizontal_map_ends;
     bool          connect_vertical_map_ends;
     bool          is_affected_by_gravity;
+    bool          is_animated;
     bool          is_in_background;
     bool          is_in_midground;
     bool          is_jumping;
@@ -332,6 +338,7 @@ typedef struct esz_map
     esz_object_t*         object;
     esz_sprite_t*         sprite;
     esz_tiled_map_t*      handle;
+    int32_t               active_player_entity_id;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
     int32_t               height;
