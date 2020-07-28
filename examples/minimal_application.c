@@ -39,7 +39,7 @@ int main()
     {
         esz_update_core(window, core);
 
-        status = esz_draw_frame(window, core);
+        status = esz_show_scene(window, core);
         if (ESZ_ERROR_CRITICAL == status)
         {
             break;
