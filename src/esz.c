@@ -80,7 +80,6 @@ static esz_status          init_animated_tiles(esz_core_t* core);
 static esz_status          init_background(esz_window_t* window, esz_core_t* core);
 static esz_status          init_objects(esz_core_t* core);
 static esz_status          init_sprites(esz_window_t* window, esz_core_t* core);
-static bool                is_camera_locked(esz_core_t* core);
 static bool                is_camera_at_horizontal_boundary(esz_core_t* core);
 static bool                is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core);
 static esz_status          load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
@@ -398,6 +397,11 @@ esz_status esz_init_core(esz_core_t** core)
     return ESZ_OK;
 }
 
+bool esz_is_camera_locked(esz_core_t* core)
+{
+    return core->camera.is_locked;
+}
+
 bool esz_is_core_active(esz_core_t* core)
 {
     return core->is_active;
@@ -406,6 +410,33 @@ bool esz_is_core_active(esz_core_t* core)
 bool esz_is_map_loaded(esz_core_t* core)
 {
     return core->map.is_loaded;
+}
+
+void esz_move_player(bool state, esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (! core->map.is_loaded)
+    {
+        return;
+    }
+
+    entity            = core->map.object[core->map.active_player_entity_id].entity;
+    entity->is_moving = state;
+}
+
+bool esz_is_player_moving(esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (! core->map.is_loaded)
+    {
+        return false;
+    }
+
+    entity = core->map.object[core->map.active_player_entity_id].entity;
+
+    return entity->is_moving;
 }
 
 esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_core_t* core)
@@ -640,28 +671,28 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
     switch (event_type)
     {
         case EVENT_FINGERDOWN:
-            core->event.finger_down_cb   = event_callback;
+            core->event.finger_down_cb      = event_callback;
             break;
         case EVENT_FINGERUP:
-            core->event.finger_up_cb     = event_callback;
+            core->event.finger_up_cb        = event_callback;
             break;
         case EVENT_FINGERMOTION:
-            core->event.finger_motion_cb = event_callback;
+            core->event.finger_motion_cb    = event_callback;
             break;
         case EVENT_KEYDOWN:
-            core->event.key_down_cb      = event_callback;
+            core->event.key_down_cb         = event_callback;
             break;
         case EVENT_KEYUP:
-            core->event.key_up_cb        = event_callback;
+            core->event.key_up_cb           = event_callback;
             break;
         case EVENT_MAP_LOADED:
-            core->event.map_loaded_cb    = event_callback;
+            core->event.map_loaded_cb       = event_callback;
             break;
         case EVENT_MAP_UNLOADED:
-            core->event.map_unloaded_cb  = event_callback;
+            core->event.map_unloaded_cb     = event_callback;
             break;
         case EVENT_MULTIGESTURE:
-            core->event.multi_gesture_cb = event_callback;
+            core->event.multi_gesture_cb    = event_callback;
             break;
     }
 }
@@ -676,7 +707,54 @@ void esz_set_active_player_entity(int32_t id, esz_core_t* core)
     core->map.active_player_entity_id = id;
 }
 
+void esz_set_next_player_animation(esz_core_t* core)
+{
+    esz_entity_t* entity;
+    int32_t       id;
+
+    if (! core->map.is_loaded)
+    {
+        return;
+    }
+
+    entity = core->map.object[core->map.active_player_entity_id].entity;
+    id     = entity->current_animation + 1;
+
+    if (id > entity->animation_count)
+    {
+        id = 1;
+    }
+
+    esz_set_player_animation(id, core);
+}
+
 void esz_set_player_animation(int32_t id, esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (! core->map.is_loaded)
+    {
+        return;
+    }
+
+    entity = core->map.object[core->map.active_player_entity_id].entity;
+
+    if (0 >= id || entity->animation_count < id)
+    {
+        return;
+    }
+
+    if (0 <= core->map.active_player_entity_id)
+    {
+        if (entity->current_animation != id)
+        {
+            entity->current_frame     = 0;
+            entity->current_animation = id;
+        }
+    }
+}
+
+void esz_set_player_direction(esz_direction direction, esz_core_t* core)
 {
     esz_entity_t* entity;
 
@@ -689,16 +767,13 @@ void esz_set_player_animation(int32_t id, esz_core_t* core)
 
     if (0 <= core->map.active_player_entity_id)
     {
-        if (id < entity->current_animation)
-        {
-            entity->current_animation = id;
-        }
+        entity->direction = direction;
     }
 }
 
 void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is_relative, esz_window_t* window, esz_core_t* core)
 {
-    if (! is_camera_locked(core))
+    if (! esz_is_camera_locked(core))
     {
         if (pos_is_relative)
         {
@@ -1422,6 +1497,8 @@ static esz_status init_objects(esz_core_t* core)
                             return ESZ_ERROR_CRITICAL;
                         }
 
+                        (*entity)->current_animation           = 1;
+
                         (*entity)->acceleration                = get_decimal_property(H_acceleration, properties, core);
                         (*entity)->jumping_power               = get_decimal_property(H_jumping_power, properties, core);
                         (*entity)->max_velocity_x              = get_decimal_property(H_max_velocity_x, properties, core);
@@ -1476,6 +1553,11 @@ static esz_status init_objects(esz_core_t* core)
                                 SDL_snprintf(property_name, 26, "animation_%u_first_frame", anim_index + 1);
                                 (*entity)->animation[anim_index].first_frame =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, core);
+
+                                if (0 == (*entity)->animation[anim_index].first_frame)
+                                {
+                                    (*entity)->animation[anim_index].first_frame = 1;
+                                }
 
                                 SDL_snprintf(property_name, 26, "animation_%u_fps", anim_index + 1);
                                 (*entity)->animation[anim_index].fps =
@@ -1618,11 +1700,6 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
     }
 
     return ESZ_OK;
-}
-
-static bool is_camera_locked(esz_core_t* core)
-{
-    return core->camera.is_locked;
 }
 
 static bool is_camera_at_horizontal_boundary(esz_core_t* core)
@@ -1971,7 +2048,7 @@ static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
 
 static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
 {
-    if (is_camera_locked(core) && 0 <= core->camera.target_entity_id)
+    if (esz_is_camera_locked(core) && 0 <= core->camera.target_entity_id)
     {
         esz_object_t* target = &core->map.object[core->camera.target_entity_id];
 
@@ -2261,12 +2338,30 @@ static esz_status render_entities(esz_entity_layer_level level, esz_window_t* wi
                             flip = SDL_FLIP_HORIZONTAL;
                         }
 
+                        // Update animation frame
+                        // -----------------------------------------------------
+
                         if ((*entity)->is_animated && (*entity)->animation)
                         {
                             int32_t current_animation = (*entity)->current_animation;
 
-                            src.x = (*entity)->current_frame                         * object->width;
-                            src.y = (*entity)->animation[current_animation].offset_y * object->height;
+                            (*entity)->time_since_last_anim_frame += window->time_since_last_frame;
+
+                            if ((*entity)->time_since_last_anim_frame >= 1.0 / (double)((*entity)->animation[current_animation - 1].fps))
+                            {
+                                (*entity)->time_since_last_anim_frame = 0.0;
+
+                                (*entity)->current_frame += 1;
+
+                                if ((*entity)->current_frame >= (*entity)->animation[current_animation - 1].length)
+                                {
+                                    (*entity)->current_frame = 0;
+                                }
+                            }
+
+                            src.x  = ((*entity)->animation[current_animation - 1].first_frame - 1) * object->width;
+                            src.x += (*entity)->current_frame                                      * object->width;
+                            src.y  = (*entity)->animation[current_animation - 1].offset_y          * object->height;
                         }
 
                         src.w  = object->width;
@@ -2767,29 +2862,10 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                 {
                     case H_entity:
                     {
-                        esz_entity_t** entity = &object->entity;
-
-                        // Update animation frame
-                        // -----------------------------------------------------
-
-                        if ((*entity)->is_animated && (*entity)->animation)
-                        {
-                            int32_t current_animation = (*entity)->current_animation;
-
-                            (*entity)->time_since_last_anim_frame += window->time_since_last_frame;
-
-                            if ((*entity)->time_since_last_anim_frame >= 1.0 / (double)((*entity)->animation[current_animation].fps))
-                            {
-                                (*entity)->time_since_last_anim_frame = 0.0;
-
-                                (*entity)->current_frame += 1;
-
-                                if ((*entity)->current_frame >= (*entity)->animation[current_animation].length)
-                                {
-                                    (*entity)->current_frame = (*entity)->animation[current_animation].first_frame;
-                                }
-                            }
-                        }
+                        esz_entity_t** entity                = &object->entity;
+                        double         acceleration          = (core->map.gravitation * core->map.meter_in_pixel);
+                        double         time_since_last_frame = esz_get_time_since_last_frame(window);
+                        double         distance              = acceleration * time_since_last_frame * time_since_last_frame;
 
                         // Vertical movement and gravity
                         // -----------------------------------------------------
@@ -2811,11 +2887,8 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
 
                             if (is_in_midair)
                             {
-                                double time_since_last_frame  = esz_get_time_since_last_frame(window);
-                                double acceleration           = (core->map.gravitation * core->map.meter_in_pixel);
-                                double distance               = acceleration * time_since_last_frame * time_since_last_frame;
-                                (*entity)->velocity_y        += distance;
-                                object->pos_y                += (*entity)->velocity_y;
+                                (*entity)->velocity_y += distance;
+                                object->pos_y         += (*entity)->velocity_y;
                             }
                             else
                             {
@@ -2832,10 +2905,11 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
 
                         if ((*entity)->is_moving)
                         {
-                            double time_since_last_frame  = esz_get_time_since_last_frame(window);
-                            double acceleration           = (*entity)->acceleration * (double)core->map.meter_in_pixel;
-                            double distance               = acceleration * time_since_last_frame * time_since_last_frame;
-                            (*entity)->velocity_x        += distance;
+                            (*entity)->velocity_x += distance;
+                        }
+                        else
+                        {
+                            (*entity)->velocity_x -= distance;
                         }
 
                         if (0.0 < (*entity)->velocity_x)
@@ -2854,6 +2928,10 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                         if ((*entity)->max_velocity_x <= (*entity)->velocity_x)
                         {
                             (*entity)->velocity_x = (*entity)->max_velocity_x;
+                        }
+                        else if (0.0 > (*entity)->velocity_x)
+                        {
+                            (*entity)->velocity_x = 0.0;
                         }
 
                         // Collision detection
@@ -2877,6 +2955,10 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                         }
                         else
                         {
+                            if ((double)(object->width / 4) > object->pos_x)
+                            {
+                                object->pos_x = (double)(object->width / 4);
+                            }
                             // tbd.
                         }
 

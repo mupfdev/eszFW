@@ -247,10 +247,10 @@ typedef struct esz_event
 
     void (*finger_down_cb)(esz_window_t*   window, esz_core_t* core);
     void (*finger_motion_cb)(esz_window_t* window, esz_core_t* core);
-    void (*finger_up_cb)(esz_window_t*     window, esz_core_t* core);
-    void (*key_down_cb)(esz_window_t*      window, esz_core_t* core);
-    void (*key_up_cb)(esz_window_t*        window, esz_core_t* core);
-    void (*map_loaded_cb)(esz_window_t*    window, esz_core_t* core);
+    void (*finger_up_cb)(esz_window_t* window, esz_core_t* core);
+    void (*key_down_cb)(esz_window_t* window, esz_core_t* core);
+    void (*key_up_cb)(esz_window_t* window, esz_core_t* core);
+    void (*map_loaded_cb)(esz_window_t* window, esz_core_t* core);
     void (*map_unloaded_cb)(esz_window_t*  window, esz_core_t* core);
     void (*multi_gesture_cb)(esz_window_t* window, esz_core_t* core);
 
