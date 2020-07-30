@@ -247,10 +247,10 @@ typedef struct esz_event
 
     void (*finger_down_cb)(esz_window_t*   window, esz_core_t* core);
     void (*finger_motion_cb)(esz_window_t* window, esz_core_t* core);
-    void (*finger_up_cb)(esz_window_t*     window, esz_core_t* core);
-    void (*key_down_cb)(esz_window_t*      window, esz_core_t* core);
-    void (*key_up_cb)(esz_window_t*        window, esz_core_t* core);
-    void (*map_loaded_cb)(esz_window_t*    window, esz_core_t* core);
+    void (*finger_up_cb)(esz_window_t* window, esz_core_t* core);
+    void (*key_down_cb)(esz_window_t* window, esz_core_t* core);
+    void (*key_up_cb)(esz_window_t* window, esz_core_t* core);
+    void (*map_loaded_cb)(esz_window_t* window, esz_core_t* core);
     void (*map_unloaded_cb)(esz_window_t*  window, esz_core_t* core);
     void (*multi_gesture_cb)(esz_window_t* window, esz_core_t* core);
 
@@ -325,7 +325,7 @@ typedef struct esz_map
     double                time_since_last_anim_frame;
 
     #ifdef USE_LIBTMX
-    uint64_t              hash_query;
+    unsigned long         hash_query;
     #elif  USE_CUTE_TILED
     unsigned long long    hash_id_objectgroup;
     unsigned long long    hash_id_tilelayer;
