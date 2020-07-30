@@ -157,7 +157,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     };
     esz_logo = esz_logo_pxdata;
 
-    *window = SDL_calloc(1, sizeof(struct esz_window));
+    *window = calloc(1, sizeof(struct esz_window));
     if (! *window)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -303,7 +303,7 @@ void esz_deactivate_core(esz_core_t* core)
 
 void esz_destroy_core(esz_core_t* core)
 {
-    SDL_free(core);
+    free(core);
     SDL_Log("Destroy engine core.\n");
 }
 
@@ -324,7 +324,7 @@ void esz_destroy_window(esz_window_t* window)
         SDL_DestroyWindow(window->window);
     }
 
-    SDL_free(window);
+    free(window);
     SDL_Log("Quitting.\n");
 
     SDL_Quit();
@@ -384,7 +384,7 @@ double esz_get_time_since_last_frame(esz_window_t* window)
 
 esz_status esz_init_core(esz_core_t** core)
 {
-    *core = SDL_calloc(1, sizeof(struct esz_core));
+    *core = calloc(1, sizeof(struct esz_core));
     if (! *core)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -485,7 +485,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 2. Paths and file locations
     // -------------------------------------------------------------------------
 
-    core->map.path = SDL_calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
+    core->map.path = calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
     if (! core->map.path)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -506,7 +506,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
         cwk_path_get_dirname(core->map.handle->ts_head->source, &ts_path_length);
 
-        ts_path = SDL_calloc(1, ts_path_length + 1);
+        ts_path = calloc(1, ts_path_length + 1);
         if (! ts_path)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -518,11 +518,11 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         source_length += SDL_strlen(core->map.handle->tiles[first_gid]->tileset->image->source);
         source_length += ts_path_length + 1;
 
-        tileset_image_source = SDL_calloc(1, source_length);
+        tileset_image_source = calloc(1, source_length);
         if (! tileset_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
-            SDL_free(ts_path);
+            free(ts_path);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -539,13 +539,12 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
                      ts_path,
                      core->map.handle->tiles[first_gid]->tileset->image->source);
 
-        SDL_free(ts_path);
+        free(ts_path);
 
         #elif USE_CUTE_TILED
         if (! core->map.handle->tilesets)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: no embedded tileset found.\n", __func__);
-            SDL_free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -554,11 +553,10 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         source_length += SDL_strlen(core->map.handle->tilesets->image.ptr);
         source_length += 1;
 
-        tileset_image_source = SDL_calloc(1, source_length);
+        tileset_image_source = calloc(1, source_length);
         if (! tileset_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
-            SDL_free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -575,7 +573,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     if (ESZ_OK != init_objects(core))
     {
-        SDL_free(tileset_image_source);
+        free(tileset_image_source);
         esz_unload_map(window, core);
         return ESZ_WARNING;
     }
@@ -588,7 +586,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         if (ESZ_OK != load_texture_from_file(tileset_image_source, &core->map.tileset_texture, window))
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: Error loading image '%s'.\n", __func__, tileset_image_source);
-            SDL_free(tileset_image_source);
+            free(tileset_image_source);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
@@ -600,7 +598,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    SDL_free(tileset_image_source);
+    free(tileset_image_source);
 
     // 5. Sprites
     // -------------------------------------------------------------------------
@@ -873,6 +871,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         SDL_Log("No map has been loaded.\n");
         return;
     }
+    core->map.is_loaded = false;
 
     core->map.active_player_entity_id         = -1;
     core->map.animated_tile_fps               = 0;
@@ -888,7 +887,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     core->map.gravitation                     = 0.0;
     core->map.height                          = 0;
     core->map.integer_property                = 0;
-    core->map.is_loaded                       = false;
     core->map.meter_in_pixel                  = 0;
     core->map.object_count                    = 0;
     core->map.pos_x                           = 0.0;
@@ -943,12 +941,12 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         }
     }
 
-    SDL_free(core->map.background.layer);
+    free(core->map.background.layer);
 
     // 6. Animated tiles
     // -------------------------------------------------------------------------
 
-    SDL_free(core->map.animated_tile);
+    free(core->map.animated_tile);
 
     // 5. Sprites
     // -------------------------------------------------------------------------
@@ -967,7 +965,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         }
     }
 
-    SDL_free(core->map.sprite);
+    free(core->map.sprite);
 
     // 4. Tileset
     // -------------------------------------------------------------------------
@@ -1000,8 +998,8 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
                     case H_entity:
                     {
                         esz_entity_t** entity = &object->entity;
-                        SDL_free((*entity)->animation);
-                        SDL_free((*entity));
+                        free((*entity)->animation);
+                        free((*entity));
                     }
                     break;
                 }
@@ -1012,12 +1010,12 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         }
         layer = layer->next;
     }
-    SDL_free(core->map.object);
+    free(core->map.object);
 
     // 2. Paths and file locations
     // -------------------------------------------------------------------------
 
-    SDL_free(core->map.path);
+    free(core->map.path);
 
     // 1. Map file
     // -------------------------------------------------------------------------
@@ -1354,7 +1352,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
     }
     else
     {
-        core->map.animated_tile = SDL_calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
+        core->map.animated_tile = calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
         if (! core->map.animated_tile)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1408,7 +1406,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    core->map.background.layer = SDL_calloc((size_t)core->map.background.layer_count, sizeof(struct esz_background_layer));
+    core->map.background.layer = calloc((size_t)core->map.background.layer_count, sizeof(struct esz_background_layer));
     if (! core->map.background.layer)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1460,7 +1458,7 @@ static esz_status init_objects(esz_core_t* core)
 
     if (core->map.object_count)
     {
-        core->map.object = SDL_calloc((size_t)core->map.object_count, sizeof(struct esz_object));
+        core->map.object = calloc((size_t)core->map.object_count, sizeof(struct esz_object));
         if (! core->map.object)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1491,7 +1489,7 @@ static esz_status init_objects(esz_core_t* core)
                     {
                         esz_entity_t** entity = &object->entity;
 
-                        (*entity) = SDL_calloc(1, sizeof(struct esz_entity));
+                        (*entity) = calloc(1, sizeof(struct esz_entity));
                         if (! (*entity))
                         {
                             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory for entity.\n", __func__);
@@ -1542,7 +1540,7 @@ static esz_status init_objects(esz_core_t* core)
                         {
                             char property_name[26] = { 0 };
 
-                            (*entity)->animation = SDL_calloc((size_t)(*entity)->animation_count, sizeof(struct esz_animation));
+                            (*entity)->animation = calloc((size_t)(*entity)->animation_count, sizeof(struct esz_animation));
                             if (! (*entity)->animation)
                             {
                                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1662,7 +1660,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    core->map.sprite = SDL_calloc((size_t)core->map.sprite_sheet_count, sizeof(struct esz_sprite));
+    core->map.sprite = calloc((size_t)core->map.sprite_sheet_count, sizeof(struct esz_sprite));
     if (! core->map.sprite)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1680,7 +1678,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         // Todo: error handling.
         source_length         = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
 
-        sprite_sheet_image_source = SDL_calloc(1, source_length);
+        sprite_sheet_image_source = calloc(1, source_length);
         if (! sprite_sheet_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1693,11 +1691,11 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
         if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].texture, window))
         {
-            SDL_free(sprite_sheet_image_source);
+            free(sprite_sheet_image_source);
             return ESZ_ERROR_CRITICAL;
         }
 
-        SDL_free(sprite_sheet_image_source);
+        free(sprite_sheet_image_source);
     }
 
     return ESZ_OK;
@@ -1766,7 +1764,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
     source_length = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
 
-    background_layer_image_source = SDL_calloc(1, source_length);
+    background_layer_image_source = calloc(1, source_length);
     if (! background_layer_image_source)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1781,7 +1779,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
         goto exit;
     }
 
-    SDL_free(background_layer_image_source);
+    free(background_layer_image_source);
 
     if (0 > SDL_QueryTexture(image_texture, NULL, NULL, &image_width, &image_height))
     {
@@ -2049,6 +2047,11 @@ static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
 
 static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
 {
+    if (! core->map.is_loaded)
+    {
+        return;
+    }
+
     if (esz_is_camera_locked(core) && 0 <= core->camera.target_entity_id)
     {
         esz_object_t* target = &core->map.object[core->camera.target_entity_id];
