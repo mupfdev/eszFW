@@ -84,7 +84,8 @@ option(USE_LIBTMX "Use libTMX instead of cute_tiled" OFF)
 target_link_libraries(
   ${PROJECT_NAME}
   ${SDL2_LIBRARIES}
-  cwalk)
+  cwalk
+  m)
 
 if(USE_LIBTMX)
   add_definitions(-DUSE_LIBTMX)
@@ -97,10 +98,6 @@ if(USE_LIBTMX)
 else()
   add_definitions(-DUSE_CUTE_TILED)
 endif(USE_LIBTMX)
-
-if(UNIX)
-    target_link_libraries(${PROJECT_NAME} m)
-endif(UNIX)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
   target_compile_options(${PROJECT_NAME} PRIVATE
