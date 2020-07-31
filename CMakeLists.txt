@@ -21,7 +21,7 @@ include_directories(
     SYSTEM ${STB_INCLUDE_DIR})
 
 set(eszFW_sources
-    src/esz.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.c)
 
 add_library(
     ${PROJECT_NAME}
@@ -37,7 +37,7 @@ target_include_directories(
 add_library(
     cwalk
     STATIC
-    external/cwalk/src/cwalk.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/src/cwalk.c)
 
 add_library(
     lua

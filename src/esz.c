@@ -66,14 +66,17 @@
 
 static esz_status          create_and_set_render_target(SDL_Texture** target, esz_window_t* window);
 static esz_status          draw_scene(esz_window_t* window, esz_core_t* core);
-static bool                get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
-static double              get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static bool                get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core);
+static double              get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core);
 static int32_t             get_first_gid(esz_tiled_map_t* tiled_map);
 static esz_tiled_layer_t*  get_head_tiled_layer(esz_core_t* core);
 static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_core_t* core);
-static int32_t             get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
-static const char*         get_tiled_layer_name(esz_tiled_layer_t* layer);
+static int32_t             get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core);
+static const char*         get_tiled_layer_name(esz_tiled_layer_t* tiled_layer);
+static int32_t             get_tiled_layer_property_count(esz_tiled_layer_t* tiled_layer);
+static int32_t             get_tiled_map_property_count(esz_tiled_map_t* tiled_map);
 static const char*         get_tiled_object_name(esz_tiled_object_t* tiled_object);
+static int32_t             get_tiled_object_property_count(esz_tiled_object_t* tiled_object);
 static const char*         get_tiled_object_type_name(esz_tiled_object_t* tiled_object);
 static int32_t             get_tile_height(esz_tiled_map_t* tiled_map);
 static int32_t             get_tile_width(esz_tiled_map_t* tiled_map);
@@ -84,7 +87,7 @@ static esz_status          init_sprites(esz_window_t* window, esz_core_t* core);
 static bool                is_camera_at_horizontal_boundary(esz_core_t* core);
 static bool                is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core);
 static esz_status          load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static void                load_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static void                load_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core);
 static esz_status          load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status          load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static esz_tiled_map_t*    load_tiled_map(const char* map_file_name);
@@ -333,29 +336,37 @@ void esz_destroy_window(esz_window_t* window)
 
 bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    int32_t prop_cnt = get_tiled_map_property_count(core->map.handle);
+
     core->map.boolean_property = false;
-    load_property(name_hash, core->map.handle->properties, core);
+    load_property(name_hash, core->map.handle->properties, prop_cnt, core);
     return core->map.boolean_property;
 }
 
 double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    int32_t prop_cnt = get_tiled_map_property_count(core->map.handle);
+
     core->map.decimal_property = 0.0;
-    load_property(name_hash, core->map.handle->properties, core);
+    load_property(name_hash, core->map.handle->properties, prop_cnt, core);
     return core->map.decimal_property;
 }
 
 int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    int32_t prop_cnt = get_tiled_map_property_count(core->map.handle);
+
     core->map.integer_property = 0;
-    load_property(name_hash, core->map.handle->properties, core);
+    load_property(name_hash, core->map.handle->properties, prop_cnt, core);
     return core->map.integer_property;
 }
 
 const char* esz_get_string_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    int32_t prop_cnt = get_tiled_map_property_count(core->map.handle);
+
     core->map.string_property = NULL;
-    load_property(name_hash, core->map.handle->properties, core);
+    load_property(name_hash, core->map.handle->properties, prop_cnt, core);
     return core->map.string_property;
 }
 
@@ -1176,17 +1187,17 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
     return ESZ_OK;
 }
 
-static bool get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static bool get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     core->map.boolean_property = false;
-    load_property(name_hash, properties, core);
+    load_property(name_hash, properties, property_count, core);
     return core->map.boolean_property;
 }
 
-static double get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static double get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     core->map.decimal_property = 0.0;
-    load_property(name_hash, properties, core);
+    load_property(name_hash, properties, property_count, core);
     return core->map.decimal_property;
 }
 
@@ -1228,20 +1239,44 @@ static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_c
     return NULL;
 }
 
-static int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     core->map.integer_property = 0;
-    load_property(name_hash, properties, core);
+    load_property(name_hash, properties, property_count, core);
     return core->map.integer_property;
 }
 
-static const char* get_tiled_layer_name(esz_tiled_layer_t* layer)
+static const char* get_tiled_layer_name(esz_tiled_layer_t* tiled_layer)
 {
     #ifdef USE_LIBTMX
-    return layer->name;
+    return tiled_layer->name;
 
     #elif  USE_CUTE_TILED
-    return layer->name.ptr;
+    return tiled_layer->name.ptr;
+
+    #endif
+}
+
+static int32_t get_tiled_layer_property_count(esz_tiled_layer_t* tiled_layer)
+{
+    #ifdef USE_LIBTMX
+    (void)tiled_layer;
+    return 0;
+
+    #elif  USE_CUTE_TILED
+    return tiled_layer->property_count;
+
+    #endif
+}
+
+static int32_t get_tiled_map_property_count(esz_tiled_map_t* tiled_map)
+{
+    #ifdef USE_LIBTMX
+    (void)tiled_map;
+    return 0;
+
+    #elif  USE_CUTE_TILED
+    return tiled_map->property_count;
 
     #endif
 }
@@ -1253,6 +1288,18 @@ static const char* get_tiled_object_name(esz_tiled_object_t* tiled_object)
 
     #elif  USE_CUTE_TILED
     return tiled_object->name.ptr;
+
+    #endif
+}
+
+static int32_t get_tiled_object_property_count(esz_tiled_object_t* tiled_object)
+{
+    #ifdef USE_LIBTMX
+    (void)tiled_object;
+    return 0;
+
+    #elif  USE_CUTE_TILED
+    return tiled_object->property_count;
 
     #endif
 }
@@ -1395,7 +1442,6 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     core->map.background.layer_count = 0;
     while (search_is_running)
     {
-        // Fix me: this line is executed once too often. Why?
         SDL_snprintf(property_name, 21, "background_layer_%u", core->map.background.layer_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
@@ -1487,6 +1533,7 @@ static esz_status init_objects(esz_core_t* core)
                 uint64_t              type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t*         object     = &core->map.object[index];
                 esz_tiled_property_t* properties = tiled_object->properties;
+                int32_t               prop_cnt   = get_tiled_object_property_count(tiled_object);
 
                 object->pos_x  = (double)tiled_object->x;
                 object->pos_y  = (double)tiled_object->y;
@@ -1506,19 +1553,19 @@ static esz_status init_objects(esz_core_t* core)
 
                         (*entity)->current_animation           = 1;
 
-                        (*entity)->acceleration                = get_decimal_property(H_acceleration, properties, core);
-                        (*entity)->jumping_power               = get_decimal_property(H_jumping_power, properties, core);
-                        (*entity)->max_velocity_x              = get_decimal_property(H_max_velocity_x, properties, core);
+                        (*entity)->acceleration                = get_decimal_property(H_acceleration, properties, prop_cnt, core);
+                        (*entity)->jumping_power               = get_decimal_property(H_jumping_power, properties, prop_cnt, core);
+                        (*entity)->max_velocity_x              = get_decimal_property(H_max_velocity_x, properties, prop_cnt, core);
 
-                        (*entity)->sprite_sheet_id             = get_integer_property(H_sprite_sheet_id, properties, core);
+                        (*entity)->sprite_sheet_id             = get_integer_property(H_sprite_sheet_id, properties, prop_cnt, core);
 
-                        (*entity)->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, core);
-                        (*entity)->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, core);
-                        (*entity)->is_affected_by_gravity      = get_boolean_property(H_is_affected_by_gravity, properties, core);
-                        (*entity)->is_animated                 = get_boolean_property(H_is_animated, properties, core);
-                        (*entity)->is_in_background            = get_boolean_property(H_is_in_background, properties, core);
-                        (*entity)->is_in_midground             = get_boolean_property(H_is_in_midground, properties, core);
-                        (*entity)->is_moving                   = get_boolean_property(H_is_moving, properties, core);
+                        (*entity)->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, prop_cnt, core);
+                        (*entity)->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, prop_cnt, core);
+                        (*entity)->is_affected_by_gravity      = get_boolean_property(H_is_affected_by_gravity, properties, prop_cnt, core);
+                        (*entity)->is_animated                 = get_boolean_property(H_is_animated, properties, prop_cnt, core);
+                        (*entity)->is_in_background            = get_boolean_property(H_is_in_background, properties, prop_cnt, core);
+                        (*entity)->is_in_midground             = get_boolean_property(H_is_in_midground, properties, prop_cnt, core);
+                        (*entity)->is_moving                   = get_boolean_property(H_is_moving, properties, prop_cnt,  core);
 
                         (*entity)->spawn_pos_x                 = core->map.object[index].pos_x;
                         (*entity)->spawn_pos_y                 = core->map.object[index].pos_y;
@@ -1531,10 +1578,9 @@ static esz_status init_objects(esz_core_t* core)
                             (*entity)->animation_count = 0;
                             while (search_is_running)
                             {
-                                // Fix me: this line is executed once too often. Why?
                                 SDL_snprintf(property_name, 14, "animation_%u", (*entity)->animation_count + 1);
 
-                                if (get_boolean_property(esz_hash((const unsigned char*)property_name), properties, core))
+                                if (get_boolean_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core))
                                 {
                                     (*entity)->animation_count += 1;
                                 }
@@ -1561,7 +1607,7 @@ static esz_status init_objects(esz_core_t* core)
                             {
                                 SDL_snprintf(property_name, 26, "animation_%u_first_frame", anim_index + 1);
                                 (*entity)->animation[anim_index].first_frame =
-                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, core);
+                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
                                 if (0 == (*entity)->animation[anim_index].first_frame)
                                 {
@@ -1570,19 +1616,19 @@ static esz_status init_objects(esz_core_t* core)
 
                                 SDL_snprintf(property_name, 26, "animation_%u_fps", anim_index + 1);
                                 (*entity)->animation[anim_index].fps =
-                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, core);
+                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
                                 SDL_snprintf(property_name, 26, "animation_%u_length", anim_index + 1);
                                 (*entity)->animation[anim_index].length =
-                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, core);
+                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
                                 SDL_snprintf(property_name, 26, "animation_%u_offset_y", anim_index + 1);
                                 (*entity)->animation[anim_index].offset_y =
-                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, core);
+                                    get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
                             }
                         }
 
-                        if (get_boolean_property(H_is_player, properties, core) && ! player_found)
+                        if (get_boolean_property(H_is_player, properties, prop_cnt, core) && ! player_found)
                         {
                             player_found = true;
 
@@ -1597,7 +1643,7 @@ static esz_status init_objects(esz_core_t* core)
                             SDL_Log("  %d %s\n", index, get_tiled_object_name(tiled_object));
                         }
 
-                        if (get_boolean_property(H_is_left_oriented, properties, core))
+                        if (get_boolean_property(H_is_left_oriented, properties, prop_cnt, core))
                         {
                             (*entity)->direction = ESZ_LEFT;
                         }
@@ -1614,8 +1660,8 @@ static esz_status init_objects(esz_core_t* core)
                     break;
                 }
 
-                object->width  = get_integer_property(H_width, properties, core);
-                object->height = get_integer_property(H_height, properties, core);
+                object->width  = get_integer_property(H_width, properties, prop_cnt, core);
+                object->height = get_integer_property(H_height, properties, prop_cnt, core);
 
                 if (0 >= object->width)
                 {
@@ -1654,7 +1700,6 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
     while (search_is_running)
     {
-        // Fix me: this line is executed once too often. Why?
         SDL_snprintf(property_name, 17, "sprite_sheet_%u", core->map.sprite_sheet_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
@@ -1863,23 +1908,23 @@ exit:
     return status;
 }
 
-static void load_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static void load_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     #ifdef USE_LIBTMX
+    (void)property_count;
     core->map.hash_query = name_hash;
     tmx_property_foreach(properties, tmxlib_store_property, (void*)core);
 
     #elif  USE_CUTE_TILED
     int index = 0;
 
-    while (properties[index].name.ptr)
+    //while (properties[index].name.ptr)
+    for (index = 0; index < property_count; index += 1)
     {
         if (name_hash == esz_hash((const unsigned char*)properties[index].name.ptr))
         {
             break;
         }
-
-        index += 1;
     }
 
     if (properties[index].name.ptr)
@@ -2637,10 +2682,11 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
 
         if (is_tiled_layer_of_type(ESZ_TILE_LAYER, layer, core))
         {
-            bool is_in_foreground  = false;
-            bool is_layer_rendered = false;
+            bool    is_in_foreground  = false;
+            bool    is_layer_rendered = false;
+            int32_t prop_cnt          = get_tiled_layer_property_count(layer);
 
-            is_in_foreground = get_boolean_property(H_is_in_foreground, layer->properties, core);
+            is_in_foreground = get_boolean_property(H_is_in_foreground, layer->properties, prop_cnt, core);
 
             if (ESZ_MAP_LAYER_BG == level && false == is_in_foreground)
             {
