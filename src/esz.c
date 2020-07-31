@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <SDL.h>
 #include <cwalk.h>
 #include "esz.h"
@@ -27,37 +28,39 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define ESZ_DEBUG
+
 // Hash table
 // -----------------------------------------------------------------------------
 
-#define H_acceleration                    0x186a848f
-#define H_animated_tile_fps               0xde2debdd
-#define H_background_constant_velocity    0x5ad8b7fc
-#define H_background_is_top_aligned       0x00773f85
-#define H_background_layer_shift          0xc255007e
-#define H_connect_horizontal_map_ends     0x88cb679e
-#define H_connect_vertical_map_ends       0x92bca50e
-#define H_entity                          0xfb7ffdc2
-#define H_gravitation                     0x12404d2d
-#define H_height                          0x01d688de
-#define H_is_affected_by_gravity          0xf228f6d1
-#define H_is_animated                     0x3eae4983
-#define H_is_in_background                0x5b4839b6
-#define H_is_in_foreground                0xd43eb8f1
-#define H_is_in_midground                 0x0f6ff45f
-#define H_is_left_oriented                0xc7d179a4
-#define H_is_moving                       0x71f37f30
-#define H_is_player                       0x78b16e8d
-#define H_jumping_power                   0x606d92ab
-#define H_max_velocity_x                  0x96163590
-#define H_meter_in_pixel                  0x4a407cf9
-#define H_opengl                          0x12ef9eea
-#define H_sprite_sheet_id                 0xe50cd180
-#define H_width                           0x10a3b0a5
+#define H_acceleration                 0xce26e518186a848f
+#define H_animated_tile_fps            0xf16ba347de2debdd
+#define H_background_constant_velocity 0x1cb19bb15ad8b7fc
+#define H_background_is_top_aligned    0xe10d87b900773f85
+#define H_background_layer_shift       0xf42f15f4c255007e
+#define H_connect_horizontal_map_ends  0xb2d77d5c88cb679e
+#define H_connect_vertical_map_ends    0x8fd9bf6992bca50e
+#define H_entity                       0x00000652fb7ffdc2
+#define H_gravitation                  0xc090e5ec12404d2d
+#define H_height                       0x0000065301d688de
+#define H_is_affected_by_gravity       0xd7df2608f228f6d1
+#define H_is_animated                  0xc09beeb13eae4983
+#define H_is_in_background             0xdba806855b4839b6
+#define H_is_in_foreground             0xdba8c1d8d43eb8f1
+#define H_is_in_midground              0x7b0525da0f6ff45f
+#define H_is_left_oriented             0x1af19f00c7d179a4
+#define H_is_moving                    0x0377cc4471f37f30
+#define H_is_player                    0x0377cc4478b16e8d
+#define H_jumping_power                0x702da8a7606d92ab
+#define H_max_velocity_x               0xa1d4b1b096163590
+#define H_meter_in_pixel               0xfbbc8a6d4a407cf9
+#define H_opengl                       0x0000065312ef9eea
+#define H_sprite_sheet_id              0xe2141daae50cd180
+#define H_width                        0x0000003110a3b0a5
 
 #ifdef USE_CUTE_TILED
-#define H_objectgroup                     0x970be349
-#define H_tilelayer                       0x0e844fb0
+#define H_objectgroup                  0xc0b9d518970be349
+#define H_tilelayer                    0x0377d9f70e844fb0
 #endif
 
 // Private function prototypes
@@ -65,12 +68,12 @@
 
 static esz_status          create_and_set_render_target(SDL_Texture** target, esz_window_t* window);
 static esz_status          draw_scene(esz_window_t* window, esz_core_t* core);
-static bool                get_boolean_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
-static double              get_decimal_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static bool                get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static double              get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static int32_t             get_first_gid(esz_tiled_map_t* tiled_map);
 static esz_tiled_layer_t*  get_head_tiled_layer(esz_core_t* core);
 static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_core_t* core);
-static int32_t             get_integer_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static int32_t             get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static const char*         get_tiled_layer_name(esz_tiled_layer_t* layer);
 static const char*         get_tiled_object_name(esz_tiled_object_t* tiled_object);
 static const char*         get_tiled_object_type_name(esz_tiled_object_t* tiled_object);
@@ -83,7 +86,7 @@ static esz_status          init_sprites(esz_window_t* window, esz_core_t* core);
 static bool                is_camera_at_horizontal_boundary(esz_core_t* core);
 static bool                is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_layer_t* layer, esz_core_t* core);
 static esz_status          load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static void                load_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core);
+static void                load_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core);
 static esz_status          load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status          load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static esz_tiled_map_t*    load_tiled_map(const char* map_file_name);
@@ -330,26 +333,30 @@ void esz_destroy_window(esz_window_t* window)
     SDL_Quit();
 }
 
-bool esz_get_boolean_map_property(const unsigned long name_hash, esz_core_t* core)
+bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    core->map.boolean_property = false;
     load_property(name_hash, core->map.handle->properties, core);
     return core->map.boolean_property;
 }
 
-double esz_get_decimal_map_property(const unsigned long name_hash, esz_core_t* core)
+double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    core->map.decimal_property = 0.0;
     load_property(name_hash, core->map.handle->properties, core);
     return core->map.decimal_property;
 }
 
-int32_t esz_get_integer_map_property(const unsigned long name_hash, esz_core_t* core)
+int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    core->map.integer_property = 0;
     load_property(name_hash, core->map.handle->properties, core);
     return core->map.integer_property;
 }
 
-const char* esz_get_string_map_property(const unsigned long name_hash, esz_core_t* core)
+const char* esz_get_string_map_property(const uint64_t name_hash, esz_core_t* core)
 {
+    core->map.string_property = NULL;
     load_property(name_hash, core->map.handle->properties, core);
     return core->map.string_property;
 }
@@ -359,9 +366,9 @@ const uint8_t* esz_get_keyboard_state(void)
     return SDL_GetKeyboardState(NULL);
 }
 
-unsigned long esz_hash(const unsigned char* name)
+uint64_t esz_hash(const unsigned char* name)
 {
-    unsigned long hash = 5381;
+    uint64_t hash = 5381;
     uint32_t c;
 
     while ((c = *name++))
@@ -990,7 +997,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
 
             while (tiled_object)
             {
-                unsigned long type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t* object    = &core->map.object[index];
 
                 switch (type_hash)
@@ -1173,14 +1180,16 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
     return ESZ_OK;
 }
 
-static bool get_boolean_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static bool get_boolean_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
 {
+    core->map.boolean_property = false;
     load_property(name_hash, properties, core);
     return core->map.boolean_property;
 }
 
-static double get_decimal_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static double get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
 {
+    core->map.decimal_property = 0.0;
     load_property(name_hash, properties, core);
     return core->map.decimal_property;
 }
@@ -1223,8 +1232,9 @@ static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_c
     return NULL;
 }
 
-static int32_t get_integer_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
 {
+    core->map.integer_property = 0;
     load_property(name_hash, properties, core);
     return core->map.integer_property;
 }
@@ -1389,6 +1399,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     core->map.background.layer_count = 0;
     while (search_is_running)
     {
+        // Fix me: this line is executed once too often. Why?
         SDL_snprintf(property_name, 21, "background_layer_%u", core->map.background.layer_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
@@ -1398,6 +1409,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
         else
         {
             search_is_running = false;
+            break;
         }
     }
 
@@ -1476,7 +1488,7 @@ static esz_status init_objects(esz_core_t* core)
             tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
             {
-                unsigned long         type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t              type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t*         object     = &core->map.object[index];
                 esz_tiled_property_t* properties = tiled_object->properties;
 
@@ -1523,6 +1535,7 @@ static esz_status init_objects(esz_core_t* core)
                             (*entity)->animation_count = 0;
                             while (search_is_running)
                             {
+                                // Fix me: this line is executed once too often. Why?
                                 SDL_snprintf(property_name, 14, "animation_%u", (*entity)->animation_count + 1);
 
                                 if (get_boolean_property(esz_hash((const unsigned char*)property_name), properties, core))
@@ -1532,6 +1545,7 @@ static esz_status init_objects(esz_core_t* core)
                                 else
                                 {
                                     search_is_running = false;
+                                    break;
                                 }
                             }
                         }
@@ -1641,8 +1655,10 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
     bool search_is_running = true;
 
     core->map.sprite_sheet_count = 0;
+
     while (search_is_running)
     {
+        // Fix me: this line is executed once too often. Why?
         SDL_snprintf(property_name, 17, "sprite_sheet_%u", core->map.sprite_sheet_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
@@ -1675,27 +1691,30 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
 
         const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
-        // Todo: error handling.
-        source_length         = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
 
-        sprite_sheet_image_source = calloc(1, source_length);
-        if (! sprite_sheet_image_source)
+        if (file_name)
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
-            return ESZ_ERROR_CRITICAL;
-        }
+            source_length = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
 
-        SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map.path, file_name);
+            sprite_sheet_image_source = calloc(1, source_length);
+            if (! sprite_sheet_image_source)
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
+                return ESZ_ERROR_CRITICAL;
+            }
 
-        core->map.sprite[index].id = index + 1;
+            SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map.path, file_name);
 
-        if (ESZ_OK != load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].texture, window))
-        {
+            core->map.sprite[index].id = index + 1;
+
+            if (ESZ_ERROR_CRITICAL == load_texture_from_file(sprite_sheet_image_source, &core->map.sprite[index].texture, window))
+            {
+                free(sprite_sheet_image_source);
+                return ESZ_ERROR_CRITICAL;
+            }
+
             free(sprite_sheet_image_source);
-            return ESZ_ERROR_CRITICAL;
         }
-
-        free(sprite_sheet_image_source);
     }
 
     return ESZ_OK;
@@ -1773,7 +1792,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
     SDL_snprintf(background_layer_image_source, source_length, "%s%s", core->map.path, file_name);
 
-    if (ESZ_OK != load_texture_from_file(background_layer_image_source, &image_texture, window))
+    if (ESZ_ERROR_CRITICAL == load_texture_from_file(background_layer_image_source, &image_texture, window))
     {
         status = ESZ_ERROR_CRITICAL;
         goto exit;
@@ -1848,13 +1867,8 @@ exit:
     return status;
 }
 
-static void load_property(const unsigned long name_hash, esz_tiled_property_t* properties, esz_core_t* core)
+static void load_property(const uint64_t name_hash, esz_tiled_property_t* properties, esz_core_t* core)
 {
-    core->map.boolean_property = false;
-    core->map.decimal_property = 0.0;
-    core->map.integer_property = 0;
-    core->map.string_property  = NULL;
-
     #ifdef USE_LIBTMX
     core->map.hash_query = name_hash;
     tmx_property_foreach(properties, tmxlib_store_property, (void*)core);
@@ -1872,45 +1886,48 @@ static void load_property(const unsigned long name_hash, esz_tiled_property_t* p
         index += 1;
     }
 
-    switch (properties[index].type)
+    if (properties[index].name.ptr)
     {
-        case CUTE_TILED_PROPERTY_COLOR:
-        case CUTE_TILED_PROPERTY_FILE:
-	case CUTE_TILED_PROPERTY_NONE:
-            // tbd.
-            break;
-	case CUTE_TILED_PROPERTY_INT:
-            #ifdef ESZ_DEBUG
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                         "Loading integer property '%s': %d\n", properties[index].name.ptr, properties[index].data.integer);
-            #endif
+        switch (properties[index].type)
+        {
+            case CUTE_TILED_PROPERTY_COLOR:
+            case CUTE_TILED_PROPERTY_FILE:
+            case CUTE_TILED_PROPERTY_NONE:
+                // tbd.
+                break;
+            case CUTE_TILED_PROPERTY_INT:
+                #ifdef ESZ_DEBUG
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                             "Loading integer property '%s': %d\n", properties[index].name.ptr, properties[index].data.integer);
+                #endif
 
-            core->map.integer_property = properties[index].data.integer;
-            break;
-	case CUTE_TILED_PROPERTY_BOOL:
-            #ifdef ESZ_DEBUG
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                         "Loading boolean property '%s': %u\n", properties[index].name.ptr, properties[index].data.boolean);
-            #endif
+                core->map.integer_property = properties[index].data.integer;
+                break;
+            case CUTE_TILED_PROPERTY_BOOL:
+                #ifdef ESZ_DEBUG
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                             "Loading boolean property '%s': %u\n", properties[index].name.ptr, properties[index].data.boolean);
+                #endif
 
-            core->map.boolean_property = (bool)properties[index].data.boolean;
-            break;
-	case CUTE_TILED_PROPERTY_FLOAT:
-            #ifdef ESZ_DEBUG
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                         "Loading decimal property '%s': %f\n", properties[index].name.ptr, (double)properties[index].data.floating);
-            #endif
+                core->map.boolean_property = (bool)properties[index].data.boolean;
+                break;
+            case CUTE_TILED_PROPERTY_FLOAT:
+                #ifdef ESZ_DEBUG
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                             "Loading decimal property '%s': %f\n", properties[index].name.ptr, (double)properties[index].data.floating);
+                #endif
 
-            core->map.decimal_property = (double)properties[index].data.floating;
-            break;
-	case CUTE_TILED_PROPERTY_STRING:
-            #ifdef ESZ_DEBUG
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                         "Loading string property '%s': %s\n", properties[index].name.ptr, properties[index].data.string.ptr);
-            #endif
+                core->map.decimal_property = (double)properties[index].data.floating;
+                break;
+            case CUTE_TILED_PROPERTY_STRING:
+                #ifdef ESZ_DEBUG
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                             "Loading string property '%s': %s\n", properties[index].name.ptr, properties[index].data.string.ptr);
+                #endif
 
-            core->map.string_property  = properties[index].data.string.ptr;
-            break;
+                core->map.string_property  = properties[index].data.string.ptr;
+                break;
+        }
     }
     #endif // USE_CUTE_TILED
 }
@@ -1929,6 +1946,11 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
     int            pitch;
     uint32_t       pixel_format;
     unsigned char* data;
+
+    if (! file_name)
+    {
+        return ESZ_WARNING;
+    }
 
     data = stbi_load(file_name, &width, &height, &orig_format, req_format);
 
@@ -1981,6 +2003,11 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
     int            pitch;
     uint32_t       pixel_format;
     unsigned char* data;
+
+    if (! buffer)
+    {
+        return ESZ_WARNING;
+    }
 
     data = stbi_load_from_memory(buffer, length, &width, &height, &orig_format, req_format);
 
@@ -2316,7 +2343,7 @@ static esz_status render_entities(esz_entity_layer_level level, esz_window_t* wi
             esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
             {
-                unsigned long type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t* object    = &core->map.object[index];
 
                 switch (type_hash)
@@ -2754,6 +2781,11 @@ static esz_status render_scene(esz_window_t* window, esz_core_t* core)
 {
     esz_status status = ESZ_OK;
 
+    if (! core->map.is_loaded)
+    {
+        return status;
+    }
+
     status = render_background(window, core);
     if (ESZ_OK != status)
     {
@@ -2859,7 +2891,7 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
             esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
             {
-                unsigned long type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
                 esz_object_t* object    = &core->map.object[index];
 
                 switch (type_hash)

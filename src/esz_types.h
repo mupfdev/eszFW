@@ -325,10 +325,10 @@ typedef struct esz_map
     double                time_since_last_anim_frame;
 
     #ifdef USE_LIBTMX
-    unsigned long         hash_query;
+    uint64_t              hash_query;
     #elif  USE_CUTE_TILED
-    unsigned long long    hash_id_objectgroup;
-    unsigned long long    hash_id_tilelayer;
+    long long unsigned    hash_id_objectgroup;
+    long long unsigned    hash_id_tilelayer;
     #endif
 
     size_t                path_length;
