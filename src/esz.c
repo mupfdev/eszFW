@@ -28,8 +28,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define ESZ_DEBUG
-
 // Hash table
 // -----------------------------------------------------------------------------
 
@@ -1027,11 +1025,6 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     // 1. Map file
     // -------------------------------------------------------------------------
 
-    #ifdef USE_CUTE_TILED
-    core->map.hash_id_objectgroup = 0;
-    core->map.hash_id_tilelayer   = 0;
-    #endif
-
     #ifdef USE_LIBTMX
     if (core->map.handle)
     {
@@ -1039,6 +1032,9 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     }
 
     #elif  USE_CUTE_TILED
+    core->map.hash_id_objectgroup = 0;
+    core->map.hash_id_tilelayer   = 0;
+
     if (core->map.handle)
     {
         cute_tiled_free_map(core->map.handle);
