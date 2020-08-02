@@ -7,12 +7,6 @@
 #ifndef ESZ_H
 #define ESZ_H
 
-#ifndef USE_LIBTMX
-    #ifndef USE_CUTE_TILED
-        #error "Please select a supported Tiled map loader."
-    #endif
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "esz_types.h"

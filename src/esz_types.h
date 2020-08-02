@@ -22,7 +22,7 @@ typedef tmx_property esz_tiled_property_t;
 
 #include <tmx.h>
 
-#elif  USE_CUTE_TILED
+#else // (cute_tiled.h)
 struct cute_tiled_layer_t;
 struct cute_tiled_map_t;
 struct cute_tiled_object_t;
@@ -114,6 +114,16 @@ typedef enum
     ESZ_OBJECT_GROUP
 
 } esz_tiled_layer_type;
+
+/**
+ * @brief An enumeration of entity states
+ */
+typedef enum
+{
+    IS_AFFECTED_BY_GRAVITY,
+    IS_IN_MIDAIR,
+    IS_JUMPING,
+};
 
 /**
  * @brief An enumeration of event types
@@ -326,7 +336,7 @@ typedef struct esz_map
 
     #ifdef USE_LIBTMX
     uint64_t              hash_query;
-    #elif  USE_CUTE_TILED
+    #else
     long long unsigned    hash_id_objectgroup;
     long long unsigned    hash_id_tilelayer;
     #endif

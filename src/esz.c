@@ -18,7 +18,7 @@
 
 #ifdef USE_LIBTMX
     #include <tmx.h>
-#elif  USE_CUTE_TILED
+#else // (cute_tiled.h)
     #define CUTE_TILED_IMPLEMENTATION
     #include <cute_tiled.h>
 #endif
@@ -56,7 +56,7 @@
 #define H_sprite_sheet_id              0xe2141daae50cd180
 #define H_width                        0x0000003110a3b0a5
 
-#ifdef USE_CUTE_TILED
+#ifndef USE_LIBTMX // (cute_tiled.h)
 #define H_objectgroup                  0xc0b9d518970be349
 #define H_tilelayer                    0x0377d9f70e844fb0
 #endif
@@ -478,7 +478,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    #ifdef USE_CUTE_TILED
+    #ifndef USE_LIBTMX // (cute_tiled.h)
     {
         esz_tiled_layer_t* layer = core->map.handle->layers;
         while (layer)
@@ -557,7 +557,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
         free(ts_path);
 
-        #elif USE_CUTE_TILED
+        #else // (cute_tiled.h)
         if (! core->map.handle->tilesets)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: no embedded tileset found.\n", __func__);
@@ -581,7 +581,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
                      core->map.path,
                      core->map.handle->tilesets->image.ptr);
 
-        #endif // USE_CUTE_TILED
+        #endif
     }
 
     // 3. Objects
@@ -1042,7 +1042,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         tmx_map_free(core->map.handle);
     }
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     core->map.hash_id_objectgroup = 0;
     core->map.hash_id_tilelayer   = 0;
 
@@ -1206,7 +1206,7 @@ static int32_t get_first_gid(esz_tiled_map_t* tiled_map)
     #ifdef USE_LIBTMX
     return (int32_t)tiled_map->ts_head->firstgid;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_map->tilesets->firstgid;
 
     #endif
@@ -1217,7 +1217,7 @@ static esz_tiled_layer_t* get_head_tiled_layer(esz_core_t* core)
     #ifdef USE_LIBTMX
     return core->map.handle->ly_head;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return core->map.handle->layers;
 
     #endif
@@ -1230,7 +1230,7 @@ static esz_tiled_object_t* get_head_tiled_object(esz_tiled_layer_t* layer, esz_c
         #ifdef USE_LIBTMX
         return layer->content.objgr->head;
 
-        #elif  USE_CUTE_TILED
+        #else // (cute_tiled.h)
         return layer->objects;
 
         #endif
@@ -1251,7 +1251,7 @@ static const char* get_tiled_layer_name(esz_tiled_layer_t* tiled_layer)
     #ifdef USE_LIBTMX
     return tiled_layer->name;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_layer->name.ptr;
 
     #endif
@@ -1263,7 +1263,7 @@ static int32_t get_tiled_layer_property_count(esz_tiled_layer_t* tiled_layer)
     (void)tiled_layer;
     return 0;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_layer->property_count;
 
     #endif
@@ -1275,7 +1275,7 @@ static int32_t get_tiled_map_property_count(esz_tiled_map_t* tiled_map)
     (void)tiled_map;
     return 0;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_map->property_count;
 
     #endif
@@ -1286,7 +1286,7 @@ static const char* get_tiled_object_name(esz_tiled_object_t* tiled_object)
     #ifdef USE_LIBTMX
     return tiled_object->name;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_object->name.ptr;
 
     #endif
@@ -1298,7 +1298,7 @@ static int32_t get_tiled_object_property_count(esz_tiled_object_t* tiled_object)
     (void)tiled_object;
     return 0;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_object->property_count;
 
     #endif
@@ -1309,7 +1309,7 @@ static const char* get_tiled_object_type_name(esz_tiled_object_t* tiled_object)
     #ifdef USE_LIBTMX
     return tiled_object->type;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_object->type.ptr;
 
     #endif
@@ -1320,7 +1320,7 @@ static int32_t get_tile_height(esz_tiled_map_t* tiled_map)
     #ifdef USE_LIBTMX
     return (int32_t)tiled_map->tiles[get_first_gid(tiled_map)]->tileset->tile_height;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_map->tilesets->tileheight;
 
     #endif
@@ -1331,7 +1331,7 @@ static int32_t get_tile_width(esz_tiled_map_t* tiled_map)
     #ifdef USE_LIBTMX
     return (int32_t)tiled_map->tiles[get_first_gid(tiled_map)]->tileset->tile_width;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return tiled_map->tilesets->tilewidth;
 
     #endif
@@ -1354,7 +1354,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
                     #ifdef USE_LIBTMX
                     uint32_t* layer_content = layer->content.gids;
-                    #elif  USE_CUTE_TILED
+                    #else // (cute_tiled.h)
                     int32_t*  layer_content = layer->data;
                     #endif
 
@@ -1369,7 +1369,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
                         }
                     }
 
-                    #elif USE_CUTE_TILED
+                    #else // (cute_tiled.h)
                     {
                         cute_tiled_tileset_t*         tileset   = core->map.handle->tilesets;
                         cute_tiled_tile_descriptor_t* tile      = tileset->tiles;
@@ -1392,7 +1392,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
                             }
                         }
                     }
-                    #endif // USE_CUTE_TILED
+                    #endif
                 }
             }
         }
@@ -1779,7 +1779,7 @@ static bool is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_la
                 return true;
             }
 
-            #elif  USE_CUTE_TILED
+            #else // (cute_tiled.h)
             if (core->map.hash_id_tilelayer == layer->type.hash_id)
             {
                 return true;
@@ -1794,7 +1794,7 @@ static bool is_tiled_layer_of_type(const esz_tiled_layer_type type, esz_tiled_la
                 return true;
             }
 
-            #elif  USE_CUTE_TILED
+            #else // (cute_tiled.h)
             if (core->map.hash_id_objectgroup == layer->type.hash_id)
             {
                 return true;
@@ -1915,7 +1915,7 @@ static void load_property(const uint64_t name_hash, esz_tiled_property_t* proper
     core->map.hash_query = name_hash;
     tmx_property_foreach(properties, tmxlib_store_property, (void*)core);
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     int index = 0;
 
     //while (properties[index].name.ptr)
@@ -1970,7 +1970,7 @@ static void load_property(const uint64_t name_hash, esz_tiled_property_t* proper
                 break;
         }
     }
-    #endif // USE_CUTE_TILED
+    #endif
 }
 
 /* Based on
@@ -2101,7 +2101,7 @@ static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, tmx_strerr());
     }
 
-    #elif USE_CUTE_TILED
+    #else // (cute_tiled.h)
     tiled_map = (esz_tiled_map_t*)cute_tiled_load_map_from_file(map_file_name, NULL);
     if (! tiled_map)
     {
@@ -2192,7 +2192,7 @@ static int32_t remove_gid_flip_bits(int32_t gid)
     #ifdef USE_LIBTMX
     return gid & TMX_FLIP_BITS_REMOVAL;
 
-    #elif  USE_CUTE_TILED
+    #else // (cute_tiled.h)
     return cute_tiled_unset_flags(gid);
 
     #endif
@@ -2547,7 +2547,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
             dst.x            = (int32_t)core->map.animated_tile[index].dst_x;
             dst.y            = (int32_t)core->map.animated_tile[index].dst_y;
 
-            #elif  USE_CUTE_TILED
+            #else // (cute_tiled.h)
             cute_tiled_tileset_t*         tileset = core->map.handle->tilesets;
             cute_tiled_tile_descriptor_t* tile    = tileset->tiles;
 
@@ -2568,7 +2568,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
                 tile = tile->next;
             }
 
-            #endif // USE_CUTE_TILED
+            #endif
 
             if (0 > SDL_RenderCopy(window->renderer, core->map.tileset_texture, &src, &dst))
             {
@@ -2586,7 +2586,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
             #ifdef USE_LIBTMX
             next_tile_id = (int32_t)core->map.handle->tiles[gid]->animation[core->map.animated_tile[index].current_frame].tile_id;
 
-            #elif  USE_CUTE_TILED
+            #else // (cute_tiled.h)
             tile = tileset->tiles;
             while (tile)
             {
@@ -2598,7 +2598,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
                 tile = tile->next;
             }
 
-            #endif // USE_CUTE_TILED
+            #endif
 
             core->map.animated_tile[index].id = next_tile_id;
         }
@@ -2707,7 +2707,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
 
                         #ifdef USE_LIBTMX
                         uint32_t* layer_content = layer->content.gids;
-                        #elif  USE_CUTE_TILED
+                        #else // (cute_tiled.h)
                         int32_t*  layer_content = layer->data;
                         #endif
 
@@ -2745,7 +2745,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
                             }
                         }
 
-                        #elif USE_CUTE_TILED
+                        #else // (cute_tiled.h)
                         if (gid)
                         {
                             cute_tiled_tileset_t* tileset;
@@ -2791,7 +2791,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
                                 }
                             }
                         }
-                        #endif // USE_CUTE_TILED
+                        #endif
                     }
                 }
 

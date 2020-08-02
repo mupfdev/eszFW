@@ -29,10 +29,10 @@ add_library(
     ${eszFW_sources})
 
 target_include_directories(
-   ${PROJECT_NAME}
-   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
-   ${CUTE_INCLUDE_DIR}
-   ${LIBTMX_INCLUDE_DIR})
+    ${PROJECT_NAME}
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CUTE_INCLUDE_DIR}
+    ${LIBTMX_INCLUDE_DIR})
 
 add_library(
     cwalk
@@ -77,25 +77,23 @@ add_library(
     ${LUA_INCLUDE_DIR}/lvm.c
     ${LUA_INCLUDE_DIR}/lzio.c
     ${LUA_INCLUDE_DIR}/onelua.c
-)
+    )
 
 option(USE_LIBTMX "Use libTMX instead of cute_tiled" OFF)
 
 target_link_libraries(
-  ${PROJECT_NAME}
-  ${SDL2_LIBRARIES}
-  cwalk)
+    ${PROJECT_NAME}
+    ${SDL2_LIBRARIES}
+    cwalk)
 
 if(USE_LIBTMX)
-  add_definitions(-DUSE_LIBTMX)
-  add_subdirectory(external/tmx)
-  set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
-  target_link_libraries(
-    ${PROJECT_NAME}
-    ${LIBXML2_LIBRARIES}
-    tmx)
-else()
-  add_definitions(-DUSE_CUTE_TILED)
+    add_definitions(-DUSE_LIBTMX)
+    add_subdirectory(external/tmx)
+    set_property(TARGET tmx PROPERTY POSITION_INDEPENDENT_CODE ON)
+    target_link_libraries(
+        ${PROJECT_NAME}
+        ${LIBXML2_LIBRARIES}
+        tmx)
 endif(USE_LIBTMX)
 
 if(UNIX)
@@ -103,10 +101,10 @@ if(UNIX)
 endif(UNIX)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  target_compile_options(${PROJECT_NAME} PRIVATE
-    -Weverything
-    -Wno-unused-function
-    -Wno-unused-macros
-    -Wno-padded
-    -Wno-strict-prototypes)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Weverything
+        -Wno-unused-function
+        -Wno-unused-macros
+        -Wno-padded
+        -Wno-strict-prototypes)
 endif()
