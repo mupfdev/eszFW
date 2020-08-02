@@ -1726,18 +1726,14 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
     for (int32_t index = 0; index < core->map.sprite_sheet_count; index += 1)
     {
-        char*  sprite_sheet_image_source;
-        size_t source_length;
-
         SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
 
         const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
 
         if (file_name)
         {
-            source_length = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
-
-            sprite_sheet_image_source = calloc(1, source_length);
+            size_t source_length            = SDL_strlen(core->map.path) + SDL_strlen(file_name) + 1;
+            char* sprite_sheet_image_source = calloc(1, source_length);
             if (! sprite_sheet_image_source)
             {
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -2467,7 +2463,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
     bool               render_animated_tiles = false;
     esz_render_layer   render_layer          = ESZ_MAP_FG;
 
-    if (! core->map.is_loaded)
+    if (!core->map.is_loaded)
     {
         return ESZ_OK;
     }
