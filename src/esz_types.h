@@ -120,10 +120,25 @@ typedef enum
  */
 typedef enum
 {
-    IS_AFFECTED_BY_GRAVITY,
-    IS_IN_MIDAIR,
-    IS_JUMPING,
-};
+    STATE_ANIMATED,
+    STATE_DUCKING,
+    STATE_FALLING,
+    STATE_FLOATING,
+    STATE_GRAVITATIONAL,
+    STATE_HEADING_LEFT,
+    STATE_HEADING_RIGHT,
+    STATE_IN_BACKGROUND,
+    STATE_IN_FOREGROUND,
+    STATE_IN_MIDGROUND,
+    STATE_IS_PLAYER,
+    STATE_JUMPING,
+    STATE_LOOKING_LEFT,
+    STATE_LOOKING_RIGHT,
+    STATE_MOVING,
+    STATE_RISING,
+    STATE_STANDING
+
+} esz_state;
 
 /**
  * @brief An enumeration of event types
@@ -279,20 +294,14 @@ typedef struct esz_entity
     double           time_since_last_anim_frame;
     double           velocity_x;
     double           velocity_y;
-    esz_direction    direction;
     esz_animation_t* animation;
     int32_t          animation_count;
     int32_t          current_animation;
     int32_t          current_frame;
     int32_t          sprite_sheet_id;
+    uint32_t         state;
     bool             connect_horizontal_map_ends;
     bool             connect_vertical_map_ends;
-    bool             is_affected_by_gravity;
-    bool             is_animated;
-    bool             is_in_background;
-    bool             is_in_midground;
-    bool             is_jumping;
-    bool             is_moving;
 
 } esz_entity_t;
 
@@ -363,7 +372,6 @@ typedef struct esz_map
     int32_t               sprite_sheet_count;
     int32_t               width;
     bool                  boolean_property;
-    bool                  is_loaded;
 
 } esz_map_t;
 
@@ -374,8 +382,9 @@ typedef struct esz_core
 {
     struct esz_camera camera;
     struct esz_event  event;
-    struct esz_map    map;
+    esz_map_t*        map;
     bool              is_active;
+    bool              is_map_loaded;
     bool              is_paused;
 
 } esz_core_t;

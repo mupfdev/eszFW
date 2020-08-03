@@ -21,7 +21,9 @@ include_directories(
     SYSTEM ${STB_INCLUDE_DIR})
 
 set(eszFW_sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_types.h)
 
 add_library(
     ${PROJECT_NAME}

@@ -158,9 +158,6 @@ bool esz_is_core_active(esz_core_t* core);
  */
 bool esz_is_map_loaded(esz_core_t* core);
 
-
-void esz_move_player(bool state, esz_core_t* core);
-
 /**
  * @brief  Check if the active player entity is currently moving
  * @param  core Engine core
@@ -241,13 +238,6 @@ void esz_set_next_player_animation(esz_core_t* core);
 void esz_set_player_animation(int32_t id, esz_core_t* core);
 
 /**
- * @brief Set the player's viewing direction
- * @param direction Viewing direction
- * @param core Engine core
- */
-void esz_set_player_direction(esz_direction direction, esz_core_t* core);
-
-/**
  * @brief  Set the window's zoom level
  * @param  factor Zoom factor
  * @param  window Window handle
@@ -286,7 +276,6 @@ esz_status esz_toggle_fullscreen(esz_window_t* window);
  * @param  window Window handle
  * @param  core Engine core
  */
-
 void esz_unload_map(esz_window_t* window, esz_core_t* core);
 
 /**
