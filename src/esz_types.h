@@ -48,6 +48,15 @@ typedef struct esz_core   esz_core_t;
 typedef void (*esz_event_callback)(esz_window_t* window, esz_core_t* core);
 
 /**
+ * @brief An enumeration of entity actions
+ */
+typedef enum
+{
+    ACTION_JUMP = 0
+
+} esz_action;
+
+/**
  * @brief An enumeration of alignments.
  */
 typedef enum
@@ -122,15 +131,16 @@ typedef enum
 {
     STATE_ANIMATED,
     STATE_DUCKING,
-    STATE_FALLING,
     STATE_FLOATING,
     STATE_GRAVITATIONAL,
-    STATE_HEADING_LEFT,
-    STATE_HEADING_RIGHT,
+    STATE_GOING_DOWN,
+    STATE_GOING_LEFT,
+    STATE_GOING_RIGHT,
+    STATE_GOING_UP,
     STATE_IN_BACKGROUND,
     STATE_IN_FOREGROUND,
+    STATE_IN_MID_AIR,
     STATE_IN_MIDGROUND,
-    STATE_IS_PLAYER,
     STATE_JUMPING,
     STATE_LOOKING_LEFT,
     STATE_LOOKING_RIGHT,
@@ -299,6 +309,7 @@ typedef struct esz_entity
     int32_t          current_animation;
     int32_t          current_frame;
     int32_t          sprite_sheet_id;
+    uint32_t         action;
     uint32_t         state;
     bool             connect_horizontal_map_ends;
     bool             connect_vertical_map_ends;

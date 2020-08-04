@@ -135,6 +135,20 @@ bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_
     return true;
 }
 
+void esz_clear_player_state(esz_state state, esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (!esz_is_map_loaded(core))
+    {
+        return;
+    }
+
+    entity = core->map->object[core->map->active_player_entity_id].entity;
+
+    CLR_STATE(entity->state, state);
+}
+
 esz_status esz_create_window(const char* window_title, esz_window_config_t* config, esz_window_t** window)
 {
     esz_status      status = ESZ_OK;
@@ -695,28 +709,28 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
     switch (event_type)
     {
         case EVENT_FINGERDOWN:
-            core->event.finger_down_cb      = event_callback;
+            core->event.finger_down_cb   = event_callback;
             break;
         case EVENT_FINGERUP:
-            core->event.finger_up_cb        = event_callback;
+            core->event.finger_up_cb     = event_callback;
             break;
         case EVENT_FINGERMOTION:
-            core->event.finger_motion_cb    = event_callback;
+            core->event.finger_motion_cb = event_callback;
             break;
         case EVENT_KEYDOWN:
-            core->event.key_down_cb         = event_callback;
+            core->event.key_down_cb      = event_callback;
             break;
         case EVENT_KEYUP:
-            core->event.key_up_cb           = event_callback;
+            core->event.key_up_cb        = event_callback;
             break;
         case EVENT_MAP_LOADED:
-            core->event.map_loaded_cb       = event_callback;
+            core->event.map_loaded_cb    = event_callback;
             break;
         case EVENT_MAP_UNLOADED:
-            core->event.map_unloaded_cb     = event_callback;
+            core->event.map_unloaded_cb  = event_callback;
             break;
         case EVENT_MULTIGESTURE:
-            core->event.multi_gesture_cb    = event_callback;
+            core->event.multi_gesture_cb = event_callback;
             break;
     }
 }
@@ -756,7 +770,7 @@ void esz_set_player_animation(int32_t id, esz_core_t* core)
 {
     esz_entity_t* entity;
 
-    if (! esz_is_map_loaded(core))
+    if (!esz_is_map_loaded(core))
     {
         return;
     }
@@ -770,9 +784,23 @@ void esz_set_player_animation(int32_t id, esz_core_t* core)
 
     if (entity->current_animation != id)
     {
-        entity->current_frame = 0;
+        entity->current_frame     = 0;
         entity->current_animation = id;
     }
+}
+
+void esz_set_player_state(esz_state state, esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (!esz_is_map_loaded(core))
+    {
+        return;
+    }
+
+    entity = core->map->object[core->map->active_player_entity_id].entity;
+
+    SET_STATE(entity->state, state);
 }
 
 void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is_relative, esz_window_t* window, esz_core_t* core)
@@ -866,10 +894,24 @@ esz_status esz_toggle_fullscreen(esz_window_t* window)
     return status;
 }
 
+void esz_trigger_player_action(esz_action action, esz_core_t* core)
+{
+    esz_entity_t* entity;
+
+    if (!esz_is_map_loaded(core))
+    {
+        return;
+    }
+
+    entity = core->map->object[core->map->active_player_entity_id].entity;
+
+    SET_STATE(entity->action, action);
+}
+
 void esz_unload_map(esz_window_t* window, esz_core_t* core)
 {
     int32_t             index;
-    esz_tiled_layer_t*  layer        = get_head_tiled_layer(core);
+    esz_tiled_layer_t*  layer;
     esz_tiled_object_t* tiled_object = NULL;
 
     if (! esz_is_map_loaded(core))
@@ -877,6 +919,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         SDL_Log("No map has been loaded.\n");
         return;
     }
+    layer                         = get_head_tiled_layer(core);
     core->is_map_loaded           = false;
     core->camera.target_entity_id = 0;
 
@@ -1570,12 +1613,12 @@ static esz_status init_objects(esz_core_t* core)
 
                         if (get_boolean_property(H_is_left_oriented, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_HEADING_LEFT);
+                            SET_STATE((*entity)->state, STATE_GOING_LEFT);
                             SET_STATE((*entity)->state, STATE_LOOKING_LEFT);
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_HEADING_RIGHT);
+                            SET_STATE((*entity)->state, STATE_GOING_RIGHT);
                             SET_STATE((*entity)->state, STATE_LOOKING_RIGHT);
                         }
 
@@ -1587,7 +1630,6 @@ static esz_status init_objects(esz_core_t* core)
                         if (get_boolean_property(H_is_player, properties, prop_cnt, core) && ! player_found)
                         {
                             player_found = true;
-                            SET_STATE((*entity)->state, STATE_IS_PLAYER);
                             esz_lock_camera(core);
                             esz_set_active_player_entity(index, core);
                             esz_set_camera_target(index, core);
@@ -2941,43 +2983,16 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                 {
                     case H_entity:
                     {
-                        esz_entity_t** entity                = &object->entity;
-                        esz_state*     state                 = &(*entity)->state;
-                        double         acceleration_x        = (*entity)->acceleration   * core->map->meter_in_pixel;
-                        double         acceleration_y        = core->map->meter_in_pixel * core->map->meter_in_pixel;
+                        esz_entity_t** entity = &object->entity;
+                        esz_state* state = &(*entity)->state;
+                        double         acceleration_x = (*entity)->acceleration * core->map->meter_in_pixel;
+                        double         acceleration_y = core->map->meter_in_pixel * core->map->meter_in_pixel;
                         double         time_since_last_frame = esz_get_time_since_last_frame(window);
-                        double         distance_x            = acceleration_x * time_since_last_frame * time_since_last_frame;
-                        double         distance_y            = acceleration_y * time_since_last_frame * time_since_last_frame;
+                        double         distance_x = acceleration_x * time_since_last_frame * time_since_last_frame;
+                        double         distance_y = acceleration_y * time_since_last_frame * time_since_last_frame;
 
-                        // Adjust mutually exclusive states or set default
+                        // Adjust mutually exclusive states
                         // ----------------------------------------------------
-
-                        if (IS_STATE_SET(*state, STATE_HEADING_RIGHT))
-                        {
-                            CLR_STATE(*state, STATE_HEADING_LEFT);
-                        }
-                        else if (IS_STATE_SET(*state, STATE_HEADING_LEFT))
-                        {
-                            CLR_STATE(*state, STATE_HEADING_RIGHT);
-                        }
-                        else
-                        {
-                            SET_STATE(*state, STATE_HEADING_RIGHT);
-                        }
-
-                        if (IS_STATE_SET(*state, STATE_LOOKING_RIGHT))
-                        {
-                            CLR_STATE((*entity)->state, STATE_LOOKING_LEFT);
-                        }
-                        else if (IS_STATE_SET(*state, STATE_LOOKING_LEFT))
-                        {
-                            CLR_STATE((*entity)->state, STATE_LOOKING_RIGHT);
-                        }
-                        else
-                        {
-                            SET_STATE((*entity)->state, STATE_LOOKING_RIGHT);
-                        }
-
                         if (IS_STATE_SET(*state, STATE_IN_MIDGROUND))
                         {
                             CLR_STATE((*entity)->state, STATE_IN_BACKGROUND);
@@ -2998,25 +3013,90 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                             SET_STATE((*entity)->state, STATE_IN_MIDGROUND);
                         }
 
+                        // Vertical movement and gravity
+                        // ----------------------------------------------------
+
                         if (IS_STATE_SET(*state, STATE_GRAVITATIONAL))
                         {
                             CLR_STATE((*entity)->state, STATE_FLOATING);
+
+                            if (0 > (*entity)->velocity_y)
+                            {
+                                SET_STATE((*entity)->state, STATE_RISING);
+                            }
+                            else
+                            {
+                                CLR_STATE((*entity)->state, STATE_RISING);
+                            }
+
+                            if (IS_STATE_SET((*entity)->state, STATE_RISING))
+                            {
+                                SET_STATE((*entity)->state, STATE_IN_MID_AIR);
+                            }
+
+                            // tbd. check ground collision here
                         }
                         else
                         {
                             SET_STATE((*entity)->state, STATE_FLOATING);
+                            CLR_STATE((*entity)->state, STATE_IN_MID_AIR);
+                            CLR_STATE((*entity)->state, STATE_JUMPING);
+                            CLR_STATE((*entity)->state, STATE_RISING);
                         }
 
-                        // tbd.
-                        // STATE_ANIMATED
-                        // STATE_DUCKING
-                        // STATE_FALLING
-                        // STATE_GRAVITATIONAL
-                        // STATE_STANDING
-                        // STATE_IS_PLAYER
-                        // STATE_JUMPING
-                        // STATE_MOVING
-                        // STATE_RISING
+                        if (0 < core->map->gravitation)
+                        {
+                            if (IS_STATE_SET((*entity)->state, STATE_IN_MID_AIR))
+                            {
+                                (*entity)->velocity_y += distance_y;
+                                object->pos_y += (*entity)->velocity_y;
+                            }
+                            else
+                            {
+                                int32_t tile_height = get_tile_height(core->map->handle);
+
+                                CLR_STATE((*entity)->action, ACTION_JUMP);
+                                (*entity)->velocity_y = 0.0;
+                                // Correct entity position along the y-axis:
+                                object->pos_y = ((double)tile_height * round(object->pos_y / (double)tile_height));
+                            }
+                        }
+                        else
+                        {
+                            if (IS_STATE_SET((*entity)->state, STATE_MOVING))
+                            {
+                                (*entity)->velocity_y += distance_y;
+                            }
+                            else
+                            {
+                                (*entity)->velocity_y -= distance_y;
+                            }
+
+                            if (0.0 < (*entity)->velocity_y)
+                            {
+                                if (IS_STATE_SET((*entity)->state, STATE_GOING_UP))
+                                {
+                                    object->pos_y -= (*entity)->velocity_y;
+                                }
+                                else if (IS_STATE_SET((*entity)->state, STATE_GOING_DOWN))
+                                {
+                                    object->pos_y += (*entity)->velocity_y;
+                                }
+                            }
+
+                            /* Since the velocity in free fall is
+                             * normally not limited, the maximum
+                             * horizontal velocity is used in this case.
+                             */
+                            if ((*entity)->max_velocity_x <= (*entity)->velocity_y)
+                            {
+                                (*entity)->velocity_y = (*entity)->max_velocity_x;
+                            }
+                            else if (0.0 > (*entity)->velocity_x)
+                            {
+                                (*entity)->velocity_y = 0.0;
+                            }
+                        }
 
                         // Horizontal movement
                         // ----------------------------------------------------
@@ -3032,11 +3112,11 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
 
                         if (0.0 < (*entity)->velocity_x)
                         {
-                            if (IS_STATE_SET((*entity)->state, STATE_HEADING_LEFT))
+                            if (IS_STATE_SET((*entity)->state, STATE_GOING_LEFT))
                             {
                                 object->pos_x -= (*entity)->velocity_x;
                             }
-                            else if (IS_STATE_SET((*entity)->state, STATE_HEADING_RIGHT))
+                            else if (IS_STATE_SET((*entity)->state, STATE_GOING_RIGHT))
                             {
                                 object->pos_x += (*entity)->velocity_x;
                             }
@@ -3050,12 +3130,6 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                         {
                             (*entity)->velocity_x = 0.0;
                         }
-
-                        // Vertical movement and gravity
-                        // ----------------------------------------------------
-
-                        // Collision detection
-                        // ----------------------------------------------------
 
                         // Connect map ends
                         // ----------------------------------------------------

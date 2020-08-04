@@ -22,6 +22,13 @@
 bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_b);
 
 /**
+ * @brief Clears state of player entity
+ * @param state Entity state ID
+ * @param core Engine core
+ */
+void esz_clear_player_state(esz_state state, esz_core_t* core);
+
+/**
  * @brief   Create window and rendering context
  * @details It tries to use the opengl rendering driver. If the driver
  *          is not found, the system's default driver is used instead.
@@ -238,6 +245,13 @@ void esz_set_next_player_animation(esz_core_t* core);
 void esz_set_player_animation(int32_t id, esz_core_t* core);
 
 /**
+ * @brief Set state of player entity
+ * @param state Entity state ID
+ * @param core Engine core
+ */
+void esz_set_player_state(esz_state state, esz_core_t* core);
+
+/**
  * @brief  Set the window's zoom level
  * @param  factor Zoom factor
  * @param  window Window handle
@@ -268,6 +282,13 @@ esz_status esz_show_scene(esz_window_t* window, esz_core_t* core);
  *         Fullscreen could not be toggled
  */
 esz_status esz_toggle_fullscreen(esz_window_t* window);
+
+/**
+ * @brief  Trigger action for player enttiy
+ * @param  action Enity action ID
+ * @param  core   Engine core
+ */
+void esz_trigger_player_action(esz_action action, esz_core_t* core);
 
 /**
  * @brief  Unload current map
