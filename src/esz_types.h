@@ -14,11 +14,15 @@ typedef struct _tmx_layer tmx_layer;
 typedef struct _tmx_map   tmx_map;
 typedef struct _tmx_obj   tmx_object;
 typedef struct _tmx_prop  tmx_property;
+typedef struct _tmx_tile  tmx_tile;
+typedef struct _tmx_ts    tmx_tileset;
 
 typedef tmx_layer    esz_tiled_layer_t;
 typedef tmx_map      esz_tiled_map_t;
 typedef tmx_object   esz_tiled_object_t;
 typedef tmx_property esz_tiled_property_t;
+typedef tmx_tile     esz_tiled_tile_t;
+typedef tmx_tileset  esz_tiled_tileset_t;
 
 #include <tmx.h>
 
@@ -27,11 +31,15 @@ struct cute_tiled_layer_t;
 struct cute_tiled_map_t;
 struct cute_tiled_object_t;
 struct cute_tiled_property_t;
+struct cute_tiled_tile_descriptor_t;
+struct cute_tiled_tileset_t;
 
-typedef struct cute_tiled_layer_t    esz_tiled_layer_t;
-typedef struct cute_tiled_map_t      esz_tiled_map_t;
-typedef struct cute_tiled_object_t   esz_tiled_object_t;
-typedef struct cute_tiled_property_t esz_tiled_property_t;
+typedef struct cute_tiled_layer_t           esz_tiled_layer_t;
+typedef struct cute_tiled_map_t             esz_tiled_map_t;
+typedef struct cute_tiled_object_t          esz_tiled_object_t;
+typedef struct cute_tiled_property_t        esz_tiled_property_t;
+typedef struct cute_tiled_tile_descriptor_t esz_tiled_tile_t;
+typedef struct cute_tiled_tileset_t         esz_tiled_tileset_t;
 
 #include <cute_tiled.h>
 
@@ -89,6 +97,22 @@ typedef enum
 } esz_entity_layer_level;
 
 /**
+ * @brief An enumeration of event types
+ */
+typedef enum
+{
+    EVENT_FINGERDOWN = 0,
+    EVENT_FINGERMOTION,
+    EVENT_FINGERUP,
+    EVENT_KEYDOWN,
+    EVENT_KEYUP,
+    EVENT_MAP_LOADED,
+    EVENT_MAP_UNLOADED,
+    EVENT_MULTIGESTURE
+
+} esz_event_type;
+
+/**
  * @brief An enumeration of map layer levels.
  */
 typedef enum
@@ -113,16 +137,6 @@ typedef enum
     ESZ_RENDER_LAYER_MAX
 
 } esz_render_layer;
-
-/**
- * @brief An enumeration of Tiled layer types.
- */
-typedef enum
-{
-    ESZ_TILE_LAYER = 0,
-    ESZ_OBJECT_GROUP
-
-} esz_tiled_layer_type;
 
 /**
  * @brief An enumeration of entity states
@@ -151,31 +165,35 @@ typedef enum
 } esz_state;
 
 /**
- * @brief An enumeration of event types
- */
-typedef enum
-{
-    EVENT_FINGERDOWN = 0,
-    EVENT_FINGERMOTION,
-    EVENT_FINGERUP,
-    EVENT_KEYDOWN,
-    EVENT_KEYUP,
-    EVENT_MAP_LOADED,
-    EVENT_MAP_UNLOADED,
-    EVENT_MULTIGESTURE
-
-} esz_event_type;
-
-/**
  * @brief An enumeration of status codes.
  */
 typedef enum
 {
-    ESZ_OK             =  0,
+    ESZ_OK             = 0,
     ESZ_ERROR_CRITICAL = -1,
     ESZ_WARNING        = -2
 
 } esz_status;
+
+/**
+ * @brief An enumeration of Tiled layer types.
+ */
+typedef enum
+{
+    ESZ_TILE_LAYER = 0,
+    ESZ_OBJECT_GROUP
+
+} esz_tiled_layer_type;
+
+typedef enum
+{
+    TILE_CLIMBABLE,
+    TILE_SOLID_ABOVE,
+    TILE_SOLID_BELOV,
+    TILE_SOLID_LEFT,
+    TILE_SOLID_RIGHT
+
+} esz_tile_property;
 
 /**
  * @brief A structure that contains a axis-aligned bounding box.
@@ -373,6 +391,7 @@ typedef struct esz_map
     esz_object_t*         object;
     esz_sprite_t*         sprite;
     esz_tiled_map_t*      handle;
+    int32_t*              tile_properties;
     int32_t               active_player_entity_id;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
