@@ -189,7 +189,7 @@ typedef enum
 {
     TILE_CLIMBABLE,
     TILE_SOLID_ABOVE,
-    TILE_SOLID_BELOV,
+    TILE_SOLID_BELOW,
     TILE_SOLID_LEFT,
     TILE_SOLID_RIGHT
 
@@ -391,7 +391,7 @@ typedef struct esz_map
     esz_object_t*         object;
     esz_sprite_t*         sprite;
     esz_tiled_map_t*      handle;
-    int32_t*              tile_properties;
+    uint32_t*             tile_properties;
     int32_t               active_player_entity_id;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
