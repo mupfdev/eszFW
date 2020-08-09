@@ -22,8 +22,8 @@
 bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_b);
 
 /**
- * @brief Clears state of player entity
- * @param state Entity state ID
+ * @brief Clears state of player actor
+ * @param state Actor state ID
  * @param core Engine core
  */
 void esz_clear_player_state(esz_state state, esz_core_t* core);
@@ -166,7 +166,7 @@ bool esz_is_core_active(esz_core_t* core);
 bool esz_is_map_loaded(esz_core_t* core);
 
 /**
- * @brief  Check if the active player entity is currently moving
+ * @brief  Check if the active player actor is currently moving
  * @param  core Engine core
  * @return Boolean condition
  */
@@ -188,7 +188,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 /**
  * @brief   Lock camera for engine core
  * @details If the camera is locked, it automatically follows the main
- *          player entity.
+ *          player actor.
  * @param   core Engine core
  */
 void esz_lock_camera(esz_core_t* core);
@@ -203,11 +203,11 @@ void esz_lock_camera(esz_core_t* core);
 void esz_register_event_callback(const esz_event_type event_type, esz_event_callback event_callback, esz_core_t* core);
 
 /**
- * @brief  Set active player entity
- * @param  id Entity ID
+ * @brief  Set active player actor
+ * @param  id Actor ID
  * @param  core Engine core
 */
-void esz_set_active_player_entity(int32_t id, esz_core_t* core);
+void esz_set_active_player_actor(int32_t id, esz_core_t* core);
 
 /**
  * @brief  Set the position of the camera
@@ -223,13 +223,13 @@ void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is
 /**
  * @brief  Set the position of the camera
  * @remark The camera has to be locked.
- * @param  id Entity ID
+ * @param  id Actor ID
  * @param  core Engine core
  */
 void esz_set_camera_target(const int32_t id, esz_core_t* core);
 
 /**
- * @brief   Select and set the next animation of active player entity
+ * @brief   Select and set the next animation of active player actor
  * @details If the last animation is skipped, it selects the first one
  *          again.
  * @remark  This function is mainly intended for debugging purposes.
@@ -238,15 +238,15 @@ void esz_set_camera_target(const int32_t id, esz_core_t* core);
 void esz_set_next_player_animation(esz_core_t* core);
 
 /**
- * @brief Set animation of active player entity
+ * @brief Set animation of active player actor
  * @param id Animation ID
  * @param core Engine core
  */
 void esz_set_player_animation(int32_t id, esz_core_t* core);
 
 /**
- * @brief Set state of player entity
- * @param state Entity state ID
+ * @brief Set state of player actor
+ * @param state Actor state ID
  * @param core Engine core
  */
 void esz_set_player_state(esz_state state, esz_core_t* core);

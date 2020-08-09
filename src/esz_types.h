@@ -56,7 +56,7 @@ typedef struct esz_core   esz_core_t;
 typedef void (*esz_event_callback)(esz_window_t* window, esz_core_t* core);
 
 /**
- * @brief An enumeration of entity actions
+ * @brief An enumeration of actor actions
  */
 typedef enum
 {
@@ -85,16 +85,16 @@ typedef enum
 } esz_direction;
 
 /**
- * @brief An enumeration of entity layer levels.
+ * @brief An enumeration of actor layer levels.
  */
 typedef enum
 {
-    ESZ_ENTITY_LAYER_BG = 0,
-    ESZ_ENTITY_LAYER_MG,
-    ESZ_ENTITY_LAYER_FG,
-    ESZ_ENTITY_LAYER_LEVEL_MAX
+    ESZ_ACTOR_LAYER_BG = 0,
+    ESZ_ACTOR_LAYER_MG,
+    ESZ_ACTOR_LAYER_FG,
+    ESZ_ACTOR_LAYER_LEVEL_MAX
 
-} esz_entity_layer_level;
+} esz_actor_layer_level;
 
 /**
  * @brief An enumeration of event types
@@ -129,17 +129,17 @@ typedef enum
 typedef enum
 {
     ESZ_BACKGROUND = 0,
-    ESZ_ENTITY_BG,
+    ESZ_ACTOR_BG,
     ESZ_MAP_BG,
-    ESZ_ENTITY_MG,
+    ESZ_ACTOR_MG,
     ESZ_MAP_FG,
-    ESZ_ENTITY_FG,
+    ESZ_ACTOR_FG,
     ESZ_RENDER_LAYER_MAX
 
 } esz_render_layer;
 
 /**
- * @brief An enumeration of entity states
+ * @brief An enumeration of actor states
  */
 typedef enum
 {
@@ -271,7 +271,7 @@ typedef struct esz_camera
     double  pos_y;
     int32_t max_pos_x;
     int32_t max_pos_y;
-    int32_t target_entity_id;
+    int32_t target_actor_id;
     bool    is_at_horizontal_boundary;
     bool    is_locked;
 
@@ -310,9 +310,9 @@ typedef struct esz_event
 } esz_event_t;
 
 /**
- * @brief A structure that contains entity information.
+ * @brief A structure that contains actor information.
  */
-typedef struct esz_entity
+typedef struct esz_actor
 {
     double           acceleration;
     double           jumping_power;
@@ -332,24 +332,24 @@ typedef struct esz_entity
     bool             connect_horizontal_map_ends;
     bool             connect_vertical_map_ends;
 
-} esz_entity_t;
+} esz_actor_t;
 
 /**
- * @brief A structure that contains a map object
+ * @brief A structure that contains an entity
  */
-typedef struct esz_object
+typedef struct esz_entity
 {
     struct esz_aabb     bounding_box;
     double              pos_x;
     double              pos_y;
-    esz_entity_t*       entity;
+    esz_actor_t*        actor;
     esz_tiled_object_t* handle;
     int32_t             height;
     int32_t             id;
     int32_t             index;
     int32_t             width;
 
-} esz_object_t;
+} esz_entity_t;
 
 /**
  * @brief A structure that contains a sprite.
@@ -388,17 +388,17 @@ typedef struct esz_map
     SDL_Texture*          tileset_texture;
     esz_animated_tile_t*  animated_tile;
     struct esz_background background;
-    esz_object_t*         object;
+    esz_entity_t*         entity;
     esz_sprite_t*         sprite;
     esz_tiled_map_t*      handle;
     uint32_t*             tile_properties;
-    int32_t               active_player_entity_id;
+    int32_t               active_player_actor_id;
     int32_t               animated_tile_fps;
     int32_t               animated_tile_index;
     int32_t               height;
     int32_t               integer_property;
     int32_t               meter_in_pixel;
-    int32_t               object_count;
+    int32_t               entity_count;
     int32_t               sprite_sheet_count;
     int32_t               width;
     bool                  boolean_property;

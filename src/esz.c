@@ -43,7 +43,7 @@
 #define H_climbable                    0x0377c455420b8600
 #define H_connect_horizontal_map_ends  0xb2d77d5c88cb679e
 #define H_connect_vertical_map_ends    0x8fd9bf6992bca50e
-#define H_entity                       0x00000652fb7ffdc2
+#define H_actor                        0x000000310f128ebe
 #define H_gravitation                  0xc090e5ec12404d2d
 #define H_height                       0x0000065301d688de
 #define H_is_affected_by_gravity       0xd7df2608f228f6d1
@@ -92,7 +92,7 @@ static int32_t              get_tile_height(esz_tiled_map_t* tiled_map);
 static int32_t              get_tile_width(esz_tiled_map_t* tiled_map);
 static esz_status           init_animated_tiles(esz_core_t* core);
 static esz_status           init_background(esz_window_t* window, esz_core_t* core);
-static esz_status           init_objects(esz_core_t* core);
+static esz_status           init_entities(esz_core_t* core);
 static esz_status           init_sprites(esz_window_t* window, esz_core_t* core);
 static bool                 is_camera_at_horizontal_boundary(esz_core_t* core);
 static bool                 is_tiled_layer_of_type(const esz_tiled_layer_type tiled_type, esz_tiled_layer_t* tiled_layer, esz_core_t* core);
@@ -104,15 +104,15 @@ static esz_tiled_map_t*     load_tiled_map(const char* map_file_name);
 static void                 move_camera_to_target(esz_window_t* window, esz_core_t* core);
 static void                 poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t              remove_gid_flip_bits(int32_t gid);
+static esz_status           render_actors(esz_actor_layer_level level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_background(esz_window_t* window, esz_core_t* core);
 static esz_status           render_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static esz_status           render_entities(esz_entity_layer_level level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_map(esz_map_layer_level level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_scene(esz_window_t* window, esz_core_t* core);
 static double               round_(double number);
 static void                 set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core);
-static void                 update_bounding_box(esz_object_t* object);
-static void                 update_objects(esz_window_t* window, esz_core_t* core);
+static void                 update_bounding_box(esz_entity_t* entity);
+static void                 update_entities(esz_window_t* window, esz_core_t* core);
 
 #ifdef USE_LIBTMX
 static void                tmxlib_store_property(esz_tiled_property_t* property, void* core);
@@ -143,16 +143,16 @@ bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_
 
 void esz_clear_player_state(esz_state state, esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
 
     if (!esz_is_map_loaded(core))
     {
         return;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
 
-    CLR_STATE(entity->state, state);
+    CLR_STATE(actor->state, state);
 }
 
 esz_status esz_create_window(const char* window_title, esz_window_config_t* config, esz_window_t** window)
@@ -458,16 +458,16 @@ bool esz_is_map_loaded(esz_core_t* core)
 
 bool esz_is_player_moving(esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
 
     if (! esz_is_map_loaded(core))
     {
         return false;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
 
-    if (IS_STATE_SET(entity->state, STATE_MOVING))
+    if (IS_STATE_SET(actor->state, STATE_MOVING))
     {
         return true;
     }
@@ -699,10 +699,10 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         #endif
     }
 
-    // 5. Objects
+    // 5. Entities
     // ------------------------------------------------------------------------
 
-    if (ESZ_OK != init_objects(core))
+    if (ESZ_OK != init_entities(core))
     {
         free(tileset_image_source);
         goto warning;
@@ -776,8 +776,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     core->map->meter_in_pixel = esz_get_integer_map_property(H_meter_in_pixel, core);
 
     SDL_Log(
-        "Load map file: %s containing %d object(s).\n",
-        map_file_name, core->map->object_count);
+        "Load map file: %s containing %d entities(s).\n",
+        map_file_name, core->map->entity_count);
 
     return ESZ_OK;
 warning:
@@ -821,19 +821,19 @@ void esz_register_event_callback(const esz_event_type event_type, esz_event_call
     }
 }
 
-void esz_set_active_player_entity(int32_t id, esz_core_t* core)
+void esz_set_active_player_actor(int32_t id, esz_core_t* core)
 {
     if (! esz_is_map_loaded(core))
     {
         return;
     }
 
-    core->map->active_player_entity_id = id;
+    core->map->active_player_actor_id = id;
 }
 
 void esz_set_next_player_animation(esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
     int32_t       id;
 
     if (! esz_is_map_loaded(core))
@@ -841,10 +841,10 @@ void esz_set_next_player_animation(esz_core_t* core)
         return;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
-    id     = entity->current_animation + 1;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
+    id    = actor->current_animation + 1;
 
-    if (id > entity->animation_count)
+    if (id > actor->animation_count)
     {
         id = 1;
     }
@@ -854,39 +854,39 @@ void esz_set_next_player_animation(esz_core_t* core)
 
 void esz_set_player_animation(int32_t id, esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
 
     if (!esz_is_map_loaded(core))
     {
         return;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
 
-    if (0 >= id || entity->animation_count < id)
+    if (0 >= id || actor->animation_count < id)
     {
         return;
     }
 
-    if (entity->current_animation != id)
+    if (actor->current_animation != id)
     {
-        entity->current_frame     = 0;
-        entity->current_animation = id;
+        actor->current_frame     = 0;
+        actor->current_animation = id;
     }
 }
 
 void esz_set_player_state(esz_state state, esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
 
     if (!esz_is_map_loaded(core))
     {
         return;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
 
-    SET_STATE(entity->state, state);
+    SET_STATE(actor->state, state);
 }
 
 void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is_relative, esz_window_t* window, esz_core_t* core)
@@ -912,7 +912,7 @@ void esz_set_camera_position(const double pos_x, const double pos_y, bool pos_is
 
 void esz_set_camera_target(const int32_t id, esz_core_t* core)
 {
-    core->camera.target_entity_id = id;
+    core->camera.target_actor_id = id;
 }
 
 esz_status esz_set_zoom_level(const double factor, esz_window_t* window)
@@ -982,16 +982,16 @@ esz_status esz_toggle_fullscreen(esz_window_t* window)
 
 void esz_trigger_player_action(esz_action action, esz_core_t* core)
 {
-    esz_entity_t* entity;
+    esz_actor_t* actor;
 
     if (!esz_is_map_loaded(core))
     {
         return;
     }
 
-    entity = core->map->object[core->map->active_player_entity_id].entity;
+    actor = core->map->entity[core->map->active_player_actor_id].actor;
 
-    SET_STATE(entity->action, action);
+    SET_STATE(actor->action, action);
 }
 
 void esz_unload_map(esz_window_t* window, esz_core_t* core)
@@ -1006,7 +1006,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         return;
     }
     core->is_map_loaded           = false;
-    core->camera.target_entity_id = 0;
+    core->camera.target_actor_id = 0;
 
     for (esz_map_layer_level level = 0; level < ESZ_MAP_LAYER_LEVEL_MAX; level += 1)
     {
@@ -1087,7 +1087,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         core->map->tileset_texture = NULL;
     }
 
-    // 5. Objects
+    // 5. Entities
     // ------------------------------------------------------------------------
 
     index = 0;
@@ -1101,15 +1101,15 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
             while (tiled_object)
             {
                 uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
-                esz_object_t* object    = &core->map->object[index];
+                esz_entity_t* entity    = &core->map->entity[index];
 
                 switch (type_hash)
                 {
-                    case H_entity:
+                    case H_actor:
                     {
-                        esz_entity_t** entity = &object->entity;
-                        free((*entity)->animation);
-                        free((*entity));
+                        esz_actor_t** actor = &entity->actor;
+                        free((*actor)->animation);
+                        free((*actor));
                     }
                     break;
                 }
@@ -1120,7 +1120,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         }
         layer = layer->next;
     }
-    free(core->map->object);
+    free(core->map->entity);
 
     // 4. Paths and file locations
     // ------------------------------------------------------------------------
@@ -1200,7 +1200,7 @@ void esz_update_core(esz_window_t* window, esz_core_t* core)
     }
 
     move_camera_to_target(window, core);
-    update_objects(window, core);
+    update_entities(window, core);
 }
 
 // Private functions (for internal use only)
@@ -1605,14 +1605,14 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     return ESZ_OK;
 }
 
-static esz_status init_objects(esz_core_t* core)
+static esz_status init_entities(esz_core_t* core)
 {
     esz_tiled_layer_t*  layer         = get_head_tiled_layer(core->map->handle);
     esz_tiled_object_t* tiled_object  = NULL;
     int32_t             index         = 0;
     bool                player_found  = false;
 
-    if (core->map->object_count)
+    if (core->map->entity_count)
     {
         return ESZ_OK;
     }
@@ -1624,24 +1624,24 @@ static esz_status init_objects(esz_core_t* core)
             tiled_object = get_head_tiled_object(layer, core);
             while (tiled_object)
             {
-                core->map->object_count += 1;
-                tiled_object            = tiled_object->next;
+                core->map->entity_count += 1;
+                tiled_object             = tiled_object->next;
             }
         }
         layer = layer->next;
     }
 
-    if (core->map->object_count)
+    if (core->map->entity_count)
     {
-        core->map->object = calloc((size_t)core->map->object_count, sizeof(struct esz_object));
-        if (! core->map->object)
+        core->map->entity = calloc((size_t)core->map->entity_count, sizeof(struct esz_entity));
+        if (! core->map->entity)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
             return ESZ_ERROR_CRITICAL;
         }
     }
 
-    SDL_Log("Initialise %u object(s):\n", core->map->object_count);
+    SDL_Log("Initialise %u entities:\n", core->map->entity_count);
 
     layer = get_head_tiled_layer(core->map->handle);
     while (layer)
@@ -1652,88 +1652,88 @@ static esz_status init_objects(esz_core_t* core)
             while (tiled_object)
             {
                 uint64_t              type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
-                esz_object_t*         object     = &core->map->object[index];
+                esz_entity_t*         entity     = &core->map->entity[index];
                 esz_tiled_property_t* properties = tiled_object->properties;
                 int32_t               prop_cnt   = get_tiled_object_property_count(tiled_object);
 
-                object->pos_x  = (double)tiled_object->x;
-                object->pos_y  = (double)tiled_object->y;
+                entity->pos_x = (double)tiled_object->x;
+                entity->pos_y = (double)tiled_object->y;
 
                 switch (type_hash)
                 {
-                    case H_entity:
+                    case H_actor:
                     {
-                        esz_entity_t** entity = &object->entity;
+                        esz_actor_t** actor = &entity->actor;
 
-                        (*entity) = calloc(1, sizeof(struct esz_entity));
-                        if (! (*entity))
+                        (*actor) = calloc(1, sizeof(struct esz_actor));
+                        if (! (*actor))
                         {
-                            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory for entity.\n", __func__);
+                            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory for actor.\n", __func__);
                             return ESZ_ERROR_CRITICAL;
                         }
 
-                        (*entity)->current_animation           = 1;
+                        (*actor)->current_animation           = 1;
 
-                        (*entity)->acceleration                = get_decimal_property(H_acceleration, properties, prop_cnt, core);
-                        (*entity)->jumping_power               = get_decimal_property(H_jumping_power, properties, prop_cnt, core);
-                        (*entity)->max_velocity_x              = get_decimal_property(H_max_velocity_x, properties, prop_cnt, core);
+                        (*actor)->acceleration                = get_decimal_property(H_acceleration, properties, prop_cnt, core);
+                        (*actor)->jumping_power               = get_decimal_property(H_jumping_power, properties, prop_cnt, core);
+                        (*actor)->max_velocity_x              = get_decimal_property(H_max_velocity_x, properties, prop_cnt, core);
 
-                        (*entity)->sprite_sheet_id             = get_integer_property(H_sprite_sheet_id, properties, prop_cnt, core);
+                        (*actor)->sprite_sheet_id             = get_integer_property(H_sprite_sheet_id, properties, prop_cnt, core);
 
-                        (*entity)->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, prop_cnt, core);
-                        (*entity)->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, prop_cnt, core);
+                        (*actor)->connect_horizontal_map_ends = get_boolean_property(H_connect_horizontal_map_ends, properties, prop_cnt, core);
+                        (*actor)->connect_vertical_map_ends   = get_boolean_property(H_connect_vertical_map_ends, properties, prop_cnt, core);
 
-                        (*entity)->spawn_pos_x                 = core->map->object[index].pos_x;
-                        (*entity)->spawn_pos_y                 = core->map->object[index].pos_y;
+                        (*actor)->spawn_pos_x                 = core->map->entity[index].pos_x;
+                        (*actor)->spawn_pos_y                 = core->map->entity[index].pos_y;
 
                         if (get_boolean_property(H_is_affected_by_gravity, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_GRAVITATIONAL);
+                            SET_STATE((*actor)->state, STATE_GRAVITATIONAL);
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_FLOATING);
+                            SET_STATE((*actor)->state, STATE_FLOATING);
                         }
 
                         if (get_boolean_property(H_is_animated, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_ANIMATED);
+                            SET_STATE((*actor)->state, STATE_ANIMATED);
                         }
 
                         if (get_boolean_property(H_is_in_midground, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_IN_MIDGROUND);
+                            SET_STATE((*actor)->state, STATE_IN_MIDGROUND);
                         }
                         else if (get_boolean_property(H_is_in_background, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_IN_BACKGROUND);
+                            SET_STATE((*actor)->state, STATE_IN_BACKGROUND);
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_IN_FOREGROUND);
+                            SET_STATE((*actor)->state, STATE_IN_FOREGROUND);
                         }
 
                         if (get_boolean_property(H_is_left_oriented, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_GOING_LEFT);
-                            SET_STATE((*entity)->state, STATE_LOOKING_LEFT);
+                            SET_STATE((*actor)->state, STATE_GOING_LEFT);
+                            SET_STATE((*actor)->state, STATE_LOOKING_LEFT);
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_GOING_RIGHT);
-                            SET_STATE((*entity)->state, STATE_LOOKING_RIGHT);
+                            SET_STATE((*actor)->state, STATE_GOING_RIGHT);
+                            SET_STATE((*actor)->state, STATE_LOOKING_RIGHT);
                         }
 
                         if (get_boolean_property(H_is_moving, properties, prop_cnt, core))
                         {
-                            SET_STATE((*entity)->state, STATE_MOVING);
+                            SET_STATE((*actor)->state, STATE_MOVING);
                         }
 
                         if (get_boolean_property(H_is_player, properties, prop_cnt, core) && ! player_found)
                         {
                             player_found = true;
                             esz_lock_camera(core);
-                            esz_set_active_player_entity(index, core);
+                            esz_set_active_player_actor(index, core);
                             esz_set_camera_target(index, core);
 
                             SDL_Log("  %d %s *\n", index, get_tiled_object_name(tiled_object));
@@ -1743,19 +1743,19 @@ static esz_status init_objects(esz_core_t* core)
                             SDL_Log("  %d %s\n", index, get_tiled_object_name(tiled_object));
                         }
 
-                        if (IS_STATE_SET((*entity)->state, STATE_ANIMATED))
+                        if (IS_STATE_SET((*actor)->state, STATE_ANIMATED))
                         {
                             char property_name[14] = { 0 };
                             bool search_is_running = true;
 
-                            (*entity)->animation_count = 0;
+                            (*actor)->animation_count = 0;
                             while (search_is_running)
                             {
-                                SDL_snprintf(property_name, 14, "animation_%u", (*entity)->animation_count + 1);
+                                SDL_snprintf(property_name, 14, "animation_%u", (*actor)->animation_count + 1);
 
                                 if (get_boolean_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core))
                                 {
-                                    (*entity)->animation_count += 1;
+                                    (*actor)->animation_count += 1;
                                 }
                                 else
                                 {
@@ -1765,38 +1765,38 @@ static esz_status init_objects(esz_core_t* core)
                             }
                         }
 
-                        if (0 < (*entity)->animation_count)
+                        if (0 < (*actor)->animation_count)
                         {
                             char property_name[26] = { 0 };
 
-                            (*entity)->animation = calloc((size_t)(*entity)->animation_count, sizeof(struct esz_animation));
-                            if (! (*entity)->animation)
+                            (*actor)->animation = calloc((size_t)(*actor)->animation_count, sizeof(struct esz_animation));
+                            if (! (*actor)->animation)
                             {
                                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
                                 return ESZ_ERROR_CRITICAL;
                             }
 
-                            for (int32_t anim_index = 0; anim_index < (*entity)->animation_count; anim_index += 1)
+                            for (int32_t anim_index = 0; anim_index < (*actor)->animation_count; anim_index += 1)
                             {
                                 SDL_snprintf(property_name, 26, "animation_%u_first_frame", anim_index + 1);
-                                (*entity)->animation[anim_index].first_frame =
+                                (*actor)->animation[anim_index].first_frame =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                if (0 == (*entity)->animation[anim_index].first_frame)
+                                if (0 == (*actor)->animation[anim_index].first_frame)
                                 {
-                                    (*entity)->animation[anim_index].first_frame = 1;
+                                    (*actor)->animation[anim_index].first_frame = 1;
                                 }
 
                                 SDL_snprintf(property_name, 26, "animation_%u_fps", anim_index + 1);
-                                (*entity)->animation[anim_index].fps =
+                                (*actor)->animation[anim_index].fps =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
                                 SDL_snprintf(property_name, 26, "animation_%u_length", anim_index + 1);
-                                (*entity)->animation[anim_index].length =
+                                (*actor)->animation[anim_index].length =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
                                 SDL_snprintf(property_name, 26, "animation_%u_offset_y", anim_index + 1);
-                                (*entity)->animation[anim_index].offset_y =
+                                (*actor)->animation[anim_index].offset_y =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
                             }
                         }
@@ -1804,20 +1804,20 @@ static esz_status init_objects(esz_core_t* core)
                     break;
                 }
 
-                object->width  = get_integer_property(H_width, properties, prop_cnt, core);
-                object->height = get_integer_property(H_height, properties, prop_cnt, core);
+                entity->width  = get_integer_property(H_width, properties, prop_cnt, core);
+                entity->height = get_integer_property(H_height, properties, prop_cnt, core);
 
-                if (0 >= object->width)
+                if (0 >= entity->width)
                 {
-                    object->width = get_tile_width(core->map->handle);
+                    entity->width = get_tile_width(core->map->handle);
                 }
 
-                if (0 >= object->height)
+                if (0 >= entity->height)
                 {
-                    object->width = get_tile_height(core->map->handle);
+                    entity->width = get_tile_height(core->map->handle);
                 }
 
-                update_bounding_box(object);
+                update_bounding_box(entity);
 
                 index        += 1;
                 tiled_object  = tiled_object->next;
@@ -1828,7 +1828,7 @@ static esz_status init_objects(esz_core_t* core)
 
     if (! player_found)
     {
-        SDL_Log("  Warning: no player entity found.\n");
+        SDL_Log("  Warning: no player actor found.\n");
     }
 
     return ESZ_OK;
@@ -2255,7 +2255,7 @@ static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
 {
     if (esz_is_camera_locked(core))
     {
-        esz_object_t* target = &core->map->object[core->camera.target_entity_id];
+        esz_entity_t* target = &core->map->entity[core->camera.target_actor_id];
 
         core->camera.pos_x  = target->pos_x;
         core->camera.pos_x -= (double)window->logical_width  / 2.0;
@@ -2331,6 +2331,131 @@ static int32_t remove_gid_flip_bits(int32_t gid)
     #endif
 }
 
+static esz_status render_actors(esz_actor_layer_level level, esz_window_t* window, esz_core_t* core)
+{
+    esz_tiled_layer_t* layer;
+    esz_render_layer   render_layer = ESZ_ACTOR_FG;
+    int32_t            index        = 0;
+
+    if (! esz_is_map_loaded(core))
+    {
+        return ESZ_OK;
+    }
+
+    layer = get_head_tiled_layer(core->map->handle);
+
+    if (ESZ_ACTOR_LAYER_LEVEL_MAX == level)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    if (ESZ_ACTOR_LAYER_BG == level)
+    {
+        render_layer = ESZ_ACTOR_BG;
+    }
+    else if (ESZ_ACTOR_LAYER_MG == level)
+    {
+        render_layer = ESZ_ACTOR_MG;
+    }
+
+    if (ESZ_OK != create_and_set_render_target(&core->map->render_target[render_layer], window))
+    {
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    while (layer)
+    {
+        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
+        {
+            esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
+            while (tiled_object)
+            {
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                esz_entity_t* object    = &core->map->entity[index];
+
+                switch (type_hash)
+                {
+                    case H_actor:
+                    {
+                        esz_actor_t**    actor = &object->actor;
+                        double           pos_x  = object->pos_x - core->camera.pos_x;
+                        double           pos_y  = object->pos_y - core->camera.pos_y;
+                        SDL_RendererFlip flip   = SDL_FLIP_NONE;
+                        SDL_Rect         dst    = { 0 };
+                        SDL_Rect         src    = { 0 };
+
+                        if (ESZ_ACTOR_LAYER_BG == level && ! IS_STATE_SET((*actor)->state, STATE_IN_BACKGROUND))
+                        {
+                            break;
+                        }
+
+                        if (ESZ_ACTOR_LAYER_MG == level && ! IS_STATE_SET((*actor)->state, STATE_IN_MIDGROUND))
+                        {
+                            break;
+                        }
+
+                        if (ESZ_ACTOR_LAYER_FG == level && ! IS_STATE_SET((*actor)->state, STATE_IN_FOREGROUND))
+                        {
+                                break;
+                        }
+
+                        if (IS_STATE_SET((*actor)->state, STATE_LOOKING_LEFT))
+                        {
+                            flip = SDL_FLIP_HORIZONTAL;
+                        }
+
+                        // Update animation frame
+                        // -----------------------------------------------------
+
+                        if (IS_STATE_SET((*actor)->state, STATE_ANIMATED) && (*actor)->animation)
+                        {
+                            int32_t current_animation = (*actor)->current_animation;
+
+                            (*actor)->time_since_last_anim_frame += window->time_since_last_frame;
+
+                            if ((*actor)->time_since_last_anim_frame >= 1.0 / (double)((*actor)->animation[current_animation - 1].fps))
+                            {
+                                (*actor)->time_since_last_anim_frame = 0.0;
+
+                                (*actor)->current_frame += 1;
+
+                                if ((*actor)->current_frame >= (*actor)->animation[current_animation - 1].length)
+                                {
+                                    (*actor)->current_frame = 0;
+                                }
+                            }
+
+                            src.x  = ((*actor)->animation[current_animation - 1].first_frame - 1) * object->width;
+                            src.x += (*actor)->current_frame                                      * object->width;
+                            src.y  = (*actor)->animation[current_animation - 1].offset_y          * object->height;
+                        }
+
+                        src.w  = object->width;
+                        src.h  = object->height;
+                        dst.x  = (int32_t)pos_x - (object->width  / 2);
+                        dst.y  = (int32_t)pos_y - (object->height / 2);
+                        dst.w  = object->width;
+                        dst.h  = object->height;
+
+                        if (0 > SDL_RenderCopyEx(window->renderer, core->map->sprite[(*actor)->sprite_sheet_id].texture, &src, &dst, 0, NULL, flip))
+                        {
+                            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
+                            return ESZ_ERROR_CRITICAL;
+                        }
+                        break;
+                    }
+                }
+                index        += 1;
+                tiled_object  = tiled_object->next;
+            }
+        }
+        layer = layer->next;
+    }
+
+    return ESZ_OK;
+}
+
 static esz_status render_background(esz_window_t* window, esz_core_t* core)
 {
     esz_status       status       = ESZ_OK;
@@ -2369,7 +2494,7 @@ static esz_status render_background(esz_window_t* window, esz_core_t* core)
     }
     else
     {
-        core->map->background.velocity = core->map->object[core->camera.target_entity_id].entity->velocity_x;
+        core->map->background.velocity = core->map->entity[core->camera.target_actor_id].actor->velocity_x;
     }
 
     if (! esz_is_camera_locked(core))
@@ -2481,131 +2606,6 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
-    }
-
-    return ESZ_OK;
-}
-
-static esz_status render_entities(esz_entity_layer_level level, esz_window_t* window, esz_core_t* core)
-{
-    esz_tiled_layer_t* layer;
-    esz_render_layer   render_layer = ESZ_ENTITY_FG;
-    int32_t            index        = 0;
-
-    if (! esz_is_map_loaded(core))
-    {
-        return ESZ_OK;
-    }
-
-    layer = get_head_tiled_layer(core->map->handle);
-
-    if (ESZ_ENTITY_LAYER_LEVEL_MAX == level)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
-        return ESZ_ERROR_CRITICAL;
-    }
-
-    if (ESZ_ENTITY_LAYER_BG == level)
-    {
-        render_layer = ESZ_ENTITY_BG;
-    }
-    else if (ESZ_ENTITY_LAYER_MG == level)
-    {
-        render_layer = ESZ_ENTITY_MG;
-    }
-
-    if (ESZ_OK != create_and_set_render_target(&core->map->render_target[render_layer], window))
-    {
-        return ESZ_ERROR_CRITICAL;
-    }
-
-    while (layer)
-    {
-        if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
-        {
-            esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
-            while (tiled_object)
-            {
-                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
-                esz_object_t* object    = &core->map->object[index];
-
-                switch (type_hash)
-                {
-                    case H_entity:
-                    {
-                        esz_entity_t**   entity = &object->entity;
-                        double           pos_x  = object->pos_x - core->camera.pos_x;
-                        double           pos_y  = object->pos_y - core->camera.pos_y;
-                        SDL_RendererFlip flip   = SDL_FLIP_NONE;
-                        SDL_Rect         dst    = { 0 };
-                        SDL_Rect         src    = { 0 };
-
-                        if (ESZ_ENTITY_LAYER_BG == level && ! IS_STATE_SET((*entity)->state, STATE_IN_BACKGROUND))
-                        {
-                            break;
-                        }
-
-                        if (ESZ_ENTITY_LAYER_MG == level && ! IS_STATE_SET((*entity)->state, STATE_IN_MIDGROUND))
-                        {
-                            break;
-                        }
-
-                        if (ESZ_ENTITY_LAYER_FG == level && ! IS_STATE_SET((*entity)->state, STATE_IN_FOREGROUND))
-                        {
-                                break;
-                        }
-
-                        if (IS_STATE_SET((*entity)->state, STATE_LOOKING_LEFT))
-                        {
-                            flip = SDL_FLIP_HORIZONTAL;
-                        }
-
-                        // Update animation frame
-                        // -----------------------------------------------------
-
-                        if (IS_STATE_SET((*entity)->state, STATE_ANIMATED) && (*entity)->animation)
-                        {
-                            int32_t current_animation = (*entity)->current_animation;
-
-                            (*entity)->time_since_last_anim_frame += window->time_since_last_frame;
-
-                            if ((*entity)->time_since_last_anim_frame >= 1.0 / (double)((*entity)->animation[current_animation - 1].fps))
-                            {
-                                (*entity)->time_since_last_anim_frame = 0.0;
-
-                                (*entity)->current_frame += 1;
-
-                                if ((*entity)->current_frame >= (*entity)->animation[current_animation - 1].length)
-                                {
-                                    (*entity)->current_frame = 0;
-                                }
-                            }
-
-                            src.x  = ((*entity)->animation[current_animation - 1].first_frame - 1) * object->width;
-                            src.x += (*entity)->current_frame                                      * object->width;
-                            src.y  = (*entity)->animation[current_animation - 1].offset_y          * object->height;
-                        }
-
-                        src.w  = object->width;
-                        src.h  = object->height;
-                        dst.x  = (int32_t)pos_x - (object->width  / 2);
-                        dst.y  = (int32_t)pos_y - (object->height / 2);
-                        dst.w  = object->width;
-                        dst.h  = object->height;
-
-                        if (0 > SDL_RenderCopyEx(window->renderer, core->map->sprite[(*entity)->sprite_sheet_id].texture, &src, &dst, 0, NULL, flip))
-                        {
-                            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
-                            return ESZ_ERROR_CRITICAL;
-                        }
-                        break;
-                    }
-                }
-                index        += 1;
-                tiled_object  = tiled_object->next;
-            }
-        }
-        layer = layer->next;
     }
 
     return ESZ_OK;
@@ -2988,9 +2988,9 @@ static esz_status render_scene(esz_window_t* window, esz_core_t* core)
         }
     }
 
-    for (esz_entity_layer_level level = 0; ESZ_ENTITY_LAYER_LEVEL_MAX > level; level += 1)
+    for (esz_actor_layer_level level = 0; ESZ_ACTOR_LAYER_LEVEL_MAX > level; level += 1)
     {
-        status = render_entities(level, window, core);
+        status = render_actors(level, window, core);
         if (ESZ_OK != status)
         {
             return status;
@@ -3043,25 +3043,25 @@ static void set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* 
     }
 }
 
-static void update_bounding_box(esz_object_t* object)
+static void update_bounding_box(esz_entity_t* entity)
 {
-    object->bounding_box.top    = object->pos_y - (double)(object->height / 2.0);
-    object->bounding_box.bottom = object->pos_y + (double)(object->height / 2.0);
-    object->bounding_box.left   = object->pos_x - (double)(object->width  / 2.0);
-    object->bounding_box.right  = object->pos_x + (double)(object->width  / 2.0);
+    entity->bounding_box.top    = entity->pos_y - (double)(entity->height / 2.0);
+    entity->bounding_box.bottom = entity->pos_y + (double)(entity->height / 2.0);
+    entity->bounding_box.left   = entity->pos_x - (double)(entity->width  / 2.0);
+    entity->bounding_box.right  = entity->pos_x + (double)(entity->width  / 2.0);
 
-    if (0 >= object->bounding_box.left)
+    if (0 >= entity->bounding_box.left)
     {
-        object->bounding_box.left = 0.0;
+        entity->bounding_box.left = 0.0;
     }
 
-    if (0 >= object->bounding_box.top)
+    if (0 >= entity->bounding_box.top)
     {
-        object->bounding_box.top = 0.0;
+        entity->bounding_box.top = 0.0;
     }
 }
 
-static void update_objects(esz_window_t* window, esz_core_t* core)
+static void update_entities(esz_window_t* window, esz_core_t* core)
 {
     esz_tiled_layer_t* layer;
     int32_t            index = 0;
@@ -3081,40 +3081,40 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
             while (tiled_object)
             {
                 uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
-                esz_object_t* object    = &core->map->object[index];
+                esz_entity_t* entity    = &core->map->entity[index];
 
                 switch (type_hash)
                 {
-                    case H_entity:
+                    case H_actor:
                     {
-                        esz_entity_t** entity = &object->entity;
-                        uint32_t*      state = &(*entity)->state;
-                        double         acceleration_x = (*entity)->acceleration * core->map->meter_in_pixel;
-                        double         acceleration_y = core->map->meter_in_pixel * core->map->meter_in_pixel;
-                        double         time_since_last_frame = esz_get_time_since_last_frame(window);
-                        double         distance_x = acceleration_x * time_since_last_frame * time_since_last_frame;
-                        double         distance_y = acceleration_y * time_since_last_frame * time_since_last_frame;
+                        esz_actor_t** actor = &entity->actor;
+                        uint32_t*     state = &(*actor)->state;
+                        double        acceleration_x = (*actor)->acceleration * core->map->meter_in_pixel;
+                        double        acceleration_y = core->map->meter_in_pixel * core->map->meter_in_pixel;
+                        double        time_since_last_frame = esz_get_time_since_last_frame(window);
+                        double        distance_x = acceleration_x * time_since_last_frame * time_since_last_frame;
+                        double        distance_y = acceleration_y * time_since_last_frame * time_since_last_frame;
 
                         // Adjust mutually exclusive states
                         // ----------------------------------------------------
                         if (IS_STATE_SET(*state, STATE_IN_MIDGROUND))
                         {
-                            CLR_STATE((*entity)->state, STATE_IN_BACKGROUND);
-                            CLR_STATE((*entity)->state, STATE_IN_FOREGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_BACKGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_FOREGROUND);
                         }
                         else if (IS_STATE_SET(*state, STATE_IN_FOREGROUND))
                         {
-                            CLR_STATE((*entity)->state, STATE_IN_BACKGROUND);
-                            CLR_STATE((*entity)->state, STATE_IN_MIDGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_BACKGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_MIDGROUND);
                         }
                         else if (IS_STATE_SET(*state, STATE_IN_BACKGROUND))
                         {
-                            CLR_STATE((*entity)->state, STATE_IN_MIDGROUND);
-                            CLR_STATE((*entity)->state, STATE_IN_FOREGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_MIDGROUND);
+                            CLR_STATE((*actor)->state, STATE_IN_FOREGROUND);
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_IN_MIDGROUND);
+                            SET_STATE((*actor)->state, STATE_IN_MIDGROUND);
                         }
 
                         // Vertical movement and gravity
@@ -3122,69 +3122,69 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
 
                         if (IS_STATE_SET(*state, STATE_GRAVITATIONAL))
                         {
-                            CLR_STATE((*entity)->state, STATE_FLOATING);
+                            CLR_STATE((*actor)->state, STATE_FLOATING);
 
-                            if (0 > (*entity)->velocity_y)
+                            if (0 > (*actor)->velocity_y)
                             {
-                                SET_STATE((*entity)->state, STATE_RISING);
+                                SET_STATE((*actor)->state, STATE_RISING);
                             }
                             else
                             {
-                                CLR_STATE((*entity)->state, STATE_RISING);
+                                CLR_STATE((*actor)->state, STATE_RISING);
                             }
 
-                            if (IS_STATE_SET((*entity)->state, STATE_RISING))
+                            if (IS_STATE_SET((*actor)->state, STATE_RISING))
                             {
-                                SET_STATE((*entity)->state, STATE_IN_MID_AIR);
+                                SET_STATE((*actor)->state, STATE_IN_MID_AIR);
                             }
 
                             // tbd. check ground collision here
                         }
                         else
                         {
-                            SET_STATE((*entity)->state, STATE_FLOATING);
-                            CLR_STATE((*entity)->state, STATE_IN_MID_AIR);
-                            CLR_STATE((*entity)->state, STATE_JUMPING);
-                            CLR_STATE((*entity)->state, STATE_RISING);
+                            SET_STATE((*actor)->state, STATE_FLOATING);
+                            CLR_STATE((*actor)->state, STATE_IN_MID_AIR);
+                            CLR_STATE((*actor)->state, STATE_JUMPING);
+                            CLR_STATE((*actor)->state, STATE_RISING);
                         }
 
                         if (0 < core->map->gravitation)
                         {
-                            if (IS_STATE_SET((*entity)->state, STATE_IN_MID_AIR))
+                            if (IS_STATE_SET((*actor)->state, STATE_IN_MID_AIR))
                             {
-                                (*entity)->velocity_y += distance_y;
-                                object->pos_y += (*entity)->velocity_y;
+                                (*actor)->velocity_y += distance_y;
+                                entity->pos_y += (*actor)->velocity_y;
                             }
                             else
                             {
                                 int32_t tile_height = get_tile_height(core->map->handle);
 
-                                CLR_STATE((*entity)->action, ACTION_JUMP);
-                                (*entity)->velocity_y = 0.0;
-                                // Correct entity position along the y-axis:
-                                object->pos_y = ((double)tile_height * round(object->pos_y / (double)tile_height));
+                                CLR_STATE((*actor)->action, ACTION_JUMP);
+                                (*actor)->velocity_y = 0.0;
+                                // Correct actor position along the y-axis:
+                                entity->pos_y = ((double)tile_height * round(entity->pos_y / (double)tile_height));
                             }
                         }
                         else
                         {
-                            if (IS_STATE_SET((*entity)->state, STATE_MOVING))
+                            if (IS_STATE_SET((*actor)->state, STATE_MOVING))
                             {
-                                (*entity)->velocity_y += distance_y;
+                                (*actor)->velocity_y += distance_y;
                             }
                             else
                             {
-                                (*entity)->velocity_y -= distance_y;
+                                (*actor)->velocity_y -= distance_y;
                             }
 
-                            if (0.0 < (*entity)->velocity_y)
+                            if (0.0 < (*actor)->velocity_y)
                             {
-                                if (IS_STATE_SET((*entity)->state, STATE_GOING_UP))
+                                if (IS_STATE_SET((*actor)->state, STATE_GOING_UP))
                                 {
-                                    object->pos_y -= (*entity)->velocity_y;
+                                    entity->pos_y -= (*actor)->velocity_y;
                                 }
-                                else if (IS_STATE_SET((*entity)->state, STATE_GOING_DOWN))
+                                else if (IS_STATE_SET((*actor)->state, STATE_GOING_DOWN))
                                 {
-                                    object->pos_y += (*entity)->velocity_y;
+                                    entity->pos_y += (*actor)->velocity_y;
                                 }
                             }
 
@@ -3192,81 +3192,81 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                              * normally not limited, the maximum
                              * horizontal velocity is used in this case.
                              */
-                            if ((*entity)->max_velocity_x <= (*entity)->velocity_y)
+                            if ((*actor)->max_velocity_x <= (*actor)->velocity_y)
                             {
-                                (*entity)->velocity_y = (*entity)->max_velocity_x;
+                                (*actor)->velocity_y = (*actor)->max_velocity_x;
                             }
-                            else if (0.0 > (*entity)->velocity_x)
+                            else if (0.0 > (*actor)->velocity_x)
                             {
-                                (*entity)->velocity_y = 0.0;
+                                (*actor)->velocity_y = 0.0;
                             }
                         }
 
                         // Horizontal movement
                         // ----------------------------------------------------
 
-                        if (IS_STATE_SET((*entity)->state, STATE_MOVING))
+                        if (IS_STATE_SET((*actor)->state, STATE_MOVING))
                         {
-                            (*entity)->velocity_x += distance_x;
+                            (*actor)->velocity_x += distance_x;
                         }
                         else
                         {
-                            (*entity)->velocity_x -= distance_x;
+                            (*actor)->velocity_x -= distance_x;
                         }
 
-                        if (0.0 < (*entity)->velocity_x)
+                        if (0.0 < (*actor)->velocity_x)
                         {
-                            if (IS_STATE_SET((*entity)->state, STATE_GOING_LEFT))
+                            if (IS_STATE_SET((*actor)->state, STATE_GOING_LEFT))
                             {
-                                object->pos_x -= (*entity)->velocity_x;
+                                entity->pos_x -= (*actor)->velocity_x;
                             }
-                            else if (IS_STATE_SET((*entity)->state, STATE_GOING_RIGHT))
+                            else if (IS_STATE_SET((*actor)->state, STATE_GOING_RIGHT))
                             {
-                                object->pos_x += (*entity)->velocity_x;
+                                entity->pos_x += (*actor)->velocity_x;
                             }
                         }
 
-                        if ((*entity)->max_velocity_x <= (*entity)->velocity_x)
+                        if ((*actor)->max_velocity_x <= (*actor)->velocity_x)
                         {
-                            (*entity)->velocity_x = (*entity)->max_velocity_x;
+                            (*actor)->velocity_x = (*actor)->max_velocity_x;
                         }
-                        else if (0.0 > (*entity)->velocity_x)
+                        else if (0.0 > (*actor)->velocity_x)
                         {
-                            (*entity)->velocity_x = 0.0;
+                            (*actor)->velocity_x = 0.0;
                         }
 
                         // Connect map ends
                         // ----------------------------------------------------
 
-                        if ((*entity)->connect_horizontal_map_ends)
+                        if ((*actor)->connect_horizontal_map_ends)
                         {
-                            if (0.0 - object->width > object->pos_x)
+                            if (0.0 - entity->width > entity->pos_x)
                             {
-                                object->pos_x = core->map->width + object->width;
+                                entity->pos_x = core->map->width + entity->width;
                             }
-                            else if (core->map->width + object->width < object->pos_x)
+                            else if (core->map->width + entity->width < entity->pos_x)
                             {
-                                object->pos_x = 0.0 - object->width;
+                                entity->pos_x = 0.0 - entity->width;
                             }
                         }
                         else
                         {
-                            if ((double)(object->width / 4) > object->pos_x)
+                            if ((double)(entity->width / 4) > entity->pos_x)
                             {
-                                object->pos_x = (double)(object->width / 4);
+                                entity->pos_x = (double)(entity->width / 4);
                             }
                             // tbd.
                         }
 
-                        if ((*entity)->connect_vertical_map_ends)
+                        if ((*actor)->connect_vertical_map_ends)
                         {
-                            if (0.0 - object->height > object->pos_y)
+                            if (0.0 - entity->height > entity->pos_y)
                             {
-                                object->pos_y = core->map->height + object->width;
+                                entity->pos_y = core->map->height + entity->width;
                             }
-                            else if (core->map->height + object->height < object->pos_y)
+                            else if (core->map->height + entity->height < entity->pos_y)
                             {
-                                object->pos_y = 0.0 - object->height;
+                                entity->pos_y = 0.0 - entity->height;
                             }
                         }
                         else
@@ -3281,7 +3281,7 @@ static void update_objects(esz_window_t* window, esz_core_t* core)
                 // Update axis-aligned bounding box
                 // ------------------------------------------------------------
 
-                update_bounding_box(object);
+                update_bounding_box(entity);
 
                 index        += 1;
                 tiled_object  = tiled_object->next;
