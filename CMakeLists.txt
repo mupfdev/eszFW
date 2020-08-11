@@ -112,4 +112,11 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
         ${PROJECT_NAME}
         PRIVATE
         -Weverything)
+else()
+    target_compile_options(
+        ${PROJECT_NAME}
+        PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic)
 endif()
