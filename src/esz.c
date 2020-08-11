@@ -110,7 +110,6 @@ static esz_status           render_background(esz_window_t* window, esz_core_t* 
 static esz_status           render_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
 static esz_status           render_map(int32_t level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_scene(esz_window_t* window, esz_core_t* core);
-static double               round_(double number);
 static void                 set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core);
 static void                 update_bounding_box(esz_entity_t* entity);
 static void                 update_entities(esz_window_t* window, esz_core_t* core);
@@ -638,7 +637,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         size_t source_length;
 
         #ifdef USE_LIBTMX
-        int32_t first_gid = (int32_t)core->map->handle->ts_head->firstgid;
+        int32_t first_gid = get_first_gid(core->map->handle);
         char*   ts_path;
         size_t  ts_path_length;
 
@@ -1501,7 +1500,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
                     {
                         cute_tiled_tileset_t*         tileset   = core->map->handle->tilesets;
                         cute_tiled_tile_descriptor_t* tile      = tileset->tiles;
-                        int32_t                       first_gid = core->map->handle->tilesets->firstgid;
+                        int32_t                       first_gid = get_first_gid(core->map->handle);
                         int32_t                       local_id  = gid - first_gid;
 
                         if (gid)
@@ -2701,7 +2700,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
             #ifdef USE_LIBTMX
             tmx_tileset* tileset;
-            int32_t      first_gid = (int32_t)core->map->handle->ts_head->firstgid;
+            int32_t      first_gid = get_first_gid(core->map->handle);
 
             tile_id = core->map->animated_tile[index].id + 1;
             tileset = core->map->handle->tiles[first_gid]->tileset;
@@ -2880,7 +2879,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
                         #ifdef USE_LIBTMX
                         if (core->map->handle->tiles[gid])
                         {
-                            int32_t      first_gid = (int32_t)core->map->handle->ts_head->firstgid;
+                            int32_t      first_gid = get_first_gid(core->map->handle);
                             tmx_tileset* tileset;
 
                             tileset = core->map->handle->tiles[first_gid]->tileset;
@@ -2913,7 +2912,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
                         if (gid)
                         {
                             cute_tiled_tileset_t* tileset;
-                            int32_t               first_gid = core->map->handle->tilesets->firstgid;
+                            int32_t               first_gid = get_first_gid(core->map->handle);
                             int32_t               local_id  = gid - first_gid;
 
                             tileset = core->map->handle->tilesets;
@@ -3013,20 +3012,6 @@ static esz_status render_scene(esz_window_t* window, esz_core_t* core)
     }
 
     return status;
-}
-
-static double round_(double number)
-{
-    double decimal_place = number - SDL_floor(number);
-
-    if (decimal_place >= 0.5)
-    {
-        return SDL_ceil(number);
-    }
-    else
-    {
-        return SDL_floor(number);
-    }
 }
 
 static void set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core)
