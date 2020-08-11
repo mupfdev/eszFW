@@ -5,20 +5,14 @@
  * @details A cross-platform game engine written in C
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <SDL.h>
 #include <cwalk.h>
-#include "esz.h"
-#include "esz_types.h"
-
-#define CLR_STATE(number, bit) number &= ~(1UL << bit)
-#define SET_STATE(number, bit) number |=   1UL << bit
-#define IS_STATE_SET(number, bit) ((0U == (number & (1 << bit))) ? 0U : 1U)
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
 
 #ifdef USE_LIBTMX
     #include <tmx.h>
@@ -27,10 +21,17 @@
     #include <cute_tiled.h>
 #endif
 
-#pragma clang diagnostic pop
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#pragma clang diagnostic pop
+
+#include "esz.h"
+#include "esz_types.h"
+
+#define CLR_STATE(number, bit) number &= ~(1UL << bit)
+#define SET_STATE(number, bit) number |=   1UL << bit
+#define IS_STATE_SET(number, bit) ((0U == (number & (1 << bit))) ? 0U : 1U)
 
 // Hash table
 // ----------------------------------------------------------------------------
@@ -104,10 +105,10 @@ static esz_tiled_map_t*     load_tiled_map(const char* map_file_name);
 static void                 move_camera_to_target(esz_window_t* window, esz_core_t* core);
 static void                 poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t              remove_gid_flip_bits(int32_t gid);
-static esz_status           render_actors(esz_actor_layer_level level, esz_window_t* window, esz_core_t* core);
+static esz_status           render_actors(int32_t level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_background(esz_window_t* window, esz_core_t* core);
 static esz_status           render_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
-static esz_status           render_map(esz_map_layer_level level, esz_window_t* window, esz_core_t* core);
+static esz_status           render_map(int32_t level, esz_window_t* window, esz_core_t* core);
 static esz_status           render_scene(esz_window_t* window, esz_core_t* core);
 static double               round_(double number);
 static void                 set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core);
@@ -160,6 +161,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_status      status = ESZ_OK;
     SDL_DisplayMode display_mode;
     uint32_t        renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+    int32_t         index;
 
     const unsigned char* esz_logo;
     const unsigned char  esz_logo_pxdata[228] = {
@@ -185,7 +187,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     };
     esz_logo = esz_logo_pxdata;
 
-    *window = calloc(1, sizeof(struct esz_window));
+    *window = (esz_window_t*)calloc(1, sizeof(struct esz_window));
     if (! *window)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -264,10 +266,10 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     /* Get index of opengl rendering driver and create 2D rendering
      * context.
      */
-    for (int driver_index = 0; driver_index < SDL_GetNumRenderDrivers(); driver_index += 1)
+    for (index = 0; index < SDL_GetNumRenderDrivers(); index += 1)
     {
         SDL_RendererInfo renderer_info = { 0 };
-        SDL_GetRenderDriverInfo(driver_index, &renderer_info);
+        SDL_GetRenderDriverInfo(index, &renderer_info);
 
         if (H_opengl != esz_hash((const unsigned char*)renderer_info.name))
         {
@@ -275,7 +277,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         }
         else
         {
-            (*window)->renderer = SDL_CreateRenderer((*window)->window, driver_index, renderer_flags);
+            (*window)->renderer = SDL_CreateRenderer((*window)->window, index, renderer_flags);
 
             if (! (*window)->renderer)
             {
@@ -424,7 +426,7 @@ double esz_get_time_since_last_frame(esz_window_t* window)
 
 esz_status esz_init_core(esz_core_t** core)
 {
-    *core = calloc(1, sizeof(struct esz_core));
+    *core = (esz_core_t*)calloc(1, sizeof(struct esz_core));
     if (! *core)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -491,7 +493,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 1. Map
     // ------------------------------------------------------------------------
 
-    core->map = calloc(1, sizeof(struct esz_map));
+    core->map = (esz_map_t*)calloc(1, sizeof(struct esz_map));
     if (! core->map)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -535,7 +537,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     {
         int32_t tile_count = (int32_t)(core->map->handle->height * core->map->handle->width);
 
-        core->map->tile_properties = calloc((size_t)tile_count, sizeof(uint32_t));
+        core->map->tile_properties = (uint32_t*)calloc((size_t)tile_count, sizeof(uint32_t));
         if (!core->map->tile_properties)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -549,9 +551,11 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             {
                 if (is_tiled_layer_of_type(ESZ_TILE_LAYER, layer, core))
                 {
-                    for (int32_t index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
+                    int32_t index_height;
+                    for (index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
                     {
-                        for (int32_t index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
+                        int32_t index_width;
+                        for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                         {
                             #ifdef USE_LIBTMX
                             uint32_t* layer_content = layer->content.gids;
@@ -620,7 +624,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 4. Paths and file locations
     // ------------------------------------------------------------------------
 
-    core->map->path = calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
+    core->map->path = (char*)calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
     if (! core->map->path)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -684,7 +688,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         source_length += SDL_strlen(core->map->handle->tilesets->image.ptr);
         source_length += 1;
 
-        tileset_image_source = calloc(1, source_length);
+        tileset_image_source = (char*)calloc(1, source_length);
         if (! tileset_image_source)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1008,21 +1012,21 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     core->is_map_loaded           = false;
     core->camera.target_actor_id = 0;
 
-    for (esz_map_layer_level level = 0; level < ESZ_MAP_LAYER_LEVEL_MAX; level += 1)
+    for (index = 0; index < ESZ_MAP_LAYER_LEVEL_MAX; index += 1)
     {
-        if (core->map->layer_texture[level])
+        if (core->map->layer_texture[index])
         {
-            SDL_DestroyTexture(core->map->layer_texture[level]);
-            core->map->layer_texture[level] = NULL;
+            SDL_DestroyTexture(core->map->layer_texture[index]);
+            core->map->layer_texture[index] = NULL;
         }
     }
 
-    for (esz_render_layer render_layer_idx = 0; render_layer_idx < ESZ_RENDER_LAYER_MAX; render_layer_idx += 1)
+    for (index = 0; index < ESZ_RENDER_LAYER_MAX; index += 1)
     {
-        if (core->map->render_target[render_layer_idx])
+        if (core->map->render_target[index])
         {
-            SDL_DestroyTexture(core->map->render_target[render_layer_idx]);
-            core->map->render_target[render_layer_idx] = NULL;
+            SDL_DestroyTexture(core->map->render_target[index]);
+            core->map->render_target[index] = NULL;
         }
     }
 
@@ -1248,6 +1252,7 @@ static esz_status create_and_set_render_target(SDL_Texture** target, esz_window_
 static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
 {
     SDL_Rect dst;
+    int32_t  index;
 
     if (0 > SDL_SetRenderTarget(window->renderer, NULL))
     {
@@ -1281,9 +1286,9 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
     dst.w = window->width;
     dst.h = window->height;
 
-    for (esz_render_layer render_layer_idx = 0; ESZ_RENDER_LAYER_MAX > render_layer_idx; render_layer_idx += 1)
+    for (index = 0; index < ESZ_RENDER_LAYER_MAX; index += 1)
     {
-        if (0 > SDL_RenderCopy(window->renderer, core->map->render_target[render_layer_idx], NULL, &dst))
+        if (0 > SDL_RenderCopy(window->renderer, core->map->render_target[index], NULL, &dst))
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s.\n", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
@@ -1470,9 +1475,11 @@ static esz_status init_animated_tiles(esz_core_t* core)
     {
         if (is_tiled_layer_of_type(ESZ_TILE_LAYER, layer, core) && layer->visible)
         {
-            for (int32_t index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
+            int32_t index_height;
+            for (index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
             {
-                for (int32_t index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
+                int32_t index_width;
+                for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                 {
                     #ifdef USE_LIBTMX
                     uint32_t* layer_content = layer->content.gids;
@@ -1526,7 +1533,7 @@ static esz_status init_animated_tiles(esz_core_t* core)
     }
     else
     {
-        core->map->animated_tile = calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
+        core->map->animated_tile = (esz_animated_tile_t*)calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
         if (!core->map->animated_tile)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1540,8 +1547,9 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
 static esz_status init_background(esz_window_t* window, esz_core_t* core)
 {
-    char property_name[21] = { 0 };
-    bool search_is_running = true;
+    char    property_name[21] = { 0 };
+    bool    search_is_running = true;
+    int32_t index;
 
     core->map->background.layer_shift = esz_get_decimal_map_property(H_background_layer_shift, core);
     core->map->background.velocity    = esz_get_decimal_map_property(H_background_constant_velocity, core);
@@ -1581,7 +1589,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    core->map->background.layer = calloc((size_t)core->map->background.layer_count, sizeof(struct esz_background_layer));
+    core->map->background.layer = (esz_background_layer_t*)calloc((size_t)core->map->background.layer_count, sizeof(struct esz_background_layer));
     if (! core->map->background.layer)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1590,7 +1598,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
 
     if (0 < core->map->background.layer_count)
     {
-        for (int32_t index = 0; index < core->map->background.layer_count; index += 1)
+        for (index = 0; index < core->map->background.layer_count; index += 1)
         {
             load_background_layer(index, window, core);
         }
@@ -1633,7 +1641,7 @@ static esz_status init_entities(esz_core_t* core)
 
     if (core->map->entity_count)
     {
-        core->map->entity = calloc((size_t)core->map->entity_count, sizeof(struct esz_entity));
+        core->map->entity = (esz_entity_t*)calloc((size_t)core->map->entity_count, sizeof(struct esz_entity));
         if (! core->map->entity)
         {
             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1665,7 +1673,7 @@ static esz_status init_entities(esz_core_t* core)
                     {
                         esz_actor_t** actor = &entity->actor;
 
-                        (*actor) = calloc(1, sizeof(struct esz_actor));
+                        (*actor) = (esz_actor_t*)calloc(1, sizeof(struct esz_actor));
                         if (! (*actor))
                         {
                             SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory for actor.\n", __func__);
@@ -1769,34 +1777,34 @@ static esz_status init_entities(esz_core_t* core)
                         {
                             char property_name[26] = { 0 };
 
-                            (*actor)->animation = calloc((size_t)(*actor)->animation_count, sizeof(struct esz_animation));
+                            (*actor)->animation = (esz_animation_t*)calloc((size_t)(*actor)->animation_count, sizeof(struct esz_animation));
                             if (! (*actor)->animation)
                             {
                                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
                                 return ESZ_ERROR_CRITICAL;
                             }
 
-                            for (int32_t anim_index = 0; anim_index < (*actor)->animation_count; anim_index += 1)
+                            for (index = 0; index < (*actor)->animation_count; index += 1)
                             {
-                                SDL_snprintf(property_name, 26, "animation_%u_first_frame", anim_index + 1);
-                                (*actor)->animation[anim_index].first_frame =
+                                SDL_snprintf(property_name, 26, "animation_%u_first_frame", index + 1);
+                                (*actor)->animation[index].first_frame =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                if (0 == (*actor)->animation[anim_index].first_frame)
+                                if (0 == (*actor)->animation[index].first_frame)
                                 {
-                                    (*actor)->animation[anim_index].first_frame = 1;
+                                    (*actor)->animation[index].first_frame = 1;
                                 }
 
-                                SDL_snprintf(property_name, 26, "animation_%u_fps", anim_index + 1);
-                                (*actor)->animation[anim_index].fps =
+                                SDL_snprintf(property_name, 26, "animation_%u_fps", index + 1);
+                                (*actor)->animation[index].fps =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                SDL_snprintf(property_name, 26, "animation_%u_length", anim_index + 1);
-                                (*actor)->animation[anim_index].length =
+                                SDL_snprintf(property_name, 26, "animation_%u_length", index + 1);
+                                (*actor)->animation[index].length =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                SDL_snprintf(property_name, 26, "animation_%u_offset_y", anim_index + 1);
-                                (*actor)->animation[anim_index].offset_y =
+                                SDL_snprintf(property_name, 26, "animation_%u_offset_y", index + 1);
+                                (*actor)->animation[index].offset_y =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
                             }
                         }
@@ -1836,8 +1844,9 @@ static esz_status init_entities(esz_core_t* core)
 
 static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 {
-    char property_name[17] = { 0 };
-    bool search_is_running = true;
+    char    property_name[17] = { 0 };
+    bool    search_is_running = true;
+    int32_t index;
 
     core->map->sprite_sheet_count = 0;
 
@@ -1860,14 +1869,14 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    core->map->sprite = calloc((size_t)core->map->sprite_sheet_count, sizeof(struct esz_sprite));
+    core->map->sprite = (esz_sprite_t*)calloc((size_t)core->map->sprite_sheet_count, sizeof(struct esz_sprite));
     if (! core->map->sprite)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
-    for (int32_t index = 0; index < core->map->sprite_sheet_count; index += 1)
+    for (index = 0; index < core->map->sprite_sheet_count; index += 1)
     {
         SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
 
@@ -1876,7 +1885,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
         if (file_name)
         {
             size_t source_length            = SDL_strlen(core->map->path) + SDL_strlen(file_name) + 1;
-            char* sprite_sheet_image_source = calloc(1, source_length);
+            char* sprite_sheet_image_source = (char*)calloc(1, source_length);
             if (! sprite_sheet_image_source)
             {
                 SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -1963,7 +1972,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
     source_length = SDL_strlen(core->map->path) + SDL_strlen(file_name) + 1;
 
-    background_layer_image_source = calloc(1, source_length);
+    background_layer_image_source = (char*)calloc(1, source_length);
     if (! background_layer_image_source)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: error allocating memory.\n", __func__);
@@ -2014,7 +2023,8 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     }
 
     dst.x = 0;
-    for (int32_t pass = 0; pass < layer_width_factor; pass += 1)
+    int32_t pass;
+    for (pass = 0; pass < layer_width_factor; pass += 1)
     {
         dst.y = 0;
         dst.w = image_width;
@@ -2283,37 +2293,37 @@ static void poll_events(esz_window_t* window, esz_core_t* core)
             case SDL_FINGERDOWN:
                 if (core->event.finger_down_cb)
                 {
-                    core->event.finger_down_cb((void*)window, (void*)core);
+                    core->event.finger_down_cb(window, core);
                 }
                 break;
             case SDL_FINGERUP:
                 if (core->event.finger_up_cb)
                 {
-                    core->event.finger_up_cb((void*)window, (void*)core);
+                    core->event.finger_up_cb(window, core);
                 }
                 break;
             case SDL_FINGERMOTION:
                 if (core->event.finger_motion_cb)
                 {
-                    core->event.finger_motion_cb((void*)window, (void*)core);
+                    core->event.finger_motion_cb(window, core);
                 }
                 break;
             case SDL_KEYDOWN:
                 if (core->event.key_down_cb)
                 {
-                    core->event.key_down_cb((void*)window, (void*)core);
+                    core->event.key_down_cb(window, core);
                 }
                 break;
             case SDL_KEYUP:
                 if (core->event.key_up_cb)
                 {
-                    core->event.key_up_cb((void*)window, (void*)core);
+                    core->event.key_up_cb(window, core);
                 }
                 break;
             case SDL_MULTIGESTURE:
                 if (core->event.multi_gesture_cb)
                 {
-                    core->event.multi_gesture_cb((void*)window, (void*)core);
+                    core->event.multi_gesture_cb(window, core);
                 }
                 break;
         }
@@ -2331,7 +2341,7 @@ static int32_t remove_gid_flip_bits(int32_t gid)
     #endif
 }
 
-static esz_status render_actors(esz_actor_layer_level level, esz_window_t* window, esz_core_t* core)
+static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t* core)
 {
     esz_tiled_layer_t* layer;
     esz_render_layer   render_layer = ESZ_ACTOR_FG;
@@ -2344,7 +2354,7 @@ static esz_status render_actors(esz_actor_layer_level level, esz_window_t* windo
 
     layer = get_head_tiled_layer(core->map->handle);
 
-    if (ESZ_ACTOR_LAYER_LEVEL_MAX == level)
+    if (level >= ESZ_ACTOR_LAYER_LEVEL_MAX)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
         return ESZ_ERROR_CRITICAL;
@@ -2502,7 +2512,8 @@ static esz_status render_background(esz_window_t* window, esz_core_t* core)
         core->map->background.velocity = 0.0;
     }
 
-    for (int32_t index = 0; index < core->map->background.layer_count; index += 1)
+    int32_t index;
+    for (index = 0; index < core->map->background.layer_count; index += 1)
     {
         core->map->background.layer[index].velocity = core->map->background.velocity / factor;
         factor -= core->map->background.layer_shift;
@@ -2612,7 +2623,7 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 }
 
 // Todo: simplify/merge libTMX/cute_tiled integration, see: esz_load_map
-static esz_status render_map(esz_map_layer_level level, esz_window_t* window, esz_core_t* core)
+static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* core)
 {
     esz_tiled_layer_t* layer;
     bool               render_animated_tiles = false;
@@ -2625,7 +2636,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
 
     layer = get_head_tiled_layer(core->map->handle);
 
-    if (ESZ_MAP_LAYER_LEVEL_MAX == level)
+    if (level >= ESZ_MAP_LAYER_LEVEL_MAX)
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: invalid layer level selected.\n", __func__);
         return ESZ_ERROR_CRITICAL;
@@ -2679,7 +2690,8 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
             return ESZ_ERROR_CRITICAL;
         }
 
-        for (int32_t index = 0; core->map->animated_tile_index > index; index += 1)
+        int32_t index;
+        for (index = 0; core->map->animated_tile_index > index; index += 1)
         {
             int32_t  gid          = core->map->animated_tile[index].gid;
             int32_t  tile_id;
@@ -2852,9 +2864,11 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
 
             if (layer->visible && is_layer_rendered)
             {
-                for (int32_t index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
+                int32_t index_height;
+                for (index_height = 0; index_height < (int32_t)core->map->handle->height; index_height += 1)
                 {
-                    for (int32_t index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
+                    int32_t index_width;
+                    for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                     {
                         #ifdef USE_LIBTMX
                         uint32_t* layer_content = layer->content.gids;
@@ -2972,6 +2986,7 @@ static esz_status render_map(esz_map_layer_level level, esz_window_t* window, es
 static esz_status render_scene(esz_window_t* window, esz_core_t* core)
 {
     esz_status status = ESZ_OK;
+    int32_t    index;
 
     status = render_background(window, core);
     if (ESZ_OK != status)
@@ -2979,18 +2994,18 @@ static esz_status render_scene(esz_window_t* window, esz_core_t* core)
         return status;
     }
 
-    for (esz_map_layer_level level = 0; ESZ_MAP_LAYER_LEVEL_MAX > level; level += 1)
+    for (index = 0; index < ESZ_MAP_LAYER_LEVEL_MAX; index  += 1)
     {
-        status = render_map(level, window, core);
+        status = render_map(index, window, core);
         if (ESZ_OK != status)
         {
             return status;
         }
     }
 
-    for (esz_actor_layer_level level = 0; ESZ_ACTOR_LAYER_LEVEL_MAX > level; level += 1)
+    for (index = 0; index < ESZ_ACTOR_LAYER_LEVEL_MAX; index += 1)
     {
-        status = render_actors(level, window, core);
+        status = render_actors(index, window, core);
         if (ESZ_OK != status)
         {
             return status;
@@ -3211,7 +3226,8 @@ static void update_entities(esz_window_t* window, esz_core_t* core)
                         }
                         else
                         {
-                            (*actor)->velocity_x -= distance_x;
+                            // tbd. friction
+                            (*actor)->velocity_x -= distance_x * 2.0;
                         }
 
                         if (0.0 < (*actor)->velocity_x)
