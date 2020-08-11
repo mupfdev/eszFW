@@ -1547,9 +1547,8 @@ static esz_status init_animated_tiles(esz_core_t* core)
 
 static esz_status init_background(esz_window_t* window, esz_core_t* core)
 {
-    char    property_name[21] = { 0 };
-    bool    search_is_running = true;
-    int32_t index;
+    char property_name[21] = { 0 };
+    bool search_is_running = true;
 
     core->map->background.layer_shift = esz_get_decimal_map_property(H_background_layer_shift, core);
     core->map->background.velocity    = esz_get_decimal_map_property(H_background_constant_velocity, core);
@@ -1598,6 +1597,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
 
     if (0 < core->map->background.layer_count)
     {
+        int32_t index;
         for (index = 0; index < core->map->background.layer_count; index += 1)
         {
             load_background_layer(index, window, core);
