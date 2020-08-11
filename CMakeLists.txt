@@ -11,11 +11,13 @@ find_package(LibXml2)
 set(CUTE_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/cute_headers)
 set(CWALK_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/include)
 set(LIBTMX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/tmx/src)
+set(LOGC_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/logc/src)
 set(LUA_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/lua)
 set(STB_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
 
 include_directories(
     SYSTEM ${CWALK_INCLUDE_DIR}
+    SYSTEM ${LOGC_INCLUDE_DIR}
     SYSTEM ${LUA_INCLUDE_DIR}
     SYSTEM ${SDL2_INCLUDE_DIRS}
     SYSTEM ${STB_INCLUDE_DIR})
@@ -32,7 +34,8 @@ add_library(
 
 target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CUTE_INCLUDE_DIR}
     ${LIBTMX_INCLUDE_DIR})
 
@@ -88,6 +91,8 @@ target_link_libraries(
     ${SDL2_LIBRARIES}
     cwalk)
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
 if(USE_LIBTMX)
     add_definitions(-DUSE_LIBTMX)
     add_subdirectory(external/tmx)
@@ -103,10 +108,8 @@ if(UNIX)
 endif(UNIX)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Weverything
-        -Wno-unused-function
-        -Wno-unused-macros
-        -Wno-padded
-        -Wno-strict-prototypes)
+    target_compile_options(
+        ${PROJECT_NAME}
+        PRIVATE
+        -Weverything)
 endif()
