@@ -630,7 +630,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         goto warning;
     }
 
-    cwk_path_get_dirname(map_file_name, &core->map->path_length);
+    cwk_path_get_dirname(map_file_name, &(core->map->path_length));
     SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
 
     {
