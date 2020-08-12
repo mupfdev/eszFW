@@ -250,7 +250,7 @@ typedef struct esz_background_layer
 /**
  * @brief A structure that contains a parallax-scrolling background.
  */
-typedef struct esz_background
+typedef struct  esz_background
 {
     esz_alignment           alignment;
     esz_direction           direction;
@@ -259,9 +259,8 @@ typedef struct esz_background
     double                  layer_shift;
     int32_t                 layer_count;
     bool                    velocity_is_constant;
-    uint8_t                 padding[3];
 
-} esz_background_t;
+} esz_background_t ;
 
 /**
  * @brief A structure that contains a camera.
@@ -275,7 +274,6 @@ typedef struct esz_camera
     int32_t target_actor_id;
     bool    is_at_horizontal_boundary;
     bool    is_locked;
-    uint8_t padding[2];
 
 } esz_camera_t;
 
@@ -290,7 +288,6 @@ typedef struct esz_window_config
     const int32_t logical_height;
     const bool    enable_fullscreen;
     const bool    enable_vsync;
-    uint8_t       padding[2];
 
 } esz_window_config_t;
 
@@ -334,7 +331,6 @@ typedef struct esz_actor
     uint32_t         state;
     bool             connect_horizontal_map_ends;
     bool             connect_vertical_map_ends;
-    uint8_t          padding[6];
 
 } esz_actor_t;
 
@@ -362,7 +358,6 @@ typedef struct esz_sprite
 {
     SDL_Texture* texture;
     int32_t      id;
-    uint8_t      padding[4];
 
 } esz_sprite_t;
 
@@ -407,7 +402,6 @@ typedef struct esz_map
     int32_t               sprite_sheet_count;
     int32_t               width;
     bool                  boolean_property;
-    uint8_t               padding[3];
 
 } esz_map_t;
 
@@ -422,7 +416,6 @@ typedef struct esz_core
     bool              is_active;
     bool              is_map_loaded;
     bool              is_paused;
-    uint8_t           padding[5];
 
 } esz_core_t;
 
@@ -449,7 +442,6 @@ typedef struct esz_window
     int32_t       width;
     bool          is_fullscreen;
     bool          vsync_enabled;
-    uint8_t       padding[6];
 
 } esz_window_t;
 

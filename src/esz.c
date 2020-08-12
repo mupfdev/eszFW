@@ -5,14 +5,19 @@
  * @details A cross-platform game engine written in C
  */
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
+#include "esz_macros.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <SDL.h>
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PADDING
+DISABLE_WARNING_SPECTRE_MITIGATION
+DISABLE_WARNING_SYMBOL_NOT_DEFINED
+
 #include <cwalk.h>
+#include <SDL.h>
 
 #ifdef USE_LIBTMX
     #include <tmx.h>
@@ -21,17 +26,22 @@
     #include <cute_tiled.h>
 #endif
 
+DISABLE_WARNING_POP
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_PADDING
+DISABLE_WARNING_SPECTRE_MITIGATION
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#pragma clang diagnostic pop
+DISABLE_WARNING_POP
 
 #include "esz.h"
 #include "esz_types.h"
 
-#define CLR_STATE(number, bit) number &= ~(1UL << bit)
-#define SET_STATE(number, bit) number |=   1UL << bit
-#define IS_STATE_SET(number, bit) ((0U == (number & (1 << bit))) ? 0U : 1U)
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_SPECTRE_MITIGATION
 
 // Hash table
 // ----------------------------------------------------------------------------
@@ -3349,3 +3359,5 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
     }
 }
 #endif
+
+DISABLE_WARNING_POP
