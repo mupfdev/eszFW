@@ -13,7 +13,7 @@ endif(USE_LIBTMX)
 set(CUTE_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/cute_headers)
 set(CWALK_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/include)
 set(LIBTMX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/tmx/src)
-set(LOGC_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/logc/src)
+set(LOGC_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/log.c/src)
 set(LUA_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/lua)
 set(STB_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
 
@@ -67,6 +67,7 @@ target_link_libraries(
     log.c)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+add_definitions(-DLOG_USE_COLOR)
 
 if(USE_LIBTMX)
     add_definitions(-DUSE_LIBTMX)
@@ -99,7 +100,7 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
         -W3)
 endif()
 
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND EMABLE_DIAGNOSTICS)
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND ENABLE_DIAGNOSTICS)
     message("Enabling all diagnostics")
     set(COMPILE_OPTIONS
         -Weverything)
