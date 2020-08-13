@@ -35,6 +35,8 @@ DISABLE_WARNING_SPECTRE_MITIGATION
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#define STB_SPRINTF_IMPLEMENTATION
+#include <stb_sprintf.h>
 
 DISABLE_WARNING_POP
 
@@ -113,6 +115,7 @@ static void                 load_property(const uint64_t name_hash, esz_tiled_pr
 static esz_status           load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status           load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static esz_tiled_map_t*     load_tiled_map(const char* map_file_name);
+static void                 log_appender(const char* msg, void* user_data);
 static void                 move_camera_to_target(esz_window_t* window, esz_core_t* core);
 static void                 poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t              remove_gid_flip_bits(int32_t gid);
@@ -197,7 +200,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     };
     esz_logo = esz_logo_pxdata;
 
-    plog_set_level(PLOG_LEVEL_INFO);
+    plog_appender_register(log_appender, PLOG_LEVEL_INFO, NULL);
 
     *window = (esz_window_t*)calloc(1, sizeof(struct esz_window));
     if (! *window)
@@ -245,7 +248,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         (*window)->refresh_rate = 60;
         if ((*window)->vsync_enabled)
         {
-            plog_info("Couldn't determine the monitor's refresh rate: VSync disabled.\n");
+            plog_warn("Couldn't determine the monitor's refresh rate: VSync disabled.\n");
             (*window)->vsync_enabled = false;
         }
     }
@@ -308,7 +311,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         SDL_RendererInfo renderer_info = { 0 };
         SDL_GetRenderDriverInfo(0, &renderer_info);
 
-        plog_info("opengl not found: use default rendering driver: %s.\n", renderer_info.name);
+        plog_warn("opengl not found: use default rendering driver: %s.\n", renderer_info.name);
 
         (*window)->renderer = SDL_CreateRenderer((*window)->window, -1, renderer_flags);
 
@@ -495,7 +498,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     if (esz_is_map_loaded(core))
     {
-        plog_info("A map has already been loaded: unload map first.\n");
+        plog_warn("A map has already been loaded: unload map first.\n");
         return ESZ_WARNING;
     }
 
@@ -636,7 +639,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 4. Paths and file locations
     // ------------------------------------------------------------------------
 
-    core->map->path = (char*)calloc(1, (size_t)(SDL_strlen(map_file_name) + 1));
+    core->map->path = (char*)calloc(1, (size_t)(strlen(map_file_name) + 1));
     if (! core->map->path)
     {
         plog_error("%s: error allocating memory.\n", __func__);
@@ -647,12 +650,12 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
 
     {
-        size_t source_length;
+        int32_t source_length;
 
         #ifdef USE_LIBTMX
         int32_t first_gid = get_first_gid(core->map->handle);
+        int32_t ts_path_length;
         char*   ts_path;
-        size_t  ts_path_length;
 
         cwk_path_get_dirname(core->map->handle->ts_head->source, &ts_path_length);
 
@@ -663,8 +666,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             goto warning;
         }
 
-        source_length  = SDL_strlen(core->map->path);
-        source_length += SDL_strlen(core->map->handle->tiles[first_gid]->tileset->image->source);
+        source_length  = strlen(core->map->path);
+        source_length += strlen(core->map->handle->tiles[first_gid]->tileset->image->source);
         source_length += ts_path_length + 1;
 
         tileset_image_source = calloc(1, source_length);
@@ -682,7 +685,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
          */
 
         SDL_strlcpy(ts_path, core->map->handle->ts_head->source, ts_path_length + 1);
-        SDL_snprintf(tileset_image_source, source_length, "%s%s%s",
+        stbsp_snprintf(tileset_image_source, source_length, "%s%s%s",
                      core->map->path,
                      ts_path,
                      core->map->handle->tiles[first_gid]->tileset->image->source);
@@ -696,8 +699,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             goto warning;
         }
 
-        source_length  = SDL_strlen(core->map->path);
-        source_length += SDL_strlen(core->map->handle->tilesets->image.ptr);
+        source_length  = (int32_t)strlen(core->map->path);
+        source_length += (int32_t)strlen(core->map->handle->tilesets->image.ptr);
         source_length += 1;
 
         tileset_image_source = (char*)calloc(1, source_length);
@@ -708,7 +711,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             return ESZ_WARNING;
         }
 
-        SDL_snprintf(tileset_image_source, source_length, "%s%s",
+        stbsp_snprintf(tileset_image_source, source_length, "%s%s",
                      core->map->path,
                      core->map->handle->tilesets->image.ptr);
 
@@ -1018,7 +1021,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
 
     if (! esz_is_map_loaded(core))
     {
-        plog_info("No map has been loaded.\n");
+        plog_warn("No map has been loaded.\n");
         return;
     }
     core->is_map_loaded           = false;
@@ -1204,7 +1207,7 @@ void esz_update_core(esz_window_t* window, esz_core_t* core)
 
     if (! window->vsync_enabled)
     {
-        double delay = SDL_floor(window->time_since_last_frame);
+        double delay = floor(window->time_since_last_frame);
         SDL_Delay((uint32_t)delay);
     }
 
@@ -1582,7 +1585,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     core->map->background.layer_count = 0;
     while (search_is_running)
     {
-        SDL_snprintf(property_name, 21, "background_layer_%u", core->map->background.layer_count + 1);
+        stbsp_snprintf(property_name, (size_t)21, "background_layer_%u", core->map->background.layer_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
         {
@@ -1771,7 +1774,7 @@ static esz_status init_entities(esz_core_t* core)
                             (*actor)->animation_count = 0;
                             while (search_is_running)
                             {
-                                SDL_snprintf(property_name, 14, "animation_%u", (*actor)->animation_count + 1);
+                                stbsp_snprintf(property_name, (size_t)14, "animation_%u", (*actor)->animation_count + 1);
 
                                 if (get_boolean_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core))
                                 {
@@ -1798,7 +1801,7 @@ static esz_status init_entities(esz_core_t* core)
 
                             for (index = 0; index < (*actor)->animation_count; index += 1)
                             {
-                                SDL_snprintf(property_name, 26, "animation_%u_first_frame", index + 1);
+                                stbsp_snprintf(property_name, 26, "animation_%u_first_frame", index + 1);
                                 (*actor)->animation[index].first_frame =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
@@ -1807,15 +1810,15 @@ static esz_status init_entities(esz_core_t* core)
                                     (*actor)->animation[index].first_frame = 1;
                                 }
 
-                                SDL_snprintf(property_name, 26, "animation_%u_fps", index + 1);
+                                stbsp_snprintf(property_name, 26, "animation_%u_fps", index + 1);
                                 (*actor)->animation[index].fps =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                SDL_snprintf(property_name, 26, "animation_%u_length", index + 1);
+                                stbsp_snprintf(property_name, 26, "animation_%u_length", index + 1);
                                 (*actor)->animation[index].length =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
 
-                                SDL_snprintf(property_name, 26, "animation_%u_offset_y", index + 1);
+                                stbsp_snprintf(property_name, 26, "animation_%u_offset_y", index + 1);
                                 (*actor)->animation[index].offset_y =
                                     get_integer_property(esz_hash((const unsigned char*)property_name), properties, prop_cnt, core);
                             }
@@ -1848,7 +1851,7 @@ static esz_status init_entities(esz_core_t* core)
 
     if (! player_found)
     {
-        plog_info("  Warning: no player actor found.\n");
+        plog_warn("  No player actor found.\n");
     }
 
     return ESZ_OK;
@@ -1864,7 +1867,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
     while (search_is_running)
     {
-        SDL_snprintf(property_name, 17, "sprite_sheet_%u", core->map->sprite_sheet_count + 1);
+        stbsp_snprintf(property_name, 17, "sprite_sheet_%u", core->map->sprite_sheet_count + 1);
 
         if (esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core))
         {
@@ -1890,21 +1893,21 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
     for (index = 0; index < core->map->sprite_sheet_count; index += 1)
     {
-        SDL_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
+        stbsp_snprintf(property_name, 17, "sprite_sheet_%u", index + 1);
 
         const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
 
         if (file_name)
         {
-            size_t source_length            = SDL_strlen(core->map->path) + SDL_strlen(file_name) + 1;
-            char* sprite_sheet_image_source = (char*)calloc(1, source_length);
+            int32_t source_length             = (int32_t)(strlen(core->map->path) + strlen(file_name) + 1);
+            char*   sprite_sheet_image_source = (char*)calloc(1, source_length);
             if (! sprite_sheet_image_source)
             {
                 plog_error("%s: error allocating memory.\n", __func__);
                 return ESZ_ERROR_CRITICAL;
             }
 
-            SDL_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map->path, file_name);
+            stbsp_snprintf(sprite_sheet_image_source, source_length, "%s%s", core->map->path, file_name);
 
             core->map->sprite[index].id = index + 1;
 
@@ -1974,15 +1977,15 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     SDL_Rect     dst;
     int32_t      image_width;
     int32_t      image_height;
+    int32_t      source_length = 0;
     double       layer_width_factor;
     char         property_name[21] = { 0 };
     char*        background_layer_image_source;
-    size_t       source_length = 0;
 
-    SDL_snprintf(property_name, 21, "background_layer_%u", index + 1);
+    stbsp_snprintf(property_name, 21, "background_layer_%u", index + 1);
 
     const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
-    source_length = SDL_strlen(core->map->path) + SDL_strlen(file_name) + 1;
+    source_length = (int32_t)(strlen(core->map->path) + strlen(file_name) + 1);
 
     background_layer_image_source = (char*)calloc(1, source_length);
     if (! background_layer_image_source)
@@ -1991,7 +1994,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
         return ESZ_ERROR_CRITICAL;
     }
 
-    SDL_snprintf(background_layer_image_source, source_length, "%s%s", core->map->path, file_name);
+    stbsp_snprintf(background_layer_image_source, source_length, "%s%s", core->map->path, file_name);
 
     if (ESZ_ERROR_CRITICAL == load_texture_from_file(background_layer_image_source, &image_texture, window))
     {
@@ -2008,7 +2011,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
         goto exit;
     }
 
-    layer_width_factor = SDL_ceil((double)window->width / (double)image_width);
+    layer_width_factor = ceil((double)window->width / (double)image_width);
 
     core->map->background.layer[index].width  = image_width * (int32_t)layer_width_factor;
     core->map->background.layer[index].height = image_height;
@@ -2259,6 +2262,12 @@ static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
     #endif
 
     return tiled_map;
+}
+
+static void log_appender(const char* msg, void* user_data)
+{
+    (void)user_data;
+    printf("%s", msg);
 }
 
 static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
