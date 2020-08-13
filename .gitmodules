@@ -16,3 +16,6 @@
 [submodule "external/log.c"]
 	path = external/log.c
 	url = https://github.com/rxi/log.c.git
+[submodule "external/picolog"]
+	path = external/picolog
+	url = https://github.com/picojs/picolog.git

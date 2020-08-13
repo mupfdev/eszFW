@@ -137,5 +137,5 @@ This project and all further listed libraries are licensed under the
 [cwalk](https://github.com/likle/cwalk) by [Leonard
 Iklé](https://github.com/likle/cwalk/blob/master/LICENSE.md).
 
-[log.c](https://github.com/rxi/log.c) by
-[rxi](https://github.com/rxi/log.c/blob/master/LICENSE).
+[picolog](https://github.com/picojs/picolog) by [James
+McLean](https://github.com/picojs/picolog/blob/master/LICENSE.md).

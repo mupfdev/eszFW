@@ -10,17 +10,17 @@ if(USE_LIBTMX)
     find_package(LibXml2)
 endif(USE_LIBTMX)
 
-set(CUTE_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/cute_headers)
-set(CWALK_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/include)
-set(LIBTMX_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/tmx/src)
-set(LOGC_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/log.c/src)
-set(LUA_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/lua)
-set(STB_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
+set(CUTE_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/cute_headers)
+set(CWALK_INCLUDE_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/include)
+set(LIBTMX_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/external/tmx/src)
+set(LUA_INCLUDE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/external/lua)
+set(PICOLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/picolog)
+set(STB_INCLUDE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
 
 include_directories(
     SYSTEM ${CWALK_INCLUDE_DIR}
-    SYSTEM ${LOGC_INCLUDE_DIR}
     SYSTEM ${LUA_INCLUDE_DIR}
+    SYSTEM ${PICOLOG_INCLUDE_DIR}
     SYSTEM ${SDL2_INCLUDE_DIRS}
     SYSTEM ${STB_INCLUDE_DIR})
 
@@ -39,7 +39,8 @@ target_include_directories(
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CUTE_INCLUDE_DIR}
-    ${LIBTMX_INCLUDE_DIR})
+    ${LIBTMX_INCLUDE_DIR}
+    ${PICOLOG_INCLUDE_DIR})
 
 add_library(
     cwalk
@@ -47,9 +48,9 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/external/cwalk/src/cwalk.c)
 
 add_library(
-    log.c
+    picolog
     STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/log.c/src/log.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/picolog/picolog.c)
 
 add_library(
     lua
@@ -64,10 +65,9 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${SDL2_LIBRARIES}
     cwalk
-    log.c)
+    picolog)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-add_definitions(-DLOG_USE_COLOR)
 
 if(USE_LIBTMX)
     add_definitions(-DUSE_LIBTMX)
