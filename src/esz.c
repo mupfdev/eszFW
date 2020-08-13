@@ -602,7 +602,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 4. Paths and file locations
     // ------------------------------------------------------------------------
 
-    core->map->path = (char*)calloc(1, (size_t)(strlen(map_file_name) + 1));
+    core->map->path = (char*)calloc(1, (size_t)(strnlen(map_file_name, 64) + 1));
     if (! core->map->path)
     {
         plog_error("%s: error allocating memory.\n", __func__);
@@ -629,8 +629,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             goto warning;
         }
 
-        source_length  = strlen(core->map->path);
-        source_length += strlen(core->map->handle->tiles[first_gid]->tileset->image->source);
+        source_length  = strnlen(core->map->path, 64);
+        source_length += strnlen(core->map->handle->tiles[first_gid]->tileset->image->source, 64);
         source_length += ts_path_length + 1;
 
         tileset_image_source = calloc(1, source_length);
@@ -662,8 +662,8 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             goto warning;
         }
 
-        source_length  = (int32_t)strlen(core->map->path);
-        source_length += (int32_t)strlen(core->map->handle->tilesets->image.ptr);
+        source_length  = (int32_t)strnlen(core->map->path, 64);
+        source_length += (int32_t)strnlen(core->map->handle->tilesets->image.ptr, 64);
         source_length += 1;
 
         tileset_image_source = (char*)calloc(1, source_length);
@@ -1862,7 +1862,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
 
         if (file_name)
         {
-            int32_t source_length             = (int32_t)(strlen(core->map->path) + strlen(file_name) + 1);
+            int32_t source_length             = (int32_t)(strnlen(core->map->path, 64) + strnlen(file_name, 64) + 1);
             char*   sprite_sheet_image_source = (char*)calloc(1, source_length);
             if (! sprite_sheet_image_source)
             {
@@ -1948,7 +1948,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     stbsp_snprintf(property_name, 21, "background_layer_%u", index + 1);
 
     const char* file_name = esz_get_string_map_property(esz_hash((const unsigned char*)property_name), core);
-    source_length = (int32_t)(strlen(core->map->path) + strlen(file_name) + 1);
+    source_length = (int32_t)(strnlen(core->map->path, 64) + strnlen(file_name, 64) + 1);
 
     background_layer_image_source = (char*)calloc(1, source_length);
     if (! background_layer_image_source)
