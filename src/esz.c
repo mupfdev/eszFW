@@ -481,8 +481,6 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         return ESZ_WARNING;
     }
 
-    core->is_map_loaded = true;
-
     // 2. Tiled map
     // ------------------------------------------------------------------------
 
@@ -491,6 +489,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     {
         goto warning;
     }
+    core->is_map_loaded = true;
 
     #ifndef USE_LIBTMX // (cute_tiled.h)
     {
@@ -2214,6 +2213,17 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
 static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
 {
     esz_tiled_map_t* tiled_map;
+    FILE*            fp = fopen(map_file_name, "r");
+
+    if (fp)
+    {
+        fclose(fp);
+    }
+    else
+    {
+        plog_error("%s: %s not found.", __func__, map_file_name);
+        return NULL;
+    }
 
     #ifdef USE_LIBTMX
     tiled_map = (esz_tiled_map_t*)tmx_load(map_file_name);
