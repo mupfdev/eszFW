@@ -78,7 +78,6 @@ static void                 load_property(const uint64_t name_hash, esz_tiled_pr
 static esz_status           load_texture_from_file(const char* file_name, SDL_Texture** texture, esz_window_t* window);
 static esz_status           load_texture_from_memory(const unsigned char* buffer, const int length, SDL_Texture** texture, esz_window_t* window);
 static esz_tiled_map_t*     load_tiled_map(const char* map_file_name);
-static void                 log_appender(const char* msg, void* user_data);
 static void                 move_camera_to_target(esz_window_t* window, esz_core_t* core);
 static void                 poll_events(esz_window_t* window, esz_core_t* core);
 static int32_t              remove_gid_flip_bits(int32_t gid);
@@ -138,6 +137,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     SDL_DisplayMode display_mode;
     uint32_t        renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
     int32_t         index;
+    plog_id_t       logger_id;
 
     const unsigned char* esz_logo;
     const unsigned char  esz_logo_pxdata[228] = {
@@ -163,12 +163,15 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     };
     esz_logo = esz_logo_pxdata;
 
-    plog_appender_register(log_appender, PLOG_LEVEL_INFO, NULL);
+    logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO, NULL);
+    plog_turn_colors_on(logger_id);
+    plog_set_time_fmt("%H:%M:%S");
+    plog_turn_timestamp_on();
 
     *window = (esz_window_t*)calloc(1, sizeof(struct esz_window));
     if (! *window)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -186,14 +189,14 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
 
     if (0 > SDL_Init(SDL_INIT_VIDEO))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
 
     if (0 != SDL_GetCurrentDisplayMode(0, &display_mode))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -211,7 +214,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         (*window)->refresh_rate = 60;
         if ((*window)->vsync_enabled)
         {
-            plog_warn("Couldn't determine the monitor's refresh rate: VSync disabled.\n");
+            plog_warn("Couldn't determine the monitor's refresh rate: VSync disabled.");
             (*window)->vsync_enabled = false;
         }
     }
@@ -231,7 +234,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
 
     if (! (*window)->window)
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -259,7 +262,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
 
             if (! (*window)->renderer)
             {
-                plog_error("%s: %s.\n", __func__, SDL_GetError());
+                plog_error("%s: %s.", __func__, SDL_GetError());
                 status = ESZ_ERROR_CRITICAL;
                 goto exit;
             }
@@ -274,26 +277,26 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         SDL_RendererInfo renderer_info = { 0 };
         SDL_GetRenderDriverInfo(0, &renderer_info);
 
-        plog_warn("opengl not found: use default rendering driver: %s.\n", renderer_info.name);
+        plog_warn("opengl not found: use default rendering driver: %s.", renderer_info.name);
 
         (*window)->renderer = SDL_CreateRenderer((*window)->window, -1, renderer_flags);
 
         if (! (*window)->renderer)
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             status = ESZ_ERROR_CRITICAL;
             goto exit;
         }
     }
 
     plog_info(
-        "Setting up window at resolution %dx%d @ %d Hz.\n",
+        "Setting up window at resolution %dx%d @ %d Hz.",
         (*window)->width,
         (*window)->height,
         (*window)->refresh_rate);
 
     esz_set_zoom_level((*window)->zoom_level, *window);
-    plog_info("Set initial zoom-level to factor %f.\n", (*window)->zoom_level);
+    plog_info("Set initial zoom-level to factor %f.", (*window)->zoom_level);
 
     if (ESZ_OK != load_texture_from_memory(esz_logo, 228, &(*window)->esz_logo, *window))
     {
@@ -312,7 +315,7 @@ void esz_deactivate_core(esz_core_t* core)
 void esz_destroy_core(esz_core_t* core)
 {
     free(core);
-    plog_info("Destroy engine core.\n");
+    plog_info("Destroy engine core.");
 }
 
 void esz_destroy_window(esz_window_t* window)
@@ -333,7 +336,7 @@ void esz_destroy_window(esz_window_t* window)
     }
 
     free(window);
-    plog_info("Quitting.\n");
+    plog_info("Quitting.");
 
     SDL_Quit();
 }
@@ -407,7 +410,7 @@ esz_status esz_init_core(esz_core_t** core)
     *core = (esz_core_t*)calloc(1, sizeof(struct esz_core));
     if (! *core)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -461,7 +464,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     if (esz_is_map_loaded(core))
     {
-        plog_warn("A map has already been loaded: unload map first.\n");
+        plog_warn("A map has already been loaded: unload map first.");
         return ESZ_WARNING;
     }
 
@@ -474,7 +477,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     core->map = (esz_map_t*)calloc(1, sizeof(struct esz_map));
     if (! core->map)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         return ESZ_WARNING;
     }
 
@@ -497,12 +500,12 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
             if (H_tilelayer == esz_hash((const unsigned char*)layer->type.ptr) && ! core->map->hash_id_tilelayer)
             {
                 core->map->hash_id_tilelayer = layer->type.hash_id;
-                plog_info("Set hash ID for tile layer: %llu\n", core->map->hash_id_tilelayer);
+                plog_info("Set hash ID for tile layer: %llu", core->map->hash_id_tilelayer);
             }
             else if (H_objectgroup == esz_hash((const unsigned char*)layer->type.ptr) && ! core->map->hash_id_objectgroup)
             {
                 core->map->hash_id_objectgroup = layer->type.hash_id;
-                plog_info("Set hash ID for object group: %llu\n", core->map->hash_id_objectgroup);
+                plog_info("Set hash ID for object group: %llu", core->map->hash_id_objectgroup);
             }
             layer = layer->next;
         }
@@ -518,7 +521,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         core->map->tile_properties = (uint32_t*)calloc((size_t)tile_count, sizeof(uint32_t));
         if (!core->map->tile_properties)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             goto warning;
         }
 
@@ -545,6 +548,10 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
                             esz_tiled_tile_t*             tile;
 
                             #ifdef USE_LIBTMX
+
+
+
+
                             // tbd.
                             (void)gid;
                             (void)tileset;
@@ -605,27 +612,27 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     core->map->path = (char*)calloc(1, (size_t)(strnlen(map_file_name, 64) + 1));
     if (! core->map->path)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         goto warning;
     }
 
-    cwk_path_get_dirname(map_file_name, &(core->map->path_length));
+    cwk_path_get_dirname(map_file_name, (size_t*)&(core->map->path_length));
     SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
 
     {
-        int32_t source_length;
+        int64_t source_length;
 
         #ifdef USE_LIBTMX
         int32_t first_gid = get_first_gid(core->map->handle);
-        int32_t ts_path_length;
+        int64_t ts_path_length;
         char*   ts_path;
 
-        cwk_path_get_dirname(core->map->handle->ts_head->source, &ts_path_length);
+        cwk_path_get_dirname(core->map->handle->ts_head->source, (size_t*)&ts_path_length);
 
         ts_path = calloc(1, ts_path_length + 1);
         if (! ts_path)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             goto warning;
         }
 
@@ -636,7 +643,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         tileset_image_source = calloc(1, source_length);
         if (! tileset_image_source)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             free(ts_path);
             goto warning;
         }
@@ -648,7 +655,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
          */
 
         SDL_strlcpy(ts_path, core->map->handle->ts_head->source, ts_path_length + 1);
-        stbsp_snprintf(tileset_image_source, source_length, "%s%s%s",
+        stbsp_snprintf(tileset_image_source, (int32_t)source_length, "%s%s%s",
                      core->map->path,
                      ts_path,
                      core->map->handle->tiles[first_gid]->tileset->image->source);
@@ -658,23 +665,23 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         #else // (cute_tiled.h)
         if (! core->map->handle->tilesets)
         {
-            plog_error("%s: no embedded tileset found.\n", __func__);
+            plog_error("%s: no embedded tileset found.", __func__);
             goto warning;
         }
 
-        source_length  = (int32_t)strnlen(core->map->path, 64);
-        source_length += (int32_t)strnlen(core->map->handle->tilesets->image.ptr, 64);
+        source_length  = strnlen(core->map->path, 64);
+        source_length += strnlen(core->map->handle->tilesets->image.ptr, 64);
         source_length += 1;
 
         tileset_image_source = (char*)calloc(1, source_length);
         if (! tileset_image_source)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             esz_unload_map(window, core);
             return ESZ_WARNING;
         }
 
-        stbsp_snprintf(tileset_image_source, source_length, "%s%s",
+        stbsp_snprintf(tileset_image_source, (int32_t)source_length, "%s%s",
                      core->map->path,
                      core->map->handle->tilesets->image.ptr);
 
@@ -697,14 +704,14 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     {
         if (ESZ_OK != load_texture_from_file(tileset_image_source, &core->map->tileset_texture, window))
         {
-            plog_error("%s: Error loading image '%s'.\n", __func__, tileset_image_source);
+            plog_error("%s: Error loading image '%s'.", __func__, tileset_image_source);
             free(tileset_image_source);
             goto warning;
         }
     }
     else
     {
-        plog_error("%s: Could not determine location of tileset image.\n", __func__);
+        plog_error("%s: Could not determine location of tileset image.", __func__);
         goto warning;
     }
 
@@ -735,7 +742,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     }
 
     plog_info(
-        "Set gravitational constant to %f (g*%dpx/s^2).\n",
+        "Set gravitational constant to %f (g*%dpx/s^2).",
         core->map->gravitation, core->map->meter_in_pixel);
 
     core->map->animated_tile_fps = esz_get_integer_map_property(H_animated_tile_fps, core);
@@ -758,7 +765,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     core->map->meter_in_pixel = esz_get_integer_map_property(H_meter_in_pixel, core);
 
     plog_info(
-        "Load map file: %s containing %d entities(s).\n",
+        "Load map file: %s containing %d entities(s).",
         map_file_name, core->map->entity_count);
 
     return ESZ_OK;
@@ -905,7 +912,7 @@ esz_status esz_set_zoom_level(const double factor, esz_window_t* window)
 
     if (0 > SDL_RenderSetLogicalSize(window->renderer, window->logical_width, window->logical_height))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_WARNING;
     }
     else
@@ -956,7 +963,7 @@ esz_status esz_toggle_fullscreen(esz_window_t* window)
 
     if (ESZ_OK != status)
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
     }
 
     return status;
@@ -984,7 +991,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
 
     if (! esz_is_map_loaded(core))
     {
-        plog_warn("No map has been loaded.\n");
+        plog_warn("No map has been loaded.");
         return;
     }
     core->is_map_loaded           = false;
@@ -1143,7 +1150,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         core->event.map_unloaded_cb(window, core);
     }
 
-    plog_info("Unload map.\n");
+    plog_info("Unload map.");
 }
 
 void esz_unlock_camera(esz_core_t* core)
@@ -1202,14 +1209,14 @@ static esz_status create_and_set_render_target(SDL_Texture** target, esz_window_
 
     if (! (*target))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
     else
     {
         if (0 > SDL_SetTextureBlendMode((*target), SDL_BLENDMODE_BLEND))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             SDL_DestroyTexture((*target));
             return ESZ_ERROR_CRITICAL;
         }
@@ -1217,7 +1224,7 @@ static esz_status create_and_set_render_target(SDL_Texture** target, esz_window_
 
     if (0 > SDL_SetRenderTarget(window->renderer, (*target)))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         SDL_DestroyTexture((*target));
         return ESZ_ERROR_CRITICAL;
     }
@@ -1234,7 +1241,7 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
 
     if (0 > SDL_SetRenderTarget(window->renderer, NULL))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
     }
 
     if (! esz_is_map_loaded(core))
@@ -1249,7 +1256,7 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
 
         if (0 > SDL_RenderCopy(window->renderer, window->esz_logo, NULL, &dst))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
@@ -1268,7 +1275,7 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
     {
         if (0 > SDL_RenderCopy(window->renderer, core->map->render_target[index], NULL, &dst))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
     }
@@ -1514,12 +1521,12 @@ static esz_status init_animated_tiles(esz_core_t* core)
         core->map->animated_tile = (esz_animated_tile_t*)calloc((size_t)animated_tile_count, sizeof(struct esz_animated_tile));
         if (!core->map->animated_tile)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             return ESZ_ERROR_CRITICAL;
         }
     }
 
-    plog_info("Initialise %u animated tile(s).\n", animated_tile_count);
+    plog_info("Initialise %u animated tile(s).", animated_tile_count);
     return ESZ_OK;
 }
 
@@ -1569,7 +1576,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
     core->map->background.layer = (esz_background_layer_t*)calloc((size_t)core->map->background.layer_count, sizeof(struct esz_background_layer));
     if (! core->map->background.layer)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -1586,7 +1593,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    plog_info("Initialise parallax-scrolling background with %u layers.\n", core->map->background.layer_count);
+    plog_info("Initialise parallax-scrolling background with %u layers.", core->map->background.layer_count);
 
     return ESZ_OK;
 }
@@ -1622,12 +1629,12 @@ static esz_status init_entities(esz_core_t* core)
         core->map->entity = (esz_entity_t*)calloc((size_t)core->map->entity_count, sizeof(struct esz_entity));
         if (! core->map->entity)
         {
-            plog_error("%s: error allocating memory.\n", __func__);
+            plog_error("%s: error allocating memory.", __func__);
             return ESZ_ERROR_CRITICAL;
         }
     }
 
-    plog_info("Initialise %u entities:\n", core->map->entity_count);
+    plog_info("Initialise %u entities:", core->map->entity_count);
 
     layer = get_head_tiled_layer(core->map->handle);
     while (layer)
@@ -1654,7 +1661,7 @@ static esz_status init_entities(esz_core_t* core)
                         (*actor) = (esz_actor_t*)calloc(1, sizeof(struct esz_actor));
                         if (! (*actor))
                         {
-                            plog_error("%s: error allocating memory for actor.\n", __func__);
+                            plog_error("%s: error allocating memory for actor.", __func__);
                             return ESZ_ERROR_CRITICAL;
                         }
 
@@ -1722,11 +1729,11 @@ static esz_status init_entities(esz_core_t* core)
                             esz_set_active_player_actor(index, core);
                             esz_set_camera_target(index, core);
 
-                            plog_info("  %d %s *\n", index, get_tiled_object_name(tiled_object));
+                            plog_info("  %d %s *", index, get_tiled_object_name(tiled_object));
                         }
                         else
                         {
-                            plog_info("  %d %s\n", index, get_tiled_object_name(tiled_object));
+                            plog_info("  %d %s", index, get_tiled_object_name(tiled_object));
                         }
 
                         if (IS_STATE_SET((*actor)->state, STATE_ANIMATED))
@@ -1758,7 +1765,7 @@ static esz_status init_entities(esz_core_t* core)
                             (*actor)->animation = (esz_animation_t*)calloc((size_t)(*actor)->animation_count, sizeof(struct esz_animation));
                             if (! (*actor)->animation)
                             {
-                                plog_error("%s: error allocating memory.\n", __func__);
+                                plog_error("%s: error allocating memory.", __func__);
                                 return ESZ_ERROR_CRITICAL;
                             }
 
@@ -1814,7 +1821,7 @@ static esz_status init_entities(esz_core_t* core)
 
     if (! player_found)
     {
-        plog_warn("  No player actor found.\n");
+        plog_warn("  No player actor found.");
     }
 
     return ESZ_OK;
@@ -1850,7 +1857,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
     core->map->sprite = (esz_sprite_t*)calloc((size_t)core->map->sprite_sheet_count, sizeof(struct esz_sprite));
     if (! core->map->sprite)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -1866,7 +1873,7 @@ static esz_status init_sprites(esz_window_t* window, esz_core_t* core)
             char*   sprite_sheet_image_source = (char*)calloc(1, source_length);
             if (! sprite_sheet_image_source)
             {
-                plog_error("%s: error allocating memory.\n", __func__);
+                plog_error("%s: error allocating memory.", __func__);
                 return ESZ_ERROR_CRITICAL;
             }
 
@@ -1953,7 +1960,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
     background_layer_image_source = (char*)calloc(1, source_length);
     if (! background_layer_image_source)
     {
-        plog_error("%s: error allocating memory.\n", __func__);
+        plog_error("%s: error allocating memory.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -1969,7 +1976,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
     if (0 > SDL_QueryTexture(image_texture, NULL, NULL, &image_width, &image_height))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -1988,14 +1995,14 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
     if (! core->map->background.layer[index].texture)
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
 
     if (0 != SDL_SetRenderTarget(window->renderer, core->map->background.layer[index].texture))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -2010,7 +2017,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
         if (0 > SDL_RenderCopy(window->renderer, image_texture, NULL, &dst))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             status = ESZ_ERROR_CRITICAL;
             goto exit;
         }
@@ -2020,7 +2027,7 @@ static esz_status load_background_layer(int32_t index, esz_window_t* window, esz
 
     if (0 > SDL_SetTextureBlendMode(core->map->background.layer[index].texture, SDL_BLENDMODE_BLEND))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         status = ESZ_ERROR_CRITICAL;
         goto exit;
     }
@@ -2031,7 +2038,7 @@ exit:
         SDL_DestroyTexture(image_texture);
     }
 
-    plog_info("Load background layer %d.\n", index + 1);
+    plog_info("Load background layer %d.", index + 1);
     return status;
 }
 
@@ -2063,22 +2070,22 @@ static void load_property(const uint64_t name_hash, esz_tiled_property_t* proper
                 // tbd.
                 break;
             case CUTE_TILED_PROPERTY_INT:
-                plog_debug("Loading integer property '%s': %d\n", properties[index].name.ptr, properties[index].data.integer);
+                plog_debug("Loading integer property '%s': %d", properties[index].name.ptr, properties[index].data.integer);
 
                 core->map->integer_property = properties[index].data.integer;
                 break;
             case CUTE_TILED_PROPERTY_BOOL:
-                plog_debug("Loading boolean property '%s': %u\n", properties[index].name.ptr, properties[index].data.boolean);
+                plog_debug("Loading boolean property '%s': %u", properties[index].name.ptr, properties[index].data.boolean);
 
                 core->map->boolean_property = (bool)properties[index].data.boolean;
                 break;
             case CUTE_TILED_PROPERTY_FLOAT:
-                plog_debug("Loading decimal property '%s': %f\n", properties[index].name.ptr, (double)properties[index].data.floating);
+                plog_debug("Loading decimal property '%s': %f", properties[index].name.ptr, (double)properties[index].data.floating);
 
                 core->map->decimal_property = (double)properties[index].data.floating;
                 break;
             case CUTE_TILED_PROPERTY_STRING:
-                plog_debug("Loading string property '%s': %s\n", properties[index].name.ptr, properties[index].data.string.ptr);
+                plog_debug("Loading string property '%s': %s", properties[index].name.ptr, properties[index].data.string.ptr);
 
                 core->map->string_property  = properties[index].data.string.ptr;
                 break;
@@ -2111,7 +2118,7 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
 
     if (NULL == data)
     {
-        plog_error("%s: %s.\n", __func__, stbi_failure_reason());
+        plog_error("%s: %s.", __func__, stbi_failure_reason());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2133,7 +2140,7 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
 
     if (NULL == surface)
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         stbi_image_free(data);
         return ESZ_ERROR_CRITICAL;
     }
@@ -2143,7 +2150,7 @@ static esz_status load_texture_from_file(const char* file_name, SDL_Texture** te
     SDL_FreeSurface(surface);
     stbi_image_free(data);
 
-    plog_info("Loading image from file: %s.\n", file_name);
+    plog_info("Loading image from file: %s.", file_name);
     return ESZ_OK;
 }
 
@@ -2168,7 +2175,7 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
 
     if (NULL == data)
     {
-        plog_error("%s: %s.\n", __func__, stbi_failure_reason());
+        plog_error("%s: %s.", __func__, stbi_failure_reason());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2190,7 +2197,7 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
 
     if (NULL == surface)
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         stbi_image_free(data);
         return ESZ_ERROR_CRITICAL;
     }
@@ -2200,7 +2207,7 @@ static esz_status load_texture_from_memory(const unsigned char* buffer, const in
     SDL_FreeSurface(surface);
     stbi_image_free(data);
 
-    plog_info("Loading image from memory.\n");
+    plog_info("Loading image from memory.");
     return ESZ_OK;
 }
 
@@ -2212,25 +2219,19 @@ static esz_tiled_map_t* load_tiled_map(const char* map_file_name)
     tiled_map = (esz_tiled_map_t*)tmx_load(map_file_name);
     if (! tiled_map)
     {
-        plog_error("%s: %s.\n", __func__, tmx_strerr());
+        plog_error("%s: %s.", __func__, tmx_strerr());
     }
 
     #else // (cute_tiled.h)
     tiled_map = (esz_tiled_map_t*)cute_tiled_load_map_from_file(map_file_name, NULL);
     if (! tiled_map)
     {
-        plog_error("%s: %s.\n", __func__, cute_tiled_error_reason);
+        plog_error("%s: %s.", __func__, cute_tiled_error_reason);
     }
 
     #endif
 
     return tiled_map;
-}
-
-static void log_appender(const char* msg, void* user_data)
-{
-    (void)user_data;
-    printf("%s", msg);
 }
 
 static void move_camera_to_target(esz_window_t* window, esz_core_t* core)
@@ -2328,7 +2329,7 @@ static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t*
 
     if (level >= ESZ_ACTOR_LAYER_LEVEL_MAX)
     {
-        plog_error("%s: invalid layer level selected.\n", __func__);
+        plog_error("%s: invalid layer level selected.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2422,7 +2423,7 @@ static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t*
 
                         if (0 > SDL_RenderCopyEx(window->renderer, core->map->sprite[(*actor)->sprite_sheet_id].texture, &src, &dst, 0, NULL, flip))
                         {
-                            plog_error("%s: %s.\n", __func__, SDL_GetError());
+                            plog_error("%s: %s.", __func__, SDL_GetError());
                             return ESZ_ERROR_CRITICAL;
                         }
                         break;
@@ -2463,7 +2464,7 @@ static esz_status render_background(esz_window_t* window, esz_core_t* core)
 
     if (! core->map->render_target[render_layer])
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2511,7 +2512,7 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 
     if (0 > SDL_QueryTexture(core->map->background.layer[index].texture, NULL, NULL, &width, NULL))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2558,7 +2559,7 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 
     if (0 > SDL_SetRenderTarget(window->renderer, core->map->render_target[render_layer]))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2580,14 +2581,14 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
 
     if (0 > SDL_RenderCopyEx(window->renderer, core->map->background.layer[index].texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
     dst.x = (int32_t)pos_x_b;
     if (0 > SDL_RenderCopyEx(window->renderer, core->map->background.layer[index].texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2610,7 +2611,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
     if (level >= ESZ_MAP_LAYER_LEVEL_MAX)
     {
-        plog_error("%s: invalid layer level selected.\n", __func__);
+        plog_error("%s: invalid layer level selected.", __func__);
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2652,13 +2653,13 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
         if (! core->map->animated_tile_texture)
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
         if (0 > SDL_SetRenderTarget(window->renderer, core->map->animated_tile_texture))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
@@ -2709,7 +2710,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
             if (0 > SDL_RenderCopy(window->renderer, core->map->tileset_texture, &src, &dst))
             {
-                plog_error("%s: %s.\n", __func__, SDL_GetError());
+                plog_error("%s: %s.", __func__, SDL_GetError());
                 return ESZ_ERROR_CRITICAL;
             }
 
@@ -2742,19 +2743,19 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
         if (0 > SDL_SetRenderTarget(window->renderer, core->map->layer_texture[level]))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
         if (0 > SDL_SetRenderTarget(window->renderer, core->map->render_target[render_layer]))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
         if (0 > SDL_SetTextureBlendMode(core->map->animated_tile_texture, SDL_BLENDMODE_BLEND))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
     }
@@ -2773,7 +2774,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
         if (0 > SDL_RenderCopyEx(window->renderer, core->map->layer_texture[level], NULL, &dst, 0, NULL, SDL_FLIP_NONE))
         {
-            plog_error("%s: %s.\n", __func__, SDL_GetError());
+            plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
 
@@ -2783,7 +2784,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
             {
                 if (0 > SDL_RenderCopyEx(window->renderer, core->map->animated_tile_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE))
                 {
-                    plog_error("%s: %s.\n", __func__, SDL_GetError());
+                    plog_error("%s: %s.", __func__, SDL_GetError());
                     return ESZ_ERROR_CRITICAL;
                 }
             }
@@ -2802,13 +2803,13 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
     if (! core->map->layer_texture[level])
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
     if (0 > SDL_SetRenderTarget(window->renderer, core->map->layer_texture[level]))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -2933,7 +2934,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
                 {
                     const char* layer_name = get_tiled_layer_name(layer);
-                    plog_info("Render map layer: %s\n", layer_name);
+                    plog_info("Render map layer: %s", layer_name);
                 }
             }
         }
@@ -2942,13 +2943,13 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
     if (0 > SDL_SetRenderTarget(window->renderer, core->map->render_target[render_layer]))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
     if (0 > SDL_SetTextureBlendMode(core->map->layer_texture[level], SDL_BLENDMODE_BLEND))
     {
-        plog_error("%s: %s.\n", __func__, SDL_GetError());
+        plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
 
@@ -3279,27 +3280,27 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
                 // tbd.
                 break;
             case PT_BOOL:
-                plog_debug("Loading boolean property '%s': %u\n", property->name, property->value.boolean);
+                plog_debug("Loading boolean property '%s': %u", property->name, property->value.boolean);
 
                 core_ptr->map->boolean_property = (bool)property->value.boolean;
                 break;
             case PT_FILE:
-                plog_debug("Loading string property '%s': %s\n", property->name, property->value.file);
+                plog_debug("Loading string property '%s': %s", property->name, property->value.file);
 
                 core_ptr->map->string_property  = property->value.file;
                 break;
             case PT_FLOAT:
-                plog_debug("Loading decimal property '%s': %f\n", property->name, (double)property->value.decimal);
+                plog_debug("Loading decimal property '%s': %f", property->name, (double)property->value.decimal);
 
                 core_ptr->map->decimal_property = (double)property->value.decimal;
                 break;
             case PT_INT:
-                plog_debug("Loading integer property '%s': %d\n", property->name, property->value.integer);
+                plog_debug("Loading integer property '%s': %d", property->name, property->value.integer);
 
                 core_ptr->map->integer_property = property->value.integer;
                 break;
             case PT_STRING:
-                plog_debug("Loading string property '%s': %s\n", property->name, property->value.string);
+                plog_debug("Loading string property '%s': %s", property->name, property->value.string);
 
                 core_ptr->map->string_property  = property->value.string;
                 break;

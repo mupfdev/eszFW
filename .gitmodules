@@ -19,3 +19,6 @@
 [submodule "external/picolog"]
 	path = external/picolog
 	url = https://github.com/picojs/picolog.git
+[submodule "external/buffer"]
+	path = external/buffer
+	url = https://github.com/clibs/buffer.git

@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
 find_package(SDL2 REQUIRED)
 if(USE_LIBTMX)
-    find_package(LibXml2)
+    find_package(LibXml2 REQUIRED)
 endif(USE_LIBTMX)
 
 set(CUTE_INCLUDE_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/external/cute_headers)
@@ -40,7 +40,8 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CUTE_INCLUDE_DIR}
     ${LIBTMX_INCLUDE_DIR}
-    ${PICOLOG_INCLUDE_DIR})
+    ${PICOLOG_INCLUDE_DIR}
+    )
 
 add_library(
     cwalk

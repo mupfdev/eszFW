@@ -122,20 +122,16 @@ cmake -DUSE_LIBTMX=ON ..
 ## Licence and Credits
 
 [cute_tiled](https://github.com/RandyGaul/cute_headers) by Randy Gaul is
-licensed under the zlib licence.  See
-[cute_tiled.h](https://github.com/RandyGaul/cute_headers/blob/master/cute_tiled.h)
-for details.
+licensed under the zlib licence.
 
 [TMX C Loader](https://github.com/baylej/tmx/) by Bayle Jonathan is
-licensed under a BSD 2-Clause "Simplified" Licence.  See the file
-[COPYING](https://raw.githubusercontent.com/baylej/tmx/master/COPYING)
-for details.
+licensed under a BSD 2-Clause "Simplified" Licence.
 
 This project and all further listed libraries are licensed under the
 "The MIT License".  See the file [LICENSE.md](LICENSE.md) for details.
 
-[cwalk](https://github.com/likle/cwalk) by [Leonard
-Iklé](https://github.com/likle/cwalk/blob/master/LICENSE.md).
+[buffer](https://github.com/clibs/buffer) by TJ Holowaychuk.
 
-[picolog](https://github.com/picojs/picolog) by [James
-McLean](https://github.com/picojs/picolog/blob/master/LICENSE.md).
+[cwalk](https://github.com/likle/cwalk) by Leonard Iklé.
+
+[picolog](https://github.com/picojs/picolog) by James McLean.
