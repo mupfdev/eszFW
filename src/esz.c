@@ -163,7 +163,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     };
     esz_logo = esz_logo_pxdata;
 
-    logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO, NULL);
+    logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO);
     plog_turn_colors_on(logger_id);
     plog_set_time_fmt("%H:%M:%S");
     plog_turn_timestamp_on();
@@ -2362,11 +2362,11 @@ static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t*
                     case H_actor:
                     {
                         esz_actor_t**    actor = &object->actor;
-                        double           pos_x  = object->pos_x - core->camera.pos_x;
-                        double           pos_y  = object->pos_y - core->camera.pos_y;
-                        SDL_RendererFlip flip   = SDL_FLIP_NONE;
-                        SDL_Rect         dst    = { 0 };
-                        SDL_Rect         src    = { 0 };
+                        double           pos_x = object->pos_x - core->camera.pos_x;
+                        double           pos_y = object->pos_y - core->camera.pos_y;
+                        SDL_RendererFlip flip  = SDL_FLIP_NONE;
+                        SDL_Rect         dst   = { 0 };
+                        SDL_Rect         src   = { 0 };
 
                         if (ESZ_ACTOR_LAYER_BG == level && ! IS_STATE_SET((*actor)->state, STATE_IN_BACKGROUND))
                         {
@@ -2477,7 +2477,17 @@ static esz_status render_background(esz_window_t* window, esz_core_t* core)
     }
     else
     {
-        core->map->background.velocity = core->map->entity[core->camera.target_actor_id].actor->velocity_x;
+        if (core->map->entity)
+        {
+            if (core->map->entity[core->camera.target_actor_id].actor)
+            {
+                core->map->background.velocity = core->map->entity[core->camera.target_actor_id].actor->velocity_x;
+            }
+        }
+        else
+        {
+            core->map->background.velocity = 0.0;
+        }
     }
 
     if (! esz_is_camera_locked(core))
