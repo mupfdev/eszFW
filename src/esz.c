@@ -1014,13 +1014,11 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
         }
     }
 
-    #ifdef USE_LIBTMX
     if (core->map->animated_tile_texture)
     {
         SDL_DestroyTexture(core->map->animated_tile_texture);
         core->map->animated_tile_texture = NULL;
     }
-    #endif
 
     // Free up allocated memory in reverse order
     // ------------------------------------------------------------------------
