@@ -1,18 +1,21 @@
 # eszFW
 
 <p>
-<a href="https://github.com/mupfelofen-de/eszFW">
-  <img src="https://img.shields.io/badge/project-GitHub-blue?style=flat?svg=true" alt="GitHub project" />
-</a>
-<a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENSE.md">
-  <img src="https://img.shields.io/badge/licence-MIT-blue?style=flat?svg=true" alt="Licence" />
-</a>
-<a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
-  <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" alt="Build status" />
-</a>
-<a href="https://www.codacy.com/manual/mupf/eszFW?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mupfelofen-de/eszFW&amp;utm_campaign=Badge_Grade">
-  <img src=https://app.codacy.com/project/badge/Grade/999c4a824cba43dba68100819699fcfa alt="Codacy Badge" />
-</a>
+  <a href="https://github.com/mupfelofen-de/eszFW">
+    <img src="https://img.shields.io/badge/project-GitHub-blue?style=flat?svg=true" alt="GitHub project" />
+  </a>
+  <a href="https://github.com/mupfelofen-de/eszFW/blob/master/LICENSE.md">
+    <img src="https://img.shields.io/badge/licence-MIT-blue?style=flat?svg=true" alt="Licence" />
+  </a>
+  <a href="https://ci.appveyor.com/project/mupfelofen-de/eszfw">
+    <img src="https://ci.appveyor.com/api/projects/status/0t2yt05ngahfa5jr?svg=true" alt="Build status" />
+  </a>
+  <a href="https://www.codacy.com/manual/mupf/eszFW?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mupfelofen-de/eszFW&amp;utm_campaign=Badge_Grade">
+    <img src=https://app.codacy.com/project/badge/Grade/999c4a824cba43dba68100819699fcfa alt="Codacy Badge" />
+  </a>
+  <a href="https://www.codetriage.com/mupfelofen-de/eszfw">
+    <img src="https://www.codetriage.com/mupfelofen-de/eszfw/badges/users.svg" alt="Open Source Helpers" />
+  </a>
 </p>
 
 ## About
