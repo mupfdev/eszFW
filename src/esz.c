@@ -152,9 +152,9 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_logo = esz_logo_pxdata;
 
     logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO);
-    plog_turn_colors_on(logger_id);
-    plog_set_time_fmt("%H:%M:%S");
-    plog_turn_timestamp_on();
+    plog_colors_on(logger_id);
+    plog_set_time_fmt(logger_id, "%H:%M:%S");
+    plog_timestamp_on(logger_id);
 
     *window = (esz_window_t*)calloc(1, sizeof(struct esz_window));
     if (! *window)
@@ -1293,12 +1293,8 @@ static esz_status init_animated_tiles(esz_core_t* core)
                 int32_t index_width;
                 for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                 {
-                    #ifdef USE_LIBTMX
-                    uint32_t* layer_content = layer->content.gids;
-                    #else // (cute_tiled.h)
-                    int32_t*  layer_content = layer->data;
-                    #endif
-                    int32_t gid = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
+                    int32_t* layer_content = get_tiled_layer_content(layer);
+                    int32_t  gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
 
                     #ifdef USE_LIBTMX
                     if (core->map->handle->tiles[gid])
