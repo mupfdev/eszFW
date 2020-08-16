@@ -413,6 +413,7 @@ typedef struct esz_core
     struct esz_camera camera;
     struct esz_event  event;
     esz_map_t*        map;
+    uint32_t          debug;
     bool              is_active;
     bool              is_map_loaded;
     bool              is_paused;

@@ -393,6 +393,14 @@ double esz_get_time_since_last_frame(esz_window_t* window)
     return window->time_since_last_frame;
 }
 
+void esz_hide_render_layer(esz_render_layer layer, esz_core_t* core)
+{
+    if (ESZ_RENDER_LAYER_MAX != layer)
+    {
+        SET_STATE(core->debug, (uint32_t)layer);
+    }
+}
+
 esz_status esz_init_core(esz_core_t** core)
 {
     *core = (esz_core_t*)calloc(1, sizeof(struct esz_core));
@@ -902,6 +910,14 @@ esz_status esz_set_zoom_level(const double factor, esz_window_t* window)
     }
 }
 
+void esz_show_render_layer(esz_render_layer layer, esz_core_t* core)
+{
+    if (ESZ_RENDER_LAYER_MAX != layer)
+    {
+        CLR_STATE(core->debug, (uint32_t)layer);
+    }
+}
+
 esz_status esz_show_scene(esz_window_t* window, esz_core_t* core)
 {
     esz_status status;
@@ -1243,6 +1259,11 @@ static esz_status draw_scene(esz_window_t* window, esz_core_t* core)
 
     for (index = 0; index < ESZ_RENDER_LAYER_MAX; index += 1)
     {
+        if (IS_STATE_SET(core->debug, index))
+        {
+            continue;
+        }
+
         if (0 > SDL_RenderCopy(window->renderer, core->map->render_target[index], NULL, &dst))
         {
             plog_error("%s: %s.", __func__, SDL_GetError());

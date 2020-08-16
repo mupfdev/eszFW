@@ -131,6 +131,13 @@ int32_t esz_get_keycode(esz_core_t* core);
 double esz_get_time_since_last_frame(esz_window_t* window);
 
 /**
+ * @brief Hide render layer for debugging purposes
+ * @param Render layer to hide
+ * @param core Engine core
+ */
+void esz_hide_render_layer(esz_render_layer layer, esz_core_t* core);
+
+/**
  * @brief  Initialise engine core
  * @param  core Engine core
  * @return Status code
@@ -261,6 +268,13 @@ void esz_set_player_state(esz_state state, esz_core_t* core);
  *         The zoom-level could not be set
  */
 esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
+
+/**
+ * @brief Show previously hidden render layer for debugging purposes
+ * @param Render layer to show
+ * @param core Engine core
+ */
+void esz_show_render_layer(esz_render_layer layer, esz_core_t* core);
 
 /**
  * @brief  Render and draw the current scene
