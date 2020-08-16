@@ -152,7 +152,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_logo = esz_logo_pxdata;
 
     logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO);
-    plog_colors_on(logger_id);
+    //plog_colors_on(logger_id);
     plog_set_time_fmt(logger_id, "%H:%M:%S");
     plog_timestamp_on(logger_id);
 
@@ -2395,6 +2395,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
             plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
+        SDL_RenderClear(window->renderer);
 
         int32_t index;
         for (index = 0; core->map->animated_tile_index > index; index += 1)
@@ -2474,17 +2475,18 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
             core->map->animated_tile[index].id = next_tile_id;
         }
 
-        if (0 > SDL_SetRenderTarget(window->renderer, core->map->layer_texture[level]))
+        /*if (0 > SDL_SetRenderTarget(window->renderer, core->map->layer_texture[level]))
         {
             plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
-        }
+        }*/
 
         if (0 > SDL_SetRenderTarget(window->renderer, core->map->render_target[render_layer]))
         {
             plog_error("%s: %s.", __func__, SDL_GetError());
             return ESZ_ERROR_CRITICAL;
         }
+        SDL_RenderClear(window->renderer);
 
         if (0 > SDL_SetTextureBlendMode(core->map->animated_tile_texture, SDL_BLENDMODE_BLEND))
         {
@@ -2545,6 +2547,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
         plog_error("%s: %s.", __func__, SDL_GetError());
         return ESZ_ERROR_CRITICAL;
     }
+    SDL_RenderClear(window->renderer);
 
     while (layer)
     {
