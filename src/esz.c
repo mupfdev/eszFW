@@ -438,8 +438,6 @@ bool esz_is_map_loaded(esz_core_t* core)
 
 bool esz_is_player_moving(esz_core_t* core)
 {
-    esz_actor_t* actor;
-
     if (! esz_is_map_loaded(core))
     {
         return false;
@@ -449,7 +447,7 @@ bool esz_is_player_moving(esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
 
             if (IS_STATE_SET(actor->state, STATE_MOVING))
             {
