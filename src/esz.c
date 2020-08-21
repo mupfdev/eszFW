@@ -102,8 +102,6 @@ bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_
 
 void esz_clear_player_state(esz_state state, esz_core_t* core)
 {
-    esz_actor_t* actor;
-
     if (!esz_is_map_loaded(core))
     {
         return;
@@ -113,7 +111,7 @@ void esz_clear_player_state(esz_state state, esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
             CLR_STATE(actor->state, state);
         }
     }
@@ -152,9 +150,12 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
     esz_logo = esz_logo_pxdata;
 
     logger_id = plog_add_stream(stdout, PLOG_LEVEL_INFO);
-    //plog_colors_on(logger_id);
     plog_set_time_fmt(logger_id, "%H:%M:%S");
     plog_timestamp_on(logger_id);
+
+    #ifndef __WIN32__
+    plog_colors_on(logger_id);
+    #endif
 
     *window = (esz_window_t*)calloc(1, sizeof(struct esz_window));
     if (! *window)
@@ -331,7 +332,7 @@ void esz_destroy_window(esz_window_t* window)
 
 bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_tiled_map_property_count(core->map->handle);
+    int32_t prop_cnt = get_map_property_count(core->map->handle);
 
     core->map->boolean_property = false;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
@@ -340,7 +341,7 @@ bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 
 double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_tiled_map_property_count(core->map->handle);
+    int32_t prop_cnt = get_map_property_count(core->map->handle);
 
     core->map->decimal_property = 0.0;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
@@ -349,7 +350,7 @@ double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 
 int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_tiled_map_property_count(core->map->handle);
+    int32_t prop_cnt = get_map_property_count(core->map->handle);
 
     core->map->integer_property = 0;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
@@ -358,7 +359,7 @@ int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 
 const char* esz_get_string_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_tiled_map_property_count(core->map->handle);
+    int32_t prop_cnt = get_map_property_count(core->map->handle);
 
     core->map->string_property = NULL;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
@@ -506,7 +507,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
         }
 
         {
-            esz_tiled_layer_t* layer = get_head_tiled_layer(core->map->handle);
+            esz_tiled_layer_t* layer = get_head_layer(core->map->handle);
 
             while (layer)
             {
@@ -518,9 +519,9 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
                         int32_t index_width;
                         for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                         {
-                            int32_t*             layer_content = get_tiled_layer_content(layer);
+                            int32_t*             layer_content = get_layer_content(layer);
                             int32_t              gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
-                            esz_tiled_tileset_t* tileset       = get_head_tiled_tileset(core->map->handle);
+                            esz_tiled_tileset_t* tileset       = get_head_tileset(core->map->handle);
                             esz_tiled_tile_t*    tile;
 
                             #ifdef USE_LIBTMX
@@ -794,9 +795,6 @@ void esz_set_active_player_actor(int32_t id, esz_core_t* core)
 
 void esz_set_next_player_animation(esz_core_t* core)
 {
-    esz_actor_t* actor;
-    int32_t       id;
-
     if (! esz_is_map_loaded(core))
     {
         return;
@@ -806,8 +804,8 @@ void esz_set_next_player_animation(esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
-            id = actor->current_animation + 1;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
+            int32_t      id    = actor->current_animation + 1;
 
             if (id > actor->animation_count)
             {
@@ -1080,16 +1078,16 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
     // ------------------------------------------------------------------------
 
     index = 0;
-    layer = get_head_tiled_layer(core->map->handle);
+    layer = get_head_layer(core->map->handle);
     while (layer)
     {
         if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
-            tiled_object = get_head_tiled_object(layer, core);
+            tiled_object = get_head_object(layer, core);
 
             while (tiled_object)
             {
-                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_object_type_name(tiled_object));
                 esz_entity_t* entity    = &core->map->entity[index];
 
                 switch (type_hash)
@@ -1301,7 +1299,7 @@ static int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property
 // Todo: simplify / merge libTMX / cute_tiled integration, see : esz_load_map
 static esz_status init_animated_tiles(esz_core_t* core)
 {
-    esz_tiled_layer_t* layer               = get_head_tiled_layer(core->map->handle);
+    esz_tiled_layer_t* layer               = get_head_layer(core->map->handle);
     int32_t            animated_tile_count = 0;
 
     while (layer)
@@ -1314,8 +1312,11 @@ static esz_status init_animated_tiles(esz_core_t* core)
                 int32_t index_width;
                 for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                 {
-                    int32_t* layer_content = get_tiled_layer_content(layer);
+                    int32_t* layer_content = get_layer_content(layer);
                     int32_t  gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
+
+                    // tbd.
+
 
                     #ifdef USE_LIBTMX
                     if (core->map->handle->tiles[gid])
@@ -1444,7 +1445,7 @@ static esz_status init_background(esz_window_t* window, esz_core_t* core)
 
 static esz_status init_entities(esz_core_t* core)
 {
-    esz_tiled_layer_t*  layer         = get_head_tiled_layer(core->map->handle);
+    esz_tiled_layer_t*  layer         = get_head_layer(core->map->handle);
     esz_tiled_object_t* tiled_object  = NULL;
     int32_t             index         = 0;
     bool                player_found  = false;
@@ -1458,7 +1459,7 @@ static esz_status init_entities(esz_core_t* core)
     {
         if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
-            tiled_object = get_head_tiled_object(layer, core);
+            tiled_object = get_head_object(layer, core);
             while (tiled_object)
             {
                 core->map->entity_count += 1;
@@ -1480,18 +1481,18 @@ static esz_status init_entities(esz_core_t* core)
 
     plog_info("Initialise %u entities:", core->map->entity_count);
 
-    layer = get_head_tiled_layer(core->map->handle);
+    layer = get_head_layer(core->map->handle);
     while (layer)
     {
         if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
-            tiled_object = get_head_tiled_object(layer, core);
+            tiled_object = get_head_object(layer, core);
             while (tiled_object)
             {
-                uint64_t              type_hash  = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t              type_hash  = esz_hash((const unsigned char*)get_object_type_name(tiled_object));
                 esz_entity_t*         entity     = &core->map->entity[index];
                 esz_tiled_property_t* properties = tiled_object->properties;
-                int32_t               prop_cnt   = get_tiled_object_property_count(tiled_object);
+                int32_t               prop_cnt   = get_object_property_count(tiled_object);
 
                 entity->pos_x = (double)tiled_object->x;
                 entity->pos_y = (double)tiled_object->y;
@@ -1573,11 +1574,11 @@ static esz_status init_entities(esz_core_t* core)
                             esz_set_active_player_actor(index, core);
                             esz_set_camera_target(index, core);
 
-                            plog_info("  %d %s *", index, get_tiled_object_name(tiled_object));
+                            plog_info("  %d %s *", index, get_object_name(tiled_object));
                         }
                         else
                         {
-                            plog_info("  %d %s", index, get_tiled_object_name(tiled_object));
+                            plog_info("  %d %s", index, get_object_name(tiled_object));
                         }
 
                         if (IS_STATE_SET((*actor)->state, STATE_ANIMATED))
@@ -2048,7 +2049,7 @@ static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t*
         return ESZ_OK;
     }
 
-    layer = get_head_tiled_layer(core->map->handle);
+    layer = get_head_layer(core->map->handle);
 
     if (level >= ESZ_ACTOR_LAYER_LEVEL_MAX)
     {
@@ -2074,10 +2075,10 @@ static esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t*
     {
         if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
-            esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
+            esz_tiled_object_t* tiled_object = get_head_object(layer, core);
             while (tiled_object)
             {
-                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_object_type_name(tiled_object));
                 esz_entity_t* object    = &core->map->entity[index];
 
                 switch (type_hash)
@@ -2328,7 +2329,6 @@ static esz_status render_background_layer(int32_t index, esz_window_t* window, e
     return ESZ_OK;
 }
 
-// Todo: simplify/merge libTMX/cute_tiled integration, see: esz_load_map
 static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* core)
 {
     esz_tiled_layer_t* layer;
@@ -2340,7 +2340,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
         return ESZ_OK;
     }
 
-    layer = get_head_tiled_layer(core->map->handle);
+    layer = get_head_layer(core->map->handle);
 
     if (level >= ESZ_MAP_LAYER_LEVEL_MAX)
     {
@@ -2400,47 +2400,21 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
         int32_t index;
         for (index = 0; core->map->animated_tile_index > index; index += 1)
         {
-            int32_t  gid          = core->map->animated_tile[index].gid;
-            int32_t  tile_id;
-            int32_t  next_tile_id = 0;
-            SDL_Rect dst;
-            SDL_Rect src;
+            esz_tiled_tileset_t* tileset;
+            int32_t              gid          = core->map->animated_tile[index].gid;
+            int32_t              next_tile_id = 0;
+            int32_t              tile_id;
+            SDL_Rect             dst;
+            SDL_Rect             src;
 
-            #ifdef USE_LIBTMX
-            tmx_tileset* tileset;
-            int32_t      first_gid = get_first_gid(core->map->handle);
-
-            tile_id = core->map->animated_tile[index].id + 1;
-            tileset = core->map->handle->tiles[first_gid]->tileset;
-            src.x   = (int32_t)core->map->handle->tiles[tile_id]->ul_x;
-            src.y   = (int32_t)core->map->handle->tiles[tile_id]->ul_y;
+            tile_id = get_animated_tile_id(&(core->map->animated_tile[index]));
+            tileset = get_head_tileset(core->map->handle);
             src.w   = dst.w = get_tile_width(core->map->handle);
             src.h   = dst.h = get_tile_height(core->map->handle);
             dst.x           = (int32_t)core->map->animated_tile[index].dst_x;
             dst.y           = (int32_t)core->map->animated_tile[index].dst_y;
 
-            #else // (cute_tiled.h)
-            cute_tiled_tileset_t*         tileset = core->map->handle->tilesets;
-            cute_tiled_tile_descriptor_t* tile    = tileset->tiles;
-
-            tile_id = core->map->animated_tile[index].id;
-            src.w   = dst.w = get_tile_width(core->map->handle);
-            src.h   = dst.h = get_tile_height(core->map->handle);
-            dst.x           = (int32_t)core->map->animated_tile[index].dst_x;
-            dst.y           = (int32_t)core->map->animated_tile[index].dst_y;
-
-            while (tile)
-            {
-                if (tile->tile_index == gid)
-                {
-                    src.x = (tile_id % tileset->columns) * get_tile_width(core->map->handle);
-                    src.y = (tile_id / tileset->columns) * get_tile_height(core->map->handle);
-                    break;
-                }
-                tile = tile->next;
-            }
-
-            #endif
+            get_tile_position(tile_id, gid, &src.x, &src.y, core->map->handle);
 
             if (0 > SDL_RenderCopy(window->renderer, core->map->tileset_texture, &src, &dst))
             {
@@ -2455,31 +2429,10 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
                 core->map->animated_tile[index].current_frame = 0;
             }
 
-            #ifdef USE_LIBTMX
-            next_tile_id = (int32_t)core->map->handle->tiles[gid]->animation[core->map->animated_tile[index].current_frame].tile_id;
-
-            #else // (cute_tiled.h)
-            tile = tileset->tiles;
-            while (tile)
-            {
-                if (tile->tile_index == gid)
-                {
-                    next_tile_id = tile->animation[core->map->animated_tile[index].current_frame].tileid;
-                    break;
-                }
-                tile = tile->next;
-            }
-
-            #endif
+            next_tile_id = get_next_animated_tile_id(gid, core->map->animated_tile[index].current_frame, core->map->handle);
 
             core->map->animated_tile[index].id = next_tile_id;
         }
-
-        /*if (0 > SDL_SetRenderTarget(window->renderer, core->map->layer_texture[level]))
-        {
-            plog_error("%s: %s.", __func__, SDL_GetError());
-            return ESZ_ERROR_CRITICAL;
-        }*/
 
         if (0 > SDL_SetRenderTarget(window->renderer, core->map->render_target[render_layer]))
         {
@@ -2558,7 +2511,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
         {
             bool    is_in_foreground  = false;
             bool    is_layer_rendered = false;
-            int32_t prop_cnt = get_tiled_layer_property_count(layer);
+            int32_t prop_cnt = get_layer_property_count(layer);
 
             is_in_foreground = get_boolean_property(H_is_in_foreground, layer->properties, prop_cnt, core);
 
@@ -2579,7 +2532,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
                     int32_t index_width;
                     for (index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                     {
-                        int32_t* layer_content = get_tiled_layer_content(layer);
+                        int32_t* layer_content = get_layer_content(layer);
                         int32_t  gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
 
                         #ifdef USE_LIBTMX
@@ -2665,7 +2618,7 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
                 }
 
                 {
-                    const char* layer_name = get_tiled_layer_name(layer);
+                    const char* layer_name = get_layer_name(layer);
                     plog_info("Render map layer: %s", layer_name);
                 }
             }
@@ -2777,16 +2730,16 @@ static void update_entities(esz_window_t* window, esz_core_t* core)
         return;
     }
 
-    layer = get_head_tiled_layer(core->map->handle);
+    layer = get_head_layer(core->map->handle);
 
     while (layer)
     {
         if (is_tiled_layer_of_type(ESZ_OBJECT_GROUP, layer, core))
         {
-            esz_tiled_object_t* tiled_object = get_head_tiled_object(layer, core);
+            esz_tiled_object_t* tiled_object = get_head_object(layer, core);
             while (tiled_object)
             {
-                uint64_t      type_hash = esz_hash((const unsigned char*)get_tiled_object_type_name(tiled_object));
+                uint64_t      type_hash = esz_hash((const unsigned char*)get_object_type_name(tiled_object));
                 esz_entity_t* entity    = &core->map->entity[index];
 
                 switch (type_hash)
