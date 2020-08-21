@@ -817,8 +817,6 @@ void esz_set_next_player_animation(esz_core_t* core)
 
 void esz_set_player_animation(int32_t id, esz_core_t* core)
 {
-    esz_actor_t* actor;
-
     if (!esz_is_map_loaded(core))
     {
         return;
@@ -828,7 +826,7 @@ void esz_set_player_animation(int32_t id, esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
 
             if (0 >= id || actor->animation_count < id)
             {
@@ -846,8 +844,6 @@ void esz_set_player_animation(int32_t id, esz_core_t* core)
 
 void esz_set_player_state(esz_state state, esz_core_t* core)
 {
-    esz_actor_t* actor;
-
     if (!esz_is_map_loaded(core))
     {
         return;
@@ -857,7 +853,7 @@ void esz_set_player_state(esz_state state, esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
             SET_STATE(actor->state, state);
         }
     }
@@ -964,8 +960,6 @@ esz_status esz_toggle_fullscreen(esz_window_t* window)
 
 void esz_trigger_player_action(esz_action action, esz_core_t* core)
 {
-    esz_actor_t* actor;
-
     if (!esz_is_map_loaded(core))
     {
         return;
@@ -975,7 +969,7 @@ void esz_trigger_player_action(esz_action action, esz_core_t* core)
     {
         if (core->map->entity[core->camera.target_actor_id].actor)
         {
-            actor = core->map->entity[core->map->active_player_actor_id].actor;
+            esz_actor_t* actor = core->map->entity[core->map->active_player_actor_id].actor;
             SET_STATE(actor->action, action);
         }
     }
