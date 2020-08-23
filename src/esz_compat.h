@@ -233,7 +233,6 @@ void get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_ma
 
     #else // (cute_tiled.h)
     esz_tiled_tileset_t* tileset  = tiled_map->tilesets;
-    esz_tiled_tile_t*    tile     = tileset->tiles;
     int32_t              local_id = gid - get_first_gid(tiled_map);
 
     *pos_x = (local_id % tileset->columns) * get_tile_width(tiled_map);
