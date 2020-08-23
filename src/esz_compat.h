@@ -4,11 +4,13 @@
  * @brief   eszFW compatibility layer
  * @details Functions used to maintain compatibility between libTMX and
  *          cute_tiled.
+ * @remark  For internal use only!
  */
 
 #ifndef ESZ_COMPAT_H
 #define ESZ_COMPAT_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 DISABLE_WARNING_PUSH
@@ -19,7 +21,6 @@ DISABLE_WARNING_SYMBOL_NOT_DEFINED
 #ifdef USE_LIBTMX
     #include <tmx.h>
 #else // (cute_tiled.h)
-    #define CUTE_TILED_IMPLEMENTATION
     #include <cute_tiled.h>
 #endif
 
@@ -30,7 +31,6 @@ DISABLE_WARNING_POP
 #include "esz_macros.h"
 #include "esz_types.h"
 
-int32_t              get_animated_tile_id(esz_animated_tile_t* animated_tile);
 int32_t              get_first_gid(esz_tiled_map_t* tiled_map);
 esz_tiled_layer_t*   get_head_layer(esz_tiled_map_t* tiled_map);
 esz_tiled_object_t*  get_head_object(esz_tiled_layer_t* tiled_layer, esz_core_t* core);
@@ -44,12 +44,15 @@ const char*          get_object_name(esz_tiled_object_t* tiled_object);
 int32_t              get_object_property_count(esz_tiled_object_t* tiled_object);
 const char*          get_object_type_name(esz_tiled_object_t* tiled_object);
 int32_t              get_tile_height(esz_tiled_map_t* tiled_map);
-void                 get_tile_position(int32_t tile_id, int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map);
+void                 get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map);
 int32_t              get_tile_width(esz_tiled_map_t* tiled_map);
+bool                 is_gid_valid(int32_t gid, esz_tiled_map_t* tiled_map);
 bool                 is_tiled_layer_of_type(const esz_tiled_layer_type tiled_type, esz_tiled_layer_t* tiled_layer, esz_core_t* core);
 void                 load_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core);
 esz_status           load_tiled_map(const char* map_file_name, esz_core_t* core);
 int32_t              remove_gid_flip_bits(int32_t gid);
+void                 set_animated_tile_position(int32_t gid, int32_t pos_x, int32_t pos_y, esz_map_t* map);
+bool                 tile_has_properties(int32_t gid, esz_tiled_tile_t** tile, esz_tiled_map_t* tiled_map);
 void                 unload_tiled_map(esz_core_t* core);
 
 #ifdef ESZ_COMPAT_IMPLEMENTATION
@@ -57,17 +60,6 @@ void                 unload_tiled_map(esz_core_t* core);
 #ifdef USE_LIBTMX
 static void tmxlib_store_property(esz_tiled_property_t* property, void* core);
 #endif
-
-int32_t get_animated_tile_id(esz_animated_tile_t* animated_tile)
-{
-    #ifdef USE_LIBTMX
-    return animated_tile->id + 1;
-
-    #else // (cute_tiled.h)
-    return animated_tile->id;
-
-    #endif
-}
 
 int32_t get_first_gid(esz_tiled_map_t* tiled_map)
 {
@@ -183,6 +175,8 @@ int32_t get_next_animated_tile_id(int32_t gid, int32_t current_frame, esz_tiled_
     }
 
     #endif
+
+    return 0;
 }
 
 const char* get_object_name(esz_tiled_object_t* tiled_object)
@@ -231,27 +225,19 @@ int32_t get_tile_height(esz_tiled_map_t* tiled_map)
     #endif
 }
 
-void get_tile_position(int32_t tile_id, int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map)
+void get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map)
 {
     #ifdef USE_LIBTMX
-    (void)gid;
-    *pos_x = (int32_t)tiled_map->tiles[tile_id]->ul_x;
-    *pos_y = (int32_t)tiled_map->tiles[tile_id]->ul_y;
+    *pos_x = (int32_t)tiled_map->tiles[gid]->ul_x;
+    *pos_y = (int32_t)tiled_map->tiles[gid]->ul_y;
 
     #else // (cute_tiled.h)
-    esz_tiled_tileset_t* tileset = tiled_map->tilesets;
-    esz_tiled_tile_t*    tile    = tileset->tiles;
+    esz_tiled_tileset_t* tileset  = tiled_map->tilesets;
+    esz_tiled_tile_t*    tile     = tileset->tiles;
+    int32_t              local_id = gid - get_first_gid(tiled_map);
 
-    while (tile)
-    {
-        if (tile->tile_index == gid)
-        {
-            *pos_x = (tile_id % tileset->columns) * get_tile_width(tiled_map);
-            *pos_y = (tile_id / tileset->columns) * get_tile_height(tiled_map);
-            break;
-        }
-        tile = tile->next;
-    }
+    *pos_x = (local_id % tileset->columns) * get_tile_width(tiled_map);
+    *pos_y = (local_id / tileset->columns) * get_tile_height(tiled_map);
 
     #endif
 }
@@ -266,6 +252,25 @@ int32_t get_tile_width(esz_tiled_map_t* tiled_map)
     return tiled_map->tilesets->tilewidth;
 
     #endif
+}
+
+bool is_gid_valid(int32_t gid, esz_tiled_map_t* tiled_map)
+{
+    #ifdef USE_LIBTMX
+    if (tiled_map->tiles[gid])
+    {
+        return true;
+    }
+    #else // (cute_tiled.h)
+    (void)tiled_map;
+
+    if (gid)
+    {
+        return true;
+    }
+
+    #endif
+    return false;
 }
 
 bool is_tiled_layer_of_type(const esz_tiled_layer_type tiled_type, esz_tiled_layer_t* tiled_layer, esz_core_t* core)
@@ -423,6 +428,86 @@ int32_t remove_gid_flip_bits(int32_t gid)
     return cute_tiled_unset_flags(gid);
 
     #endif
+}
+
+void set_animated_tile_position(int32_t gid, int32_t pos_x, int32_t pos_y, esz_map_t* map)
+{
+    int32_t animation_length;
+    int32_t id;
+    int32_t local_id;
+    bool    is_tile_animated = false;
+
+    #ifdef USE_LIBTMX
+    local_id = gid;
+
+    if (map->handle->tiles[gid]->animation)
+    {
+        animation_length = (int32_t)map->handle->tiles[gid]->animation_len;
+        id               = (int32_t)map->handle->tiles[gid]->animation[0].tile_id;
+        is_tile_animated = true;
+    }
+
+    #else // (cute_tiled.h)
+    esz_tiled_tileset_t* tileset  = map->handle->tilesets;
+    esz_tiled_tile_t*    tile     = tileset->tiles;
+
+    local_id = gid - get_first_gid(map->handle);
+
+    while (tile)
+    {
+        if (tile->tile_index == local_id)
+        {
+            if (tile->animation)
+            {
+                animation_length = tile->frame_count;
+                id               = tile->animation->tileid;
+                is_tile_animated = true;
+                break;
+            }
+        }
+        tile = tile->next;
+    }
+
+    #endif
+
+    if (is_tile_animated)
+    {
+        map->animated_tile[map->animated_tile_index].gid              = local_id;
+        map->animated_tile[map->animated_tile_index].id               = id;
+        map->animated_tile[map->animated_tile_index].dst_x            = pos_x;
+        map->animated_tile[map->animated_tile_index].dst_y            = pos_y;
+        map->animated_tile[map->animated_tile_index].current_frame    = 0;
+        map->animated_tile[map->animated_tile_index].animation_length = animation_length;
+
+        map->animated_tile_index += 1;
+    }
+}
+
+bool tile_has_properties(int32_t gid, esz_tiled_tile_t** tile, esz_tiled_map_t* tiled_map)
+{
+    int32_t local_id;
+
+    #ifdef USE_LIBTMX
+    // tbd.
+
+    #else // (cute_tiled.h)
+    local_id = gid - get_first_gid(tiled_map);
+
+    while ((*tile))
+    {
+        if ((*tile)->tile_index == local_id)
+        {
+            if (0 < (*tile)->property_count)
+            {
+                return true;
+            }
+        }
+        (*tile) = (*tile)->next;
+    }
+
+    #endif
+
+    return false;
 }
 
 void unload_tiled_map(esz_core_t* core)
