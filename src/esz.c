@@ -568,6 +568,10 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     cwk_path_get_dirname(map_file_name, (size_t*)&(core->map->path_length));
     SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
 
+
+    //tbd.
+
+
     {
         int64_t source_length;
 
@@ -1261,42 +1265,10 @@ static esz_status init_animated_tiles(esz_core_t* core)
                     int32_t* layer_content = get_layer_content(layer);
                     int32_t  gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
 
-                    // tbd.
-
-
-                    #ifdef USE_LIBTMX
-                    if (core->map->handle->tiles[gid])
+                    if (is_tile_animated(gid, NULL, NULL, core->map->handle))
                     {
-                        if (core->map->handle->tiles[gid]->animation)
-                        {
-                            animated_tile_count += 1;
-                        }
+                        animated_tile_count += 1;
                     }
-
-                    #else // (cute_tiled.h)
-                    {
-                        cute_tiled_tileset_t*         tileset   = core->map->handle->tilesets;
-                        cute_tiled_tile_descriptor_t* tile      = tileset->tiles;
-                        int32_t                       first_gid = get_first_gid(core->map->handle);
-                        int32_t                       local_id  = gid - first_gid;
-
-                        if (gid)
-                        {
-                            while (tile)
-                            {
-                                if (tile->tile_index == local_id)
-                                {
-                                    if (tile->animation)
-                                    {
-                                        animated_tile_count += 1;
-                                        break;
-                                    }
-                                }
-                                tile = tile->next;
-                            }
-                        }
-                    }
-                    #endif
                 }
             }
         }
@@ -2491,7 +2463,20 @@ static esz_status render_map(int32_t level, esz_window_t* window, esz_core_t* co
 
                             if (render_animated_tiles)
                             {
-                                set_animated_tile_position(gid, dst.x, dst.y, core->map);
+                                int32_t animation_length = 0;
+                                int32_t id               = 0;
+
+                                if (is_tile_animated(gid, &animation_length, &id, core->map->handle))
+                                {
+                                    core->map->animated_tile[core->map->animated_tile_index].gid              = get_local_id(gid, core->map->handle);
+                                    core->map->animated_tile[core->map->animated_tile_index].id               = id;
+                                    core->map->animated_tile[core->map->animated_tile_index].dst_x            = dst.x;
+                                    core->map->animated_tile[core->map->animated_tile_index].dst_y            = dst.y;
+                                    core->map->animated_tile[core->map->animated_tile_index].current_frame    = 0;
+                                    core->map->animated_tile[core->map->animated_tile_index].animation_length = animation_length;
+
+                                    core->map->animated_tile_index += 1;
+                                }
                             }
                         }
                     }
