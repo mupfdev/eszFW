@@ -4,7 +4,6 @@
  * @brief   eszFW compatibility layer
  * @details Functions used to maintain compatibility between libTMX and
  *          cute_tiled.
- * @remark  For internal use only!
  */
 
 #ifndef ESZ_COMPAT_H
