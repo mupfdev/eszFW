@@ -79,7 +79,7 @@ void move_camera_to_target(esz_window_t* window, esz_core_t* core)
     }
 }
 
-static void poll_events(esz_window_t* window, esz_core_t* core)
+void poll_events(esz_window_t* window, esz_core_t* core)
 {
     while (0 != SDL_PollEvent(&core->event.handle))
     {
@@ -157,7 +157,7 @@ void set_camera_boundaries_to_map_size(esz_window_t* window, esz_core_t* core)
     }
 }
 
-static void update_bounding_box(esz_entity_t* entity)
+void update_bounding_box(esz_entity_t* entity)
 {
     entity->bounding_box.top    = entity->pos_y - (double)(entity->height / 2.0);
     entity->bounding_box.bottom = entity->pos_y + (double)(entity->height / 2.0);
@@ -175,7 +175,7 @@ static void update_bounding_box(esz_entity_t* entity)
     }
 }
 
-static void update_entities(esz_window_t* window, esz_core_t* core)
+void update_entities(esz_window_t* window, esz_core_t* core)
 {
     esz_tiled_layer_t* layer;
     int32_t            index = 0;

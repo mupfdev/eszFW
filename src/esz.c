@@ -20,7 +20,7 @@ DISABLE_WARNING_SYMBOL_NOT_DEFINED
 #include <cwalk.h>
 #include <SDL.h>
 
-#ifdef USE_LIBTMXXF
+#ifdef USE_LIBTMX
     #include <tmx.h>
 #else // (cute_tiled.h)
     #define CUTE_TILED_IMPLEMENTATION
@@ -81,7 +81,7 @@ bool esz_bounding_boxes_do_intersect(const esz_aabb_t bb_a, const esz_aabb_t bb_
 
 void esz_clear_player_state(esz_state state, esz_core_t* core)
 {
-    if (!esz_is_map_loaded(core))
+    if (! esz_is_map_loaded(core))
     {
         return;
     }

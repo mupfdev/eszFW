@@ -250,7 +250,7 @@ esz_status render_background(esz_window_t* window, esz_core_t* core)
     esz_render_layer render_layer = ESZ_BACKGROUND;
     double           factor;
 
-    if (!esz_is_map_loaded(core))
+    if (! esz_is_map_loaded(core))
     {
         return ESZ_OK;
     }
