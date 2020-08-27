@@ -7,6 +7,8 @@
 #ifndef ESZ_TYPES_H
 #define ESZ_TYPES_H
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <SDL.h>
 
 #ifdef USE_LIBTMX
