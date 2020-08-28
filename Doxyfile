@@ -362,7 +362,8 @@ BUILTIN_STL_SUPPORT    = NO
 
 CPP_CLI_SUPPORT        = NO
 
-# Set the SIP_SUPPORT tag to YES if your project consists of sip (see:
+# Set the SIP_SUPPORT tag to YES if your project consists of sip (see:
+
 # https://www.riverbankcomputing.com/software/sip/intro) sources only. Doxygen
 # will parse them like normal C++ but will assume all classes use public instead
 # of private inheritance when no explicit protection keyword is present.
@@ -823,10 +824,9 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = README.md \
+INPUT                  = README.md  \
                          LICENSE.md \
-                         src/esz.c \
-                         src/esz.h \
+                         src/esz.h  \
                          src/esz_types.h
 
 # This tag can be used to specify the character encoding of the source files

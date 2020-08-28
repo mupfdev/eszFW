@@ -7,10 +7,10 @@
 
 #include "esz_macros.h"
 
+#include <picolog.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <picolog.h>
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PADDING
@@ -20,6 +20,7 @@ DISABLE_WARNING_SYMBOL_NOT_DEFINED
 #include <cwalk.h>
 #include <SDL.h>
 
+// Can be removed as soon everything is moved to the compatibility layer.
 #ifdef USE_LIBTMX
     #include <tmx.h>
 #else // (cute_tiled.h)
@@ -33,28 +34,18 @@ DISABLE_WARNING_PUSH
 DISABLE_WARNING_PADDING
 DISABLE_WARNING_SPECTRE_MITIGATION
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #define STB_SPRINTF_IMPLEMENTATION
 #include <stb_sprintf.h>
 
 DISABLE_WARNING_POP
 
 #include "esz.h"
-#include "esz_hashes.h"
-#include "esz_types.h"
-
-#define ESZ_COMPAT_IMPLEMENTATION
 #include "esz_compat.h"
-
-#define ESZ_UTILS_IMPLEMENTATION
-#include "esz_utils.h"
-
-#define ESZ_INIT_IMPLEMENTATION
+#include "esz_hash.h"
 #include "esz_init.h"
-
-#define ESZ_RENDER_IMPLEMENTATION
 #include "esz_render.h"
+#include "esz_types.h"
+#include "esz_utils.h"
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_SPECTRE_MITIGATION
@@ -219,7 +210,7 @@ esz_status esz_create_window(const char* window_title, esz_window_config_t* conf
         SDL_RendererInfo renderer_info = { 0 };
         SDL_GetRenderDriverInfo(index, &renderer_info);
 
-        if (H_opengl != esz_hash((const unsigned char*)renderer_info.name))
+        if (H_opengl != generate_hash((const unsigned char*)renderer_info.name))
         {
             continue;
         }
@@ -311,19 +302,6 @@ void esz_destroy_window(esz_window_t* window)
 const uint8_t* esz_get_keyboard_state(void)
 {
     return SDL_GetKeyboardState(NULL);
-}
-
-uint64_t esz_hash(const unsigned char* name)
-{
-    uint64_t hash = 5381;
-    uint32_t c;
-
-    while ((c = *name++))
-    {
-        hash = ((hash << 5) + hash) + c;
-    }
-
-    return hash;
 }
 
 int32_t esz_get_keycode(esz_core_t* core)
@@ -690,9 +668,9 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
 
     // ------------------------------------------------------------------------
 
-    core->map->height = (int32_t)((int32_t)core->map->handle->height * get_tile_height(core->map->handle));
-    core->map->width = (int32_t)((int32_t)core->map->handle->width * get_tile_width(core->map->handle));
-    core->map->gravitation = esz_get_decimal_map_property(H_gravitation, core);
+    core->map->height         = (int32_t)((int32_t)core->map->handle->height * get_tile_height(core->map->handle));
+    core->map->width          = (int32_t)((int32_t)core->map->handle->width * get_tile_width(core->map->handle));
+    core->map->gravitation    = esz_get_decimal_map_property(H_gravitation, core);
     core->map->meter_in_pixel = esz_get_integer_map_property(H_meter_in_pixel, core);
 
     plog_info(
@@ -1038,7 +1016,7 @@ void esz_unload_map(esz_window_t* window, esz_core_t* core)
 
             while (tiled_object)
             {
-                uint64_t      type_hash = esz_hash((const unsigned char*)get_object_type_name(tiled_object));
+                uint64_t      type_hash = generate_hash((const unsigned char*)get_object_type_name(tiled_object));
                 esz_entity_t* entity    = &core->map->entity[index];
 
                 switch (type_hash)

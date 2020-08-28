@@ -18,6 +18,7 @@ set(PICOLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/picolog)
 set(STB_INCLUDE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb)
 
 include_directories(
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
     SYSTEM ${CWALK_INCLUDE_DIR}
     SYSTEM ${LUA_INCLUDE_DIR}
     SYSTEM ${PICOLOG_INCLUDE_DIR}
@@ -27,7 +28,17 @@ include_directories(
 set(eszFW_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/esz.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_types.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_compat.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_compat.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_hash.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_hash.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_init.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_render.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_types.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_utils.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_utils.h)
 
 add_library(
     ${PROJECT_NAME}

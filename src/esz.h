@@ -67,7 +67,7 @@ void esz_destroy_window(esz_window_t* window);
 
 /**
  * @brief  Get boolean map property
- * @param  name_hash Hash of the property name.  @see esz_hash()
+ * @param  name_hash Hash of the property name.
  * @param  core Engine core
  * @return Boolean value, or 0.0 if not property does not exist
  */
@@ -75,7 +75,7 @@ bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core);
 
 /**
  * @brief  Get decimal map property
- * @param  name_hash Hash of the property name.  @see esz_hash()
+ * @param  name_hash Hash of the property name.
  * @param  core Engine core
  * @return Boolean value, or false if property does not exist
  */
@@ -83,7 +83,7 @@ double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core);
 
 /**
  * @brief  Get integer map property
- * @param  name_hash Hash of the property name.  @see esz_hash()
+ * @param  name_hash Hash of the property name.
  * @param  core Engine core
  * @return Integer value, or 0 if property does not exist
  */
@@ -91,7 +91,7 @@ int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 
 /**
  * @brief  Get string or file type map property
- * @param  name_hash Hash of the property name.  @see esz_hash()
+ * @param  name_hash Hash of the property name.
  * @param  core Engine core
  * @return The string, or NULL if property does not exist
  */
@@ -104,15 +104,6 @@ const char* esz_get_string_map_property(const uint64_t name_hash, esz_core_t* co
  *         https://wiki.libsdl.org/SDL_Scancode
  */
 const uint8_t* esz_get_keyboard_state(void);
-
-/**
- * @brief   Generate hash
- * @details djb2 by Dan Bernstein.  See
- *          http://www.cse.yorku.ca/~oz/hash.html for details
- * @param   name The name from which a hash is to be generated
- * @return  Hash value
- */
-uint64_t esz_hash(const unsigned char* name);
 
 /**
  * @brief  Get the current keycode

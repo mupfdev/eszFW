@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * @file  esz_hashes.h
- * @brief eszFW hash table
+ * @file  esz_hash.h
+* @brief eszFW hash table and hash generator
  */
 
 #ifndef ESZ_HASHES_H
 #define ESZ_HASHES_H
+
+#include <stdint.h>
 
 #define H_acceleration                 0xce26e518186a848f
 #define H_animated_tile_fps            0xf16ba347de2debdd
@@ -41,5 +43,7 @@
 #define H_objectgroup                  0xc0b9d518970be349
 #define H_tilelayer                    0x0377d9f70e844fb0
 #endif
+
+uint64_t generate_hash(const unsigned char* name);
 
 #endif // ESZ_HASHES_H
