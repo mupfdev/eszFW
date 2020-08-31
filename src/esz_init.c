@@ -462,8 +462,8 @@ esz_status load_sprites(esz_window_t* window, esz_core_t* core)
 
 esz_status load_tileset(esz_window_t* window, esz_core_t* core)
 {
-    esz_status status = ESZ_OK;
-    char*      image_path;
+    esz_status status      = ESZ_OK;
+    char*      image_path  = NULL;
     int32_t    path_length = get_tileset_path_length(core);
 
     image_path = calloc(1, path_length);
