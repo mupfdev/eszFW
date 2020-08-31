@@ -460,6 +460,13 @@ esz_status load_sprites(esz_window_t* window, esz_core_t* core)
     return ESZ_OK;
 }
 
+esz_status load_tile_properties(esz_core_t* core)
+{
+
+
+    return ESZ_OK;
+}
+
 esz_status load_tileset(esz_window_t* window, esz_core_t* core)
 {
     esz_status status      = ESZ_OK;
@@ -475,17 +482,9 @@ esz_status load_tileset(esz_window_t* window, esz_core_t* core)
 
     set_tileset_path(image_path, path_length, core);
 
-    if (image_path)
+    if (ESZ_OK != load_texture_from_file(image_path, &core->map->tileset_texture, window))
     {
-        if (ESZ_OK != load_texture_from_file(image_path, &core->map->tileset_texture, window))
-        {
-            plog_error("%s: Error loading image '%s'.", __func__, image_path);
-            status = ESZ_ERROR_CRITICAL;
-        }
-    }
-    else
-    {
-        plog_error("%s: Could not determine location of tileset image.", __func__);
+        plog_error("%s: Error loading image '%s'.", __func__, image_path);
         status = ESZ_ERROR_CRITICAL;
     }
 

@@ -446,6 +446,13 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 3. Tile properties
     // ------------------------------------------------------------------------
 
+    if (ESZ_OK != load_tile_properties(core))
+    {
+        goto warning;
+    }
+
+
+
     {
         esz_tiled_layer_t* layer      = get_head_layer(core->map->handle);
         int32_t            tile_count = (int32_t)(core->map->handle->height * core->map->handle->width);
