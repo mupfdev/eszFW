@@ -15,10 +15,6 @@
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PADDING
 DISABLE_WARNING_SPECTRE_MITIGATION
-DISABLE_WARNING_SYMBOL_NOT_DEFINED
-
-#include <cwalk.h>
-#include <SDL.h>
 
 // Can be removed as soon everything is moved to the compatibility layer.
 #ifdef USE_LIBTMX
@@ -27,15 +23,15 @@ DISABLE_WARNING_SYMBOL_NOT_DEFINED
     #define CUTE_TILED_IMPLEMENTATION
     #include <cute_tiled.h>
 #endif
-
-DISABLE_WARNING_POP
-
-DISABLE_WARNING_PUSH
-DISABLE_WARNING_PADDING
-DISABLE_WARNING_SPECTRE_MITIGATION
+//
 
 #define STB_SPRINTF_IMPLEMENTATION
 #include <stb_sprintf.h>
+
+DISABLE_WARNING_SYMBOL_NOT_DEFINED
+
+#include <cwalk.h>
+#include <SDL.h>
 
 DISABLE_WARNING_POP
 
@@ -514,122 +510,31 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 4. Paths and file locations
     // ------------------------------------------------------------------------
 
-    core->map->path = (char*)calloc(1, (size_t)(strnlen(map_file_name, 64) + 1));
-    if (! core->map->path)
+    if (ESZ_OK != load_map_path(map_file_name, core))
     {
-        plog_error("%s: error allocating memory.", __func__);
         goto warning;
-    }
-
-    cwk_path_get_dirname(map_file_name, (size_t*)&(core->map->path_length));
-    SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
-
-
-    //tbd.
-
-
-    {
-        int64_t source_length;
-
-        #ifdef USE_LIBTMX
-        int32_t first_gid = get_first_gid(core->map->handle);
-        int64_t ts_path_length;
-        char*   ts_path;
-
-        cwk_path_get_dirname(core->map->handle->ts_head->source, (size_t*)&ts_path_length);
-
-        ts_path = calloc(1, ts_path_length + 1);
-        if (! ts_path)
-        {
-            plog_error("%s: error allocating memory.", __func__);
-            goto warning;
-        }
-
-        source_length  = strnlen(core->map->path, 64);
-        source_length += strnlen(core->map->handle->tiles[first_gid]->tileset->image->source, 64);
-        source_length += ts_path_length + 1;
-
-        tileset_image_source = calloc(1, source_length);
-        if (! tileset_image_source)
-        {
-            plog_error("%s: error allocating memory.", __func__);
-            free(ts_path);
-            goto warning;
-        }
-
-        /* The tileset image source is stored relatively to the tileset
-         * file but because we only know the location of the tileset
-         * file relatively to the map file, we need to adjust the path
-         * accordingly.  It's a hack, but it works.
-         */
-
-        SDL_strlcpy(ts_path, core->map->handle->ts_head->source, ts_path_length + 1);
-        stbsp_snprintf(tileset_image_source, (int32_t)source_length, "%s%s%s",
-                     core->map->path,
-                     ts_path,
-                     core->map->handle->tiles[first_gid]->tileset->image->source);
-
-        free(ts_path);
-
-        #else // (cute_tiled.h)
-        if (! core->map->handle->tilesets)
-        {
-            plog_error("%s: no embedded tileset found.", __func__);
-            goto warning;
-        }
-
-        source_length  = strnlen(core->map->path, 64);
-        source_length += strnlen(core->map->handle->tilesets->image.ptr, 64);
-        source_length += 1;
-
-        tileset_image_source = (char*)calloc(1, source_length);
-        if (! tileset_image_source)
-        {
-            plog_error("%s: error allocating memory.", __func__);
-            esz_unload_map(window, core);
-            return ESZ_WARNING;
-        }
-
-        stbsp_snprintf(tileset_image_source, (int32_t)source_length, "%s%s",
-                     core->map->path,
-                     core->map->handle->tilesets->image.ptr);
-
-        #endif
     }
 
     // 5. Entities
     // ------------------------------------------------------------------------
 
-    if (ESZ_OK != init_entities(core))
+    if (ESZ_OK != load_entities(core))
     {
-        free(tileset_image_source);
         goto warning;
     }
 
     // 6. Tileset
     // ------------------------------------------------------------------------
 
-    if (tileset_image_source)
+    if (ESZ_OK != load_tileset(window, core))
     {
-        if (ESZ_OK != load_texture_from_file(tileset_image_source, &core->map->tileset_texture, window))
-        {
-            plog_error("%s: Error loading image '%s'.", __func__, tileset_image_source);
-            free(tileset_image_source);
-            goto warning;
-        }
-    }
-    else
-    {
-        plog_error("%s: Could not determine location of tileset image.", __func__);
         goto warning;
     }
-
-    free(tileset_image_source);
 
     // 7. Sprites
     // ------------------------------------------------------------------------
 
-    if (ESZ_OK != init_sprites(window, core))
+    if (ESZ_OK != load_sprites(window, core))
     {
         goto warning;
     }
@@ -637,7 +542,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 8. Animated tiles
     // ------------------------------------------------------------------------
 
-    if (ESZ_OK != init_animated_tiles(core))
+    if (ESZ_OK != load_animated_tiles(core))
     {
         goto warning;
     }
@@ -645,7 +550,7 @@ esz_status esz_load_map(const char* map_file_name, esz_window_t* window, esz_cor
     // 9. Background
     // ------------------------------------------------------------------------
 
-    if (ESZ_OK != init_background(window, core))
+    if (ESZ_OK != load_background(window, core))
     {
         goto warning;
     }

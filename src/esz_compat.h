@@ -30,6 +30,8 @@ const char*          get_object_type_name(esz_tiled_object_t* tiled_object);
 int32_t              get_tile_height(esz_tiled_map_t* tiled_map);
 void                 get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map);
 int32_t              get_tile_width(esz_tiled_map_t* tiled_map);
+void                 set_tileset_path(char* path_name, int32_t path_length, esz_core_t* core);
+int32_t              get_tileset_path_length(esz_core_t* core);
 bool                 is_gid_valid(int32_t gid, esz_tiled_map_t* tiled_map);
 bool                 is_tile_animated(int32_t gid, int32_t* animation_length, int32_t* id, esz_tiled_map_t* tiled_map);
 bool                 is_tiled_layer_of_type(const esz_tiled_layer_type tiled_type, esz_tiled_layer_t* tiled_layer, esz_core_t* core);

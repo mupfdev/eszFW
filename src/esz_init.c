@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
  * @file  esz_init.c
- * @brief eszFW initialisation and loading routines
+ * @brief eszFW initialisation routines
  */
 
 #include <picolog.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <SDL.h>
 
 #include "esz_macros.h"
@@ -19,8 +20,12 @@ DISABLE_WARNING_SPECTRE_MITIGATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
 #include <stb_image.h>
-
 #include <stb_sprintf.h>
+
+DISABLE_WARNING_SYMBOL_NOT_DEFINED
+
+#include <SDL.h>
+#include <cwalk.h>
 
 DISABLE_WARNING_POP
 
@@ -32,7 +37,7 @@ DISABLE_WARNING_POP
 
 static esz_status load_background_layer(int32_t index, esz_window_t* window, esz_core_t* core);
 
-esz_status init_animated_tiles(esz_core_t* core)
+esz_status load_animated_tiles(esz_core_t* core)
 {
     esz_tiled_layer_t* layer               = get_head_layer(core->map->handle);
     int32_t            animated_tile_count = 0;
@@ -72,11 +77,11 @@ esz_status init_animated_tiles(esz_core_t* core)
         }
     }
 
-    plog_info("Initialise %u animated tile(s).", animated_tile_count);
+    plog_info("Load %u animated tile(s).", animated_tile_count);
     return ESZ_OK;
 }
 
-esz_status init_background(esz_window_t* window, esz_core_t* core)
+esz_status load_background(esz_window_t* window, esz_core_t* core)
 {
     char    property_name[21] = { 0 };
     bool    search_is_running = true;
@@ -139,12 +144,12 @@ esz_status init_background(esz_window_t* window, esz_core_t* core)
         return ESZ_OK;
     }
 
-    plog_info("Initialise parallax-scrolling background with %u layers.", core->map->background.layer_count);
+    plog_info("Load parallax-scrolling background with %u layers.", core->map->background.layer_count);
 
     return ESZ_OK;
 }
 
-esz_status init_entities(esz_core_t* core)
+esz_status load_entities(esz_core_t* core)
 {
     esz_tiled_layer_t*  layer         = get_head_layer(core->map->handle);
     esz_tiled_object_t* tiled_object  = NULL;
@@ -179,7 +184,7 @@ esz_status init_entities(esz_core_t* core)
         }
     }
 
-    plog_info("Initialise %u entities:", core->map->entity_count);
+    plog_info("Load %u entities:", core->map->entity_count);
 
     layer = get_head_layer(core->map->handle);
     while (layer)
@@ -373,7 +378,22 @@ esz_status init_entities(esz_core_t* core)
     return ESZ_OK;
 }
 
-esz_status init_sprites(esz_window_t* window, esz_core_t* core)
+esz_status load_map_path(const char* map_file_name, esz_core_t* core)
+{
+    core->map->path = (char*)calloc(1, (size_t)(strnlen(map_file_name, 64) + 1));
+    if (! core->map->path)
+    {
+        plog_error("%s: error allocating memory.", __func__);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    cwk_path_get_dirname(map_file_name, (size_t*)&(core->map->path_length));
+    SDL_strlcpy(core->map->path, map_file_name, core->map->path_length + 1);
+
+    return ESZ_OK;
+}
+
+esz_status load_sprites(esz_window_t* window, esz_core_t* core)
 {
     char    property_name[17] = { 0 };
     bool    search_is_running = true;
@@ -438,6 +458,39 @@ esz_status init_sprites(esz_window_t* window, esz_core_t* core)
     }
 
     return ESZ_OK;
+}
+
+esz_status load_tileset(esz_window_t* window, esz_core_t* core)
+{
+    esz_status status = ESZ_OK;
+    char*      image_path;
+    int32_t    path_length = get_tileset_path_length(core);
+
+    image_path = calloc(1, path_length);
+    if (! image_path)
+    {
+        plog_error("%s: error allocating memory.", __func__);
+        return ESZ_ERROR_CRITICAL;
+    }
+
+    set_tileset_path(image_path, path_length, core);
+
+    if (image_path)
+    {
+        if (ESZ_OK != load_texture_from_file(image_path, &core->map->tileset_texture, window))
+        {
+            plog_error("%s: Error loading image '%s'.", __func__, image_path);
+            status = ESZ_ERROR_CRITICAL;
+        }
+    }
+    else
+    {
+        plog_error("%s: Could not determine location of tileset image.", __func__);
+        status = ESZ_ERROR_CRITICAL;
+    }
+
+    free(image_path);
+    return status;
 }
 
 /* Based on
