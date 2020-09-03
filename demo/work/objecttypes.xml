@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objecttypes>
+ <objecttype name="actor" color="#aaff00">
+  <property name="acceleration" type="float" default="0"/>
+  <property name="connect_horizontal_map_ends" type="bool" default="false"/>
+  <property name="connect_vertical_map_ends" type="bool" default="false"/>
+  <property name="height" type="int" default="0"/>
+  <property name="is_affected_by_gravity" type="bool" default="false"/>
+  <property name="is_animated" type="bool" default="false"/>
+  <property name="is_in_midground" type="bool" default="false"/>
+  <property name="is_left_oriented" type="bool" default="false"/>
+  <property name="is_moving" type="bool" default="false"/>
+  <property name="is_player" type="bool" default="false"/>
+  <property name="jumping_power" type="float" default="0"/>
+  <property name="max_velocity_x" type="float" default="0"/>
+  <property name="sprite_sheet_id" type="int" default="0"/>
+  <property name="width" type="int" default="0"/>
+ </objecttype>
+</objecttypes>

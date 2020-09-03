@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="right-down" width="75" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#00003c" nextlayerid="9" nextobjectid="23">
+ <properties>
+  <property name="animated_tile_fps" type="int" value="5"/>
+  <property name="background_constant_velocity" type="float" value="0"/>
+  <property name="background_is_top_aligned" type="bool" value="false"/>
+  <property name="background_layer_1" type="file" value="../backgrounds/city-bg0.png"/>
+  <property name="background_layer_2" type="file" value="../backgrounds/city-bg1.png"/>
+  <property name="background_layer_3" type="file" value="../backgrounds/city-bg2.png"/>
+  <property name="background_layer_shift" type="float" value="0.25"/>
+  <property name="font" type="file" value="../fonts/samus.ttf"/>
+  <property name="font_color" type="color" value="#ffffff00"/>
+  <property name="gravitation" type="float" value="9.80665"/>
+  <property name="meter_in_pixel" type="int" value="32"/>
+  <property name="music" type="file" value=""/>
+  <property name="sprite_sheet_1" type="file" value="../sprites/player.png"/>
+  <property name="sprite_sheet_2" type="file" value="../sprites/vehicle-misc1.png"/>
+  <property name="sprite_sheet_3" type="file" value="../sprites/vehicle-misc2.png"/>
+  <property name="sprite_sheet_4" type="file" value="../sprites/vehicle-police.png"/>
+  <property name="sprite_sheet_5" type="file" value="../sprites/vehicle-truck.png"/>
+ </properties>
+ <tileset firstgid="1" source="../tilesets/city.tsx"/>
+ <layer id="1" name="Tile Layer BG 1" width="75" height="50">
+  <properties>
+   <property name="is_in_foreground" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztmM+OTFEQxus+gIUV1hNEyAQxgrUgQjqI8QQTREinu5HgAbQFmTCJBC9hjRewECZYyPACFsIECxHfSXclpe75253bTbq+5Evn9L0z59zqqt+pc4lMJpPJZDKZTCaTyWQymUwmk8lkMplMJpPJNGl1KqLu0D3hrvq+G3BP/e3VatpP1Kx2wrvg3fAeeC88nzG+gbjchG/B+zBemMLaJ63L8BX4FHwaPgO3E+MW/Agxegw/ga9hfH0Ka5+0TsAn4Q7chXs0iI0ctzzjZ4jRc/gFfJZmI1acV/fhB/AKDWIlxy3P9TXE6CP8aUbySrM9xfnQ9Vlj+1v4HfyeZoftc/C2iHeo+5lX3+Ef8E8qZ7vj1WKzj5VUJ1Af+lPm/mGKx+q4moN5tQn/YzO8pfKz/H9ge2meLCXuv6Tu57w6gGc+CB+q6mz3sV6zfdp55eTLk63Dz+1Uz5OS2Mq89XFcszvW1/8LbPflyRH4KHyM6nlSWoMhtqdYL6+Xsv1Vwb0lcnnyGn4Dr9Lgec/DF+CLlFeDa/AH8tcg80qyfVmNXc1p1svrpbz6UnBviVyefIW/wes0eN7bcB++Q3k1+Bv+RfF9ULJ9nuKsb6vrpbHa2ECthnrF3H2wP3SrGji2D2q2x1jfUtdLe4bSvOp4nt3HR5cnkuWa7bEalLFqV/Ua7CR+g9j3vt49l+2j5BVz1eV8iI8uTyTLNdtzatDFqU/+GuQ1yD481aeH+vanDcaKWeFyOpTHLk8kyzXbc/ZBzq+XVI8tr0H24T6W6+u+vn21wVgxK9xaQmd1lyeS5ZrtOfsgx+ozhfdB2Yen+nQ95rWvixj4WDvOWZt/0+VIrFyelJxxfDXIsdpQhfdB2Yen+nQ9DtWEZq3j5gK837OOlPg3dfUfq0E5H8/F43F6UX3ejPXnsfwIsV2z1nFzET5X1VmQEv+m7Uis5tR8PBePxz0P5r6T0WzP6ds1a2VPrdeRkmR7rAblfFxPPB7nPOjk69s12zXLdV8f6kU1a2VPPWoNxvJqSc3XF3bjcc+DvncyvvftkuW6r/etPdZHj3LW5nWGeoac91ddNWdpDd6F79HffbjLm9j7dd3Xu7U/9DyfW4s+y4bWkRurUM/wB8mWbrI=
+  </data>
+ </layer>
+ <layer id="2" name="Tile Layer BG 2" width="75" height="50">
+  <properties>
+   <property name="is_in_foreground" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztl8EuxFAUhm87TzBeAI9gZosXILGY2eIFEKHdDi/Aji1eACu22FnNWIqNYWc1YykWfkkTTXBT47adtt+X/EnbNKfnfj3pTY0BAAAAAAAAAAAAAAAAAIA0WfCMWfTy7qIYrMnTOq4SsSdP+7hKxKk8neEqEV156uEqEQN5GuIKYCyo+8ZM+Hl3UQwa8tTEVSJa8tSuuKut2D63ZNnzAnkKK+yqq7X3YuvftLg60H2HFXY10NqHsfXb5upC911W2FW9pr2t9nVum6uq05CnZsyVba5+YlJzNqVM+/+7niXnI85DS57af3S1UfDZuxux/0CewsjVrGrMKfNRrQc3rY0F77HjVwfvelk1VpRV73v9LHlU+inUvXVYqyNHO8quMhMlDzw910/h2S5dHam/Y+Wk4N+j33Dp6kqOrpWbErq6N25d9eXoSXkuoas35SXvJgrA5//uthIoYQnnICs+AM+LL3o=
+  </data>
+ </layer>
+ <layer id="3" name="Tile Layer BG 3" width="75" height="50">
+  <properties>
+   <property name="is_in_foreground" type="bool" value="false"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt2EsKwjAUheHEuaAz1yEouApnCq5CrK7MZQiKjwXoXFB8zL2DFoJYml4obcz/wYFCU7icQiAxBgAAAAAAAAAAAAAAAAD0FtaYJM3y69nNytY9Kdb8A2+nBnR1llxKrN9LDpJjJdPkezegKysztNI5eh7rH5Kn5FXhTCEYFbx39/Ik8v18VmLtQPoZRtiRxkR6mtIVCmwlu7qHCMRNcld+G1vHHdl7usr9R9txyPrKrrQdx0jbcWw2hq58XSVjuvLStnSVx71nyM45dPWbe8+QnXPmf97VB+C4Iyo=
+  </data>
+ </layer>
+ <layer id="4" name="Tile Layer FG 1" width="75" height="50">
+  <properties>
+   <property name="is_in_foreground" type="bool" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt1skNgkAYhmGmBAtwK8EpQNFG3FpyqUSxC2+gXXBzOfkd0ERIBDVxMvg+yXtgwmH4k5kQBAAAAAAAAAAAAAAAwBd71xvwSOp6Ax5pGNc7+J2maqm26qhuyfs985w1xbW66quBCtVQjbL1g775WOPv/sRYTdRUzdQ8W79oTldmBUc4q9VxVv8X/9bl7jNKc88osrn/Rcu9ArxtoXOzVCu15gy9tNF8tipSO2YFAA+x7sSEe7GSk+Z0Zlb4wg38ERvX
+  </data>
+ </layer>
+ <objectgroup id="5" name="Object Layer 1">
+  <object id="1" name="Player" type="actor" x="31" y="592">
+   <properties>
+    <property name="acceleration" type="float" value="5"/>
+    <property name="animation_1" type="bool" value="true"/>
+    <property name="animation_1_first_frame" type="int" value="1"/>
+    <property name="animation_1_fps" type="int" value="5"/>
+    <property name="animation_1_length" type="int" value="4"/>
+    <property name="animation_1_offset_y" type="int" value="1"/>
+    <property name="animation_2" type="bool" value="true"/>
+    <property name="animation_2_first_frame" type="int" value="1"/>
+    <property name="animation_2_fps" type="int" value="12"/>
+    <property name="animation_2_length" type="int" value="16"/>
+    <property name="animation_2_offset_y" type="int" value="0"/>
+    <property name="animation_3" type="bool" value="true"/>
+    <property name="animation_3_first_frame" type="int" value="17"/>
+    <property name="animation_3_fps" type="int" value="12"/>
+    <property name="animation_3_length" type="int" value="6"/>
+    <property name="animation_3_offset_y" type="int" value="0"/>
+    <property name="animation_4" type="bool" value="true"/>
+    <property name="animation_4_first_frame" type="int" value="23"/>
+    <property name="animation_4_fps" type="int" value="0"/>
+    <property name="animation_4_length" type="int" value="1"/>
+    <property name="animation_5" type="bool" value="true"/>
+    <property name="animation_5_first_frame" type="int" value="24"/>
+    <property name="animation_5_fps" type="int" value="0"/>
+    <property name="animation_5_length" type="int" value="1"/>
+    <property name="animation_5_offset_y" type="int" value="0"/>
+    <property name="animation_6" type="bool" value="true"/>
+    <property name="animation_6_first_frame" type="int" value="5"/>
+    <property name="animation_6_fps" type="int" value="12"/>
+    <property name="animation_6_length" type="int" value="8"/>
+    <property name="animation_6_offset_y" type="int" value="1"/>
+    <property name="animation_7" type="bool" value="true"/>
+    <property name="animation_7_first_frame" type="int" value="13"/>
+    <property name="animation_7_fps" type="int" value="12"/>
+    <property name="animation_7_length" type="int" value="4"/>
+    <property name="animation_7_offset_y" type="int" value="1"/>
+    <property name="animation_8" type="bool" value="true"/>
+    <property name="animation_8_first_frame" type="int" value="17"/>
+    <property name="animation_8_fps" type="int" value="12"/>
+    <property name="animation_8_length" type="int" value="7"/>
+    <property name="animation_8_offset_y" type="int" value="1"/>
+    <property name="animation_9" type="bool" value="true"/>
+    <property name="animation_9_first_frame" type="int" value="24"/>
+    <property name="animation_9_fps" type="int" value="0"/>
+    <property name="animation_9_length" type="int" value="1"/>
+    <property name="animation_9_offset_y" type="int" value="1"/>
+    <property name="connect_horizontal_map_ends" type="bool" value="true"/>
+    <property name="connect_vertical_map_ends" type="bool" value="false"/>
+    <property name="height" type="int" value="64"/>
+    <property name="is_affected_by_gravity" type="bool" value="true"/>
+    <property name="is_animated" type="bool" value="true"/>
+    <property name="is_in_background" type="bool" value="false"/>
+    <property name="is_in_midground" type="bool" value="true"/>
+    <property name="is_left_oriented" type="bool" value="false"/>
+    <property name="is_moving" type="bool" value="false"/>
+    <property name="is_player" type="bool" value="true"/>
+    <property name="is_visible" type="bool" value="false"/>
+    <property name="jumping_power" type="float" value="4"/>
+    <property name="max_velocity_x" type="float" value="2.5"/>
+    <property name="sprite_sheet_id" type="int" value="0"/>
+    <property name="width" type="int" value="64"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="17" name="Truck" type="actor" x="960" y="512">
+   <properties>
+    <property name="acceleration" type="float" value="3.5"/>
+    <property name="connect_horizontal_map_ends" type="bool" value="true"/>
+    <property name="connect_vertical_map_ends" type="bool" value="false"/>
+    <property name="height" type="int" value="104"/>
+    <property name="is_affected_by_gravity" type="bool" value="false"/>
+    <property name="is_animated" type="bool" value="false"/>
+    <property name="is_in_background" type="bool" value="true"/>
+    <property name="is_in_midground" type="bool" value="false"/>
+    <property name="is_left_oriented" type="bool" value="true"/>
+    <property name="is_moving" type="bool" value="true"/>
+    <property name="is_player" type="bool" value="false"/>
+    <property name="is_visible" type="bool" value="true"/>
+    <property name="jumping_power" type="float" value="0"/>
+    <property name="max_velocity_x" type="float" value="2"/>
+    <property name="sprite_sheet_id" type="int" value="4"/>
+    <property name="width" type="int" value="264"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="18" name="Police" type="actor" x="700" y="475">
+   <properties>
+    <property name="acceleration" type="float" value="45"/>
+    <property name="connect_horizontal_map_ends" type="bool" value="true"/>
+    <property name="connect_vertical_map_ends" type="bool" value="false"/>
+    <property name="height" type="int" value="64"/>
+    <property name="is_affected_by_gravity" type="bool" value="false"/>
+    <property name="is_animated" type="bool" value="false"/>
+    <property name="is_in_background" type="bool" value="true"/>
+    <property name="is_in_midground" type="bool" value="false"/>
+    <property name="is_left_oriented" type="bool" value="false"/>
+    <property name="is_moving" type="bool" value="true"/>
+    <property name="is_player" type="bool" value="false"/>
+    <property name="is_visible" type="bool" value="true"/>
+    <property name="jumping_power" type="float" value="0"/>
+    <property name="max_velocity_x" type="float" value="4.5"/>
+    <property name="sprite_sheet_id" type="int" value="3"/>
+    <property name="width" type="int" value="168"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="20" name="MiscVehicle2" type="actor" x="800" y="670">
+   <properties>
+    <property name="acceleration" type="float" value="45"/>
+    <property name="connect_horizontal_map_ends" type="bool" value="true"/>
+    <property name="connect_vertical_map_ends" type="bool" value="false"/>
+    <property name="height" type="int" value="64"/>
+    <property name="is_affected_by_gravity" type="bool" value="false"/>
+    <property name="is_animated" type="bool" value="false"/>
+    <property name="is_in_background" type="bool" value="true"/>
+    <property name="is_in_midground" type="bool" value="false"/>
+    <property name="is_left_oriented" type="bool" value="false"/>
+    <property name="is_moving" type="bool" value="true"/>
+    <property name="is_player" type="bool" value="false"/>
+    <property name="is_visible" type="bool" value="true"/>
+    <property name="jumping_power" type="float" value="0"/>
+    <property name="max_velocity_x" type="float" value="4"/>
+    <property name="sprite_sheet_id" type="int" value="2"/>
+    <property name="width" type="int" value="96"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="19" name="MiscVehicle1" type="actor" x="560" y="600">
+   <properties>
+    <property name="acceleration" type="float" value="45"/>
+    <property name="connect_horizontal_map_ends" type="bool" value="true"/>
+    <property name="connect_vertical_map_ends" type="bool" value="false"/>
+    <property name="height" type="int" value="64"/>
+    <property name="is_affected_by_gravity" type="bool" value="false"/>
+    <property name="is_animated" type="bool" value="false"/>
+    <property name="is_in_background" type="bool" value="false"/>
+    <property name="is_in_midground" type="bool" value="false"/>
+    <property name="is_left_oriented" type="bool" value="true"/>
+    <property name="is_moving" type="bool" value="true"/>
+    <property name="is_player" type="bool" value="false"/>
+    <property name="is_visible" type="bool" value="true"/>
+    <property name="jumping_power" type="float" value="0"/>
+    <property name="max_velocity_x" type="float" value="4.8"/>
+    <property name="sprite_sheet_id" type="int" value="1"/>
+    <property name="width" type="int" value="96"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+</map>

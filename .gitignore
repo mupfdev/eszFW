@@ -1,8 +1,10 @@
-backup
 build
+out
+.vs
 *.a
 *.dll
 *.exe
 *.lib
 *.o
 *.so
+*.zip

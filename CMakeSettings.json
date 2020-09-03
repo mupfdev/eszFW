@@ -1,0 +1,50 @@
+﻿{
+    "configurations": [
+        {
+            "name": "x64-Debug",
+            "generator": "Visual Studio 16 2019 Win64",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeCommandArgs": "-DUSE_LIBTMX=OFF",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "SDL2_INCLUDE_DIR",
+                    "value": "${projectDir}\\external\\SDL2-2.0.12\\include",
+                    "type": "PATH"
+                },
+                {
+                    "name": "SDL2_LIBRARY",
+                    "value": "${projectDir}\\external\\SDL2-2.0.12\\lib\\x64\\SDL2.lib",
+                    "type": "FILEPATH"
+                }
+            ]
+        },
+        {
+            "name": "x64-Release",
+            "generator": "Visual Studio 16 2019 Win64",
+            "configurationType": "Release",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeCommandArgs": "-DUSE_LIBTMX=OFF",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "SDL2_INCLUDE_DIR",
+                    "value": "${projectDir}\\external\\SDL2-2.0.12\\include",
+                    "type": "PATH"
+                },
+                {
+                    "name": "SDL2_LIBRARY",
+                    "value": "${projectDir}\\external\\SDL2-2.0.12\\lib\\x64\\SDL2.lib",
+                    "type": "FILEPATH"
+                }
+            ]
+        }
+    ]
+}

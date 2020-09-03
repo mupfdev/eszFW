@@ -1,0 +1,10 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "extensionsPath": "extensions",
+    "folders": [
+        "../../../TauCeti-dev/res"
+    ],
+    "objectTypesFile": "objecttypes.xml"
+}

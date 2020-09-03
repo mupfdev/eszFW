@@ -5,6 +5,30 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
+if(MSVC_IDE)
+    set(SDL2_VERSION "2.0.12")
+    set(SDL2_DEVEL_PKG SDL2-devel-${SDL2_VERSION}-VC.zip)
+
+    include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+
+    ExternalProject_Add(SDL2_devel
+        URL https://www.libsdl.org/release/${SDL2_DEVEL_PKG}
+        URL_HASH SHA1=6839b6ec345ef754a6585ab24f04e125e88c3392
+        DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/
+        DOWNLOAD_NO_PROGRESS true
+        TLS_VERIFY true
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/
+        BUILD_COMMAND cmake -E echo "Skipping build step."
+
+        INSTALL_COMMAND cmake -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/lib/x64/SDL2.dll
+        ${CMAKE_CURRENT_SOURCE_DIR}/demo
+
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLists_SDL2_devel.txt"
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/CMakeLists.txt)
+endif(MSVC_IDE)
+
 find_package(SDL2 REQUIRED)
 if(USE_LIBTMX)
     find_package(LibXml2 REQUIRED)
@@ -40,6 +64,9 @@ set(eszFW_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/esz_utils.h)
 
+set(demo_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/demo/src/main.c)
+
 add_library(
     ${PROJECT_NAME}
     STATIC
@@ -51,8 +78,22 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CUTE_INCLUDE_DIR}
     ${LIBTMX_INCLUDE_DIR}
-    ${PICOLOG_INCLUDE_DIR}
-    )
+    ${PICOLOG_INCLUDE_DIR})
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_CURRENT_SOURCE_DIR}/demo)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/demo)
+
+add_executable(
+    demo
+    ${demo_sources})
+
+if(WIN32)
+    set_target_properties(
+        demo
+        PROPERTIES
+        ADDITIONAL_CLEAN_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/demo/SDL2.dll)
+endif(WIN32)
 
 add_library(
     cwalk
@@ -67,8 +108,7 @@ add_library(
 add_library(
     lua
     STATIC
-    ${LUA_INCLUDE_DIR}/onelua.c
-    )
+    ${LUA_INCLUDE_DIR}/onelua.c)
 
 option(ENABLE_DIAGNOSTICS "Enable all diagnostics"           OFF)
 option(USE_LIBTMX         "Use libTMX instead of cute_tiled" OFF)
@@ -78,6 +118,11 @@ target_link_libraries(
     ${SDL2_LIBRARIES}
     cwalk
     picolog)
+
+target_link_libraries(
+    demo
+    ${SDL2_LIBRARIES}
+    ${PROJECT_NAME})
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
