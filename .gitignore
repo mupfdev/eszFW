@@ -4,7 +4,9 @@ out
 *.a
 *.dll
 *.exe
+*.ilk
 *.lib
 *.o
+*.pdb
 *.so
 *.zip

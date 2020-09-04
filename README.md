@@ -133,8 +133,6 @@ licensed under a BSD 2-Clause "Simplified" Licence.
 This project and all further listed libraries are licensed under the
 "The MIT License".  See the file [LICENSE.md](LICENSE.md) for details.
 
-[buffer](https://github.com/clibs/buffer) by TJ Holowaychuk.
-
 [cwalk](https://github.com/likle/cwalk) by Leonard Iklé.
 
 [picolog](https://github.com/picojs/picolog) by James McLean.
