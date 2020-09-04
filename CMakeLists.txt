@@ -82,13 +82,18 @@ target_include_directories(
     ${LIBTMX_INCLUDE_DIR}
     ${PICOLOG_INCLUDE_DIR})
 
-set(CMAKE_EXECUTABLE_OUTPUT_PATH           ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 
 add_executable(
     demo
     ${demo_sources})
+
+set_target_properties(
+    demo
+    PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 
 if(WIN32)
     set_target_properties(
