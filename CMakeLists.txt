@@ -5,31 +5,39 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
-if(MSVC_IDE)
-    set(SDL2_VERSION "2.0.12")
+if(WIN32)
+    set(SDL2_PLATFORM  "x64")
+    set(SDL2_VERSION   "2.0.12")
+    set(SDL2_PATH      ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION})
     set(SDL2_DEVEL_PKG SDL2-devel-${SDL2_VERSION}-VC.zip)
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(SDL2_PLATFORM "x86")
+    endif()
 
     include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
     ExternalProject_Add(SDL2_devel
         URL https://www.libsdl.org/release/${SDL2_DEVEL_PKG}
         URL_HASH SHA1=6839b6ec345ef754a6585ab24f04e125e88c3392
-        DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/
+        DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external
         DOWNLOAD_NO_PROGRESS true
         TLS_VERIFY true
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/lib/x64/SDL2.lib
+        SOURCE_DIR ${SDL2_PATH}/
+        BUILD_BYPRODUCTS ${SDL2_PATH}/lib/${SDL2_PLATFORM}/SDL2.lib
 
         BUILD_COMMAND cmake -E echo "Skipping build step."
 
         INSTALL_COMMAND cmake -E copy
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/lib/x64/SDL2.dll
-        ${CMAKE_CURRENT_SOURCE_DIR}/demo
+        ${SDL2_PATH}/lib/${SDL2_PLATFORM}/SDL2.dll ${CMAKE_CURRENT_SOURCE_DIR}/demo
 
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLists_SDL2_devel.txt"
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL2-${SDL2_VERSION}/CMakeLists.txt)
-endif(MSVC_IDE)
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeLists_SDL2_devel.txt" ${SDL2_PATH}/CMakeLists.txt)
+
+    set(SDL2_INCLUDE_DIR ${SDL2_PATH}/include)
+    set(SDL2_LIBRARY     ${SDL2_PATH}/lib/${SDL2_PLATFORM}/SDL2.lib)
+
+endif(WIN32)
 
 find_package(SDL2 REQUIRED)
 if(USE_LIBTMX)
@@ -91,7 +99,7 @@ add_executable(
 
 set_target_properties(
     demo
-    PROPERTIES 
+    PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/demo)
 
