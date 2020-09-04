@@ -36,7 +36,7 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 - Support for two different TMX loaders:
   [libTMX](https://github.com/baylej/tmx) and
-  [cute_tiled](https://github.com/RandyGaul/cute_headers).<
+  [cute_tiled](https://github.com/RandyGaul/cute_headers).
 
 ## Documentation
 
