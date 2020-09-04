@@ -36,7 +36,7 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 - Support for two different TMX loaders:
   [libTMX](https://github.com/baylej/tmx) and
-  [cute_tiled](https://github.com/RandyGaul/cute_headers).
+  [cute_tiled](https://github.com/RandyGaul/cute_headers).<
 
 ## Documentation
 
@@ -62,14 +62,12 @@ formatting of the source code, you will find some rules here:
 
 This project currently undergoes a complete overhaul.
 
-If you wanna see the previous version in action, take a look at [Tau
-Ceti](https://github.com/mupfelofen-de/TauCeti): a sci-fi themed tech
-demo which I develop to test this engine.
+If you wanna see the previous version in action, take a look at the demo application.
 
-[![Tau Ceti](https://media.eszfw.de/tc-01-tn.png)](https://media.eszfw.de/tc-01.png?raw=true "Tau Ceti 1")
-[![Tau Ceti](https://media.eszfw.de/tc-02-tn.png)](https://media.eszfw.de/tc-02.png?raw=true "Tau Ceti 2")
+[![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01.png?raw=true "demo 1")
+[![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02.png?raw=true "demo 2")
 
-An Android version of Tau Ceti is available on Google Play:
+An Android version of the demo application is available on Google Play:
 
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=de.mupfelofen.TauCeti)
 
@@ -104,10 +102,22 @@ zlib       1.2.11 (optional)
 First clone the repository including the submodules:
 ```bash
 git clone --recurse-submodules -j2 https://github.com/mupfelofen-de/eszFW.git
-cd eszFW
 ```
 
-To compile _eszFW_ under Linux use CMake as follows:
+### Windows
+
+The easiest way to get eszFW up and running is Visual Studio 2019 with
+[C++ CMake tools for
+Windows](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019#installation)
+installed. Just open the project inside the IDE and everything else is
+set up automatically.
+
+Alternatively just use [MSYS2](https://www.msys2.org/) with CMake and a
+compiler of your choice.
+
+### Linux
+
+To compile _eszFW_ and the included demo application, simply use CMake e.g.:
 ```bash
 mkdir build
 cd build
@@ -115,14 +125,15 @@ cmake ..
 make
 ```
 
-You can also use _eszFW_ with _libTMX_ instead of _cute_tiled_.  Just
-enable the respective CMake option:
-
+If you wanna compile eszFW with _libTMX_ instead of _cute_tiled_, just enable the
+respective CMake option:
 ```bash
 cmake -DUSE_LIBTMX=ON ..
 ```
 
 ## Licence and Credits
+
+### Engine
 
 [cute_tiled](https://github.com/RandyGaul/cute_headers) by Randy Gaul is
 licensed under the zlib licence.
@@ -136,3 +147,12 @@ This project and all further listed libraries are licensed under the
 [cwalk](https://github.com/likle/cwalk) by Leonard Iklé.
 
 [picolog](https://github.com/picojs/picolog) by James McLean.
+
+### Demo application
+
+[Warped City](https://ansimuz.itch.io/warped-city) by Luis Zuno.
+Dedicated to [public
+domain](https://creativecommons.org/publicdomain/zero/1.0/).
+
+Every other work that is not explicitly mentioned here is also under
+[public domain](https://creativecommons.org/publicdomain/zero/1.0/).
