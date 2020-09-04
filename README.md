@@ -62,7 +62,8 @@ formatting of the source code, you will find some rules here:
 
 This project currently undergoes a complete overhaul.
 
-If you wanna see the previous version in action, take a look at the demo application:
+If you wanna see the previous version in action, take a look at the [demo application](demo/).
+
 [![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01.png?raw=true "demo 1")
 [![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02.png?raw=true "demo 2")
 
