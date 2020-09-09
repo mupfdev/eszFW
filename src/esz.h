@@ -123,7 +123,7 @@ double esz_get_time_since_last_frame(esz_window_t* window);
 
 /**
  * @brief Hide render layer for debugging purposes
- * @param Render layer to hide
+ * @param layer Layer to hide
  * @param core Engine core
  */
 void esz_hide_render_layer(esz_render_layer layer, esz_core_t* core);
@@ -262,7 +262,7 @@ esz_status esz_set_zoom_level(const double factor, esz_window_t* window);
 
 /**
  * @brief Show previously hidden render layer for debugging purposes
- * @param Render layer to show
+ * @param layer Layer to show
  * @param core Engine core
  */
 void esz_show_render_layer(esz_render_layer layer, esz_core_t* core);

@@ -24,6 +24,7 @@ DISABLE_WARNING_SPECTRE_MITIGATION
 #ifdef USE_LIBTMX
     #include <tmx.h>
 #else // (cute_tiled.h)
+    #define CUTE_TILED_IMPLEMENTATION
     #include <cute_tiled.h>
 #endif
 
@@ -228,6 +229,18 @@ void get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_ma
 
     *pos_x = (local_id % tileset->columns) * get_tile_width(tiled_map);
     *pos_y = (local_id / tileset->columns) * get_tile_height(tiled_map);
+
+    #endif
+}
+
+int32_t get_tile_property_count(esz_tiled_tile_t* tiled_tile)
+{
+    #ifdef USE_LIBTMX
+    (void)tiled_tile;
+    return 0;
+
+    #else // (cute_tiled.h)
+    return tiled_tile->property_count;
 
     #endif
 }
@@ -443,7 +456,6 @@ void load_property(const uint64_t name_hash, esz_tiled_property_t* properties, i
             case CUTE_TILED_PROPERTY_COLOR:
             case CUTE_TILED_PROPERTY_FILE:
             case CUTE_TILED_PROPERTY_NONE:
-                // tbd.
                 break;
             case CUTE_TILED_PROPERTY_INT:
                 plog_debug("Loading integer property '%s': %d", properties[index].name.ptr, properties[index].data.integer);
@@ -539,7 +551,7 @@ bool tile_has_properties(int32_t gid, esz_tiled_tile_t** tile, esz_tiled_map_t* 
     int32_t local_id;
 
     #ifdef USE_LIBTMX
-    // tbd.
+    return true;
 
     #else // (cute_tiled.h)
     local_id = gid - get_first_gid(tiled_map);
@@ -591,7 +603,6 @@ static void tmxlib_store_property(esz_tiled_property_t* property, void* core)
         {
             case PT_COLOR:
             case PT_NONE:
-                // tbd.
                 break;
             case PT_BOOL:
                 plog_debug("Loading boolean property '%s': %u", property->name, property->value.boolean);

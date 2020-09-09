@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * @file  esz_init.h
- * @brief eszFW initialisation routines
+ * @brief eszFW initialisation functions
  */
 
 #ifndef ESZ_INIT_H

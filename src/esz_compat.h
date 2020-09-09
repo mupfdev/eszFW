@@ -29,6 +29,7 @@ int32_t              get_object_property_count(esz_tiled_object_t* tiled_object)
 const char*          get_object_type_name(esz_tiled_object_t* tiled_object);
 int32_t              get_tile_height(esz_tiled_map_t* tiled_map);
 void                 get_tile_position(int32_t gid, int32_t* pos_x, int32_t* pos_y, esz_tiled_map_t* tiled_map);
+int32_t              get_tile_property_count(esz_tiled_tile_t* tiled_tile);
 int32_t              get_tile_width(esz_tiled_map_t* tiled_map);
 void                 set_tileset_path(char* path_name, int32_t path_length, esz_core_t* core);
 int32_t              get_tileset_path_length(esz_core_t* core);

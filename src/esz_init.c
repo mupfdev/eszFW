@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * @file  esz_init.c
- * @brief eszFW initialisation routines
+ * @brief eszFW initialisation functions
  */
 
 #include <picolog.h>
@@ -480,42 +480,40 @@ esz_status load_tile_properties(esz_core_t* core)
             {
                 for (int32_t index_width = 0; index_width < (int32_t)core->map->handle->width; index_width += 1)
                 {
-                    esz_tiled_tileset_t* tileset = get_head_tileset(core->map->handle);
-                    esz_tiled_tile_t*    tile = tileset->tiles;
+                    esz_tiled_tileset_t* tileset       = get_head_tileset(core->map->handle);
+                    esz_tiled_tile_t*    tile          = tileset->tiles;
                     int32_t*             layer_content = get_layer_content(layer);
-                    int32_t              gid = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
-                    int32_t              tile_index = (index_width + 1) * (index_height + 1);
+                    int32_t              gid           = remove_gid_flip_bits((int32_t)layer_content[(index_height * (int32_t)core->map->handle->width) + index_width]);
+                    int32_t              tile_index    = (index_width + 1) * (index_height + 1);
 
                     if (tile_has_properties(gid, &tile, core->map->handle))
                     {
-                        // tbd.
+                        int32_t prop_cnt  = get_tile_property_count(tile);
 
-                        #ifndef USE_LIBTMX
-                        if (get_boolean_property(H_climbable, tile->properties, tile->property_count, core))
+                        if (get_boolean_property(H_climbable, tile->properties, prop_cnt, core))
                         {
                             SET_STATE(core->map->tile_properties[tile_index], TILE_CLIMBABLE);
                         }
 
-                        if (get_boolean_property(H_solid_above, tile->properties, tile->property_count, core))
+                        if (get_boolean_property(H_solid_above, tile->properties, prop_cnt, core))
                         {
                             SET_STATE(core->map->tile_properties[tile_index], TILE_SOLID_ABOVE);
                         }
 
-                        if (get_boolean_property(H_solid_below, tile->properties, tile->property_count, core))
+                        if (get_boolean_property(H_solid_below, tile->properties, prop_cnt, core))
                         {
                             SET_STATE(core->map->tile_properties[tile_index], TILE_SOLID_BELOW);
                         }
 
-                        if (get_boolean_property(H_solid_left, tile->properties, tile->property_count, core))
+                        if (get_boolean_property(H_solid_left, tile->properties, prop_cnt, core))
                         {
                             SET_STATE(core->map->tile_properties[tile_index], TILE_SOLID_LEFT);
                         }
 
-                        if (get_boolean_property(H_solid_right, tile->properties, tile->property_count, core))
+                        if (get_boolean_property(H_solid_right, tile->properties, prop_cnt, core))
                         {
                             SET_STATE(core->map->tile_properties[tile_index], TILE_SOLID_RIGHT);
                         }
-                        #endif
                     }
                 }
             }

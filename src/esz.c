@@ -8,6 +8,7 @@
 #include "esz_macros.h"
 
 #include <picolog.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,15 +16,6 @@
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_PADDING
 DISABLE_WARNING_SPECTRE_MITIGATION
-
-// Can be removed as soon everything is moved to the compatibility layer.
-#ifdef USE_LIBTMX
-    #include <tmx.h>
-#else // (cute_tiled.h)
-    #define CUTE_TILED_IMPLEMENTATION
-    #include <cute_tiled.h>
-#endif
-//
 
 #define STB_SPRINTF_IMPLEMENTATION
 #include <stb_sprintf.h>
