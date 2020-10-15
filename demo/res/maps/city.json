@@ -386,7 +386,7 @@
                         {
                          "name":"sprite_sheet_id",
                          "type":"int",
-                         "value":0
+                         "value":1
                         }, 
                         {
                          "name":"width",
@@ -479,7 +479,7 @@
                         {
                          "name":"sprite_sheet_id",
                          "type":"int",
-                         "value":4
+                         "value":5
                         }, 
                         {
                          "name":"width",
@@ -572,7 +572,7 @@
                         {
                          "name":"sprite_sheet_id",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"width",
@@ -665,7 +665,7 @@
                         {
                          "name":"sprite_sheet_id",
                          "type":"int",
-                         "value":2
+                         "value":3
                         }, 
                         {
                          "name":"width",
@@ -758,7 +758,7 @@
                         {
                          "name":"sprite_sheet_id",
                          "type":"int",
-                         "value":1
+                         "value":2
                         }, 
                         {
                          "name":"width",
@@ -843,6 +843,51 @@
          "value":""
         }, 
         {
+         "name":"scancode_down",
+         "type":"int",
+         "value":81
+        }, 
+        {
+         "name":"scancode_jump",
+         "type":"int",
+         "value":44
+        }, 
+        {
+         "name":"scancode_left",
+         "type":"int",
+         "value":80
+        }, 
+        {
+         "name":"scancode_quit",
+         "type":"int",
+         "value":20
+        }, 
+        {
+         "name":"scancode_right",
+         "type":"int",
+         "value":79
+        }, 
+        {
+         "name":"scancode_run",
+         "type":"int",
+         "value":225
+        }, 
+        {
+         "name":"scancode_toggle_fullscreen",
+         "type":"int",
+         "value":68
+        }, 
+        {
+         "name":"scancode_unlock_camera",
+         "type":"int",
+         "value":43
+        }, 
+        {
+         "name":"scancode_up",
+         "type":"int",
+         "value":82
+        }, 
+        {
          "name":"sprite_sheet_1",
          "type":"file",
          "value":"..\/sprites\/player.png"
@@ -868,7 +913,7 @@
          "value":"..\/sprites\/vehicle-truck.png"
         }],
  "renderorder":"right-down",
- "tiledversion":"1.4.2",
+ "tiledversion":"2020.09.09",
  "tileheight":16,
  "tilesets":[
         {

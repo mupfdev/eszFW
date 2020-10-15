@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <SDL.h>
 
+#include "esz.h"
 #include "esz_compat.h"
 #include "esz_hash.h"
 #include "esz_macros.h"
@@ -29,17 +30,17 @@ double get_decimal_property(const uint64_t name_hash, esz_tiled_property_t* prop
     return core->map->decimal_property;
 }
 
-int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property_t* tiled_properties, int32_t property_count, esz_core_t* core)
+int32_t get_integer_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     core->map->integer_property = 0;
-    load_property(name_hash, tiled_properties, property_count, core);
+    load_property(name_hash, properties, property_count, core);
     return core->map->integer_property;
 }
 
-const char* get_string_property(const uint64_t name_hash, esz_tiled_property_t* tiled_properties, int32_t property_count, esz_core_t* core)
+const char* get_string_property(const uint64_t name_hash, esz_tiled_property_t* properties, int32_t property_count, esz_core_t* core)
 {
     core->map->string_property = NULL;
-    load_property(name_hash, tiled_properties, property_count, core);
+    load_property(name_hash, properties, property_count, core);
     return core->map->string_property;
 }
 
@@ -76,6 +77,10 @@ void move_camera_to_target(esz_window_t* window, esz_core_t* core)
 
 void poll_events(esz_window_t* window, esz_core_t* core)
 {
+    const uint8_t* keystate    = esz_get_keyboard_state();
+    double         time_factor = (window->time_since_last_frame * 1000.0);
+    int32_t        scancode;
+
     while (0 != SDL_PollEvent(&core->event.handle))
     {
         switch (core->event.handle.type)
@@ -106,6 +111,20 @@ void poll_events(esz_window_t* window, esz_core_t* core)
                 {
                     core->event.key_down_cb(window, core);
                 }
+
+                scancode = esz_get_integer_map_property(H_scancode_quit, core);
+                if (keystate[scancode] && scancode > 0)
+                {
+                    core->is_active = false;
+                    return;
+                }
+
+                scancode = esz_get_integer_map_property(H_scancode_toggle_fullscreen, core);
+                if (keystate[scancode] && scancode > 0)
+                {
+                    esz_toggle_fullscreen(window);
+                }
+
                 break;
             case SDL_KEYUP:
                 if (core->event.key_up_cb)
@@ -120,6 +139,42 @@ void poll_events(esz_window_t* window, esz_core_t* core)
                 }
                 break;
         }
+    }
+
+    scancode = esz_get_integer_map_property(H_scancode_unlock_camera, core);
+    if (keystate[scancode] && scancode > 0)
+    {
+        esz_unlock_camera(core);
+    }
+    else
+    {
+        esz_lock_camera(core);
+    }
+
+    if (! esz_is_camera_locked(core))
+    {
+        scancode = esz_get_integer_map_property(H_scancode_up, core);
+        if (keystate[scancode] && scancode > 0)
+        {
+            core->camera.pos_y -= 0.3f * time_factor;
+        }
+        scancode = esz_get_integer_map_property(H_scancode_down, core);
+        if (keystate[scancode] && scancode > 0)
+        {
+            core->camera.pos_y += 0.3f * time_factor;
+        }
+        scancode = esz_get_integer_map_property(H_scancode_left, core);
+        if (keystate[scancode] && scancode > 0)
+        {
+            core->camera.pos_x -= 0.3f * time_factor;
+        }
+        scancode = esz_get_integer_map_property(H_scancode_right, core);
+        if (keystate[scancode] && scancode > 0)
+        {
+            core->camera.pos_x += 0.3f * time_factor;
+        }
+
+        set_camera_boundaries_to_map_size(window, core);
     }
 }
 

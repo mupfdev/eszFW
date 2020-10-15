@@ -1,7 +1,10 @@
 build
+eszFW-cppcheck-build-dir
 out
+project
 .vs
 *.a
+*.cppcheck
 *.dll
 *.exe
 *.ilk

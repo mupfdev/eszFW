@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="right-down" width="75" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#00003c" nextlayerid="9" nextobjectid="23">
+<map version="1.4" tiledversion="2020.09.09" orientation="orthogonal" renderorder="right-down" width="75" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#00003c" nextlayerid="9" nextobjectid="23">
  <properties>
   <property name="animated_tile_fps" type="int" value="5"/>
   <property name="background_constant_velocity" type="float" value="0"/>
@@ -13,6 +13,15 @@
   <property name="gravitation" type="float" value="9.80665"/>
   <property name="meter_in_pixel" type="int" value="32"/>
   <property name="music" type="file" value=""/>
+  <property name="scancode_down" type="int" value="81"/>
+  <property name="scancode_jump" type="int" value="44"/>
+  <property name="scancode_left" type="int" value="80"/>
+  <property name="scancode_quit" type="int" value="20"/>
+  <property name="scancode_right" type="int" value="79"/>
+  <property name="scancode_run" type="int" value="225"/>
+  <property name="scancode_toggle_fullscreen" type="int" value="68"/>
+  <property name="scancode_unlock_camera" type="int" value="43"/>
+  <property name="scancode_up" type="int" value="82"/>
   <property name="sprite_sheet_1" type="file" value="../sprites/player.png"/>
   <property name="sprite_sheet_2" type="file" value="../sprites/vehicle-misc1.png"/>
   <property name="sprite_sheet_3" type="file" value="../sprites/vehicle-misc2.png"/>
@@ -56,6 +65,10 @@
   <object id="1" name="Player" type="actor" x="31" y="592">
    <properties>
     <property name="acceleration" type="float" value="5"/>
+    <property name="anim_id_idle" type="int" value="0"/>
+    <property name="anim_id_jump" type="int" value="0"/>
+    <property name="anim_id_run" type="int" value="0"/>
+    <property name="anim_id_walk" type="int" value="0"/>
     <property name="animation_1" type="bool" value="true"/>
     <property name="animation_1_first_frame" type="int" value="1"/>
     <property name="animation_1_fps" type="int" value="5"/>
@@ -113,7 +126,7 @@
     <property name="is_visible" type="bool" value="false"/>
     <property name="jumping_power" type="float" value="4"/>
     <property name="max_velocity_x" type="float" value="2.5"/>
-    <property name="sprite_sheet_id" type="int" value="0"/>
+    <property name="sprite_sheet_id" type="int" value="1"/>
     <property name="width" type="int" value="64"/>
    </properties>
    <point/>
@@ -134,7 +147,7 @@
     <property name="is_visible" type="bool" value="true"/>
     <property name="jumping_power" type="float" value="0"/>
     <property name="max_velocity_x" type="float" value="2"/>
-    <property name="sprite_sheet_id" type="int" value="4"/>
+    <property name="sprite_sheet_id" type="int" value="5"/>
     <property name="width" type="int" value="264"/>
    </properties>
    <point/>
@@ -155,7 +168,7 @@
     <property name="is_visible" type="bool" value="true"/>
     <property name="jumping_power" type="float" value="0"/>
     <property name="max_velocity_x" type="float" value="4.5"/>
-    <property name="sprite_sheet_id" type="int" value="3"/>
+    <property name="sprite_sheet_id" type="int" value="4"/>
     <property name="width" type="int" value="168"/>
    </properties>
    <point/>
@@ -176,7 +189,7 @@
     <property name="is_visible" type="bool" value="true"/>
     <property name="jumping_power" type="float" value="0"/>
     <property name="max_velocity_x" type="float" value="4"/>
-    <property name="sprite_sheet_id" type="int" value="2"/>
+    <property name="sprite_sheet_id" type="int" value="3"/>
     <property name="width" type="int" value="96"/>
    </properties>
    <point/>
@@ -197,7 +210,7 @@
     <property name="is_visible" type="bool" value="true"/>
     <property name="jumping_power" type="float" value="0"/>
     <property name="max_velocity_x" type="float" value="4.8"/>
-    <property name="sprite_sheet_id" type="int" value="1"/>
+    <property name="sprite_sheet_id" type="int" value="2"/>
     <property name="width" type="int" value="96"/>
    </properties>
    <point/>

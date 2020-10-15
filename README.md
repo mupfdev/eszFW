@@ -34,9 +34,8 @@ projects [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) and
 
 - The dependencies can be limited to SDL2.
 
-- Support for two different TMX loaders:
-  [libTMX](https://github.com/baylej/tmx) and
-  [cute_tiled](https://github.com/RandyGaul/cute_headers).
+- It uses the [Tiled Map Editor](https://www.mapeditor.org/) as its main
+  tool to develop games.
 
 ## Documentation
 
@@ -62,12 +61,14 @@ formatting of the source code, you will find some rules here:
 
 This project currently undergoes a complete overhaul.
 
-If you wanna see the previous version in action, take a look at the [demo application](demo/).
+If you wanna see a previous version in action, take a look at the [demo
+application](demo/).
 
 [![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-01.png?raw=true "demo 1")
 [![demo](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02-tn.png)](https://raw.githubusercontent.com/mupfelofen-de/eszFW/master/media/demo-02.png?raw=true "demo 2")
 
-An Android version of the demo application is available on Google Play:
+An Android version is available on Google Play:
+
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=de.mupfelofen.TauCeti)
 
 ## C is dead, long live C

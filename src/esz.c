@@ -260,8 +260,11 @@ void esz_deactivate_core(esz_core_t* core)
 
 void esz_destroy_core(esz_core_t* core)
 {
-    free(core);
-    plog_info("Destroy engine core.");
+    if (core)
+    {
+        free(core);
+        plog_info("Destroy engine core.");
+    }
 }
 
 void esz_destroy_window(esz_window_t* window)
@@ -281,9 +284,12 @@ void esz_destroy_window(esz_window_t* window)
         SDL_DestroyWindow(window->window);
     }
 
-    free(window);
-    plog_info("Quitting.");
+    if (window)
+    {
+        free(window);
+    }
 
+    plog_info("Quitting.");
     SDL_Quit();
 }
 
@@ -299,8 +305,14 @@ int32_t esz_get_keycode(esz_core_t* core)
 
 bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_map_property_count(core->map->handle);
+    int32_t prop_cnt;
 
+    if (! esz_is_map_loaded(core))
+    {
+        return false;
+    }
+
+    prop_cnt                    = get_map_property_count(core->map->handle);
     core->map->boolean_property = false;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
     return core->map->boolean_property;
@@ -308,8 +320,14 @@ bool esz_get_boolean_map_property(const uint64_t name_hash, esz_core_t* core)
 
 double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_map_property_count(core->map->handle);
+    int32_t prop_cnt;
 
+    if (! esz_is_map_loaded(core))
+    {
+        return 0.0;
+    }
+
+    prop_cnt                    = get_map_property_count(core->map->handle);
     core->map->decimal_property = 0.0;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
     return core->map->decimal_property;
@@ -317,8 +335,14 @@ double esz_get_decimal_map_property(const uint64_t name_hash, esz_core_t* core)
 
 int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_map_property_count(core->map->handle);
+    int32_t prop_cnt;
 
+    if (! esz_is_map_loaded(core))
+    {
+        return 0;
+    }
+
+    prop_cnt                    = get_map_property_count(core->map->handle);
     core->map->integer_property = 0;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
     return core->map->integer_property;
@@ -326,8 +350,14 @@ int32_t esz_get_integer_map_property(const uint64_t name_hash, esz_core_t* core)
 
 const char* esz_get_string_map_property(const uint64_t name_hash, esz_core_t* core)
 {
-    int32_t prop_cnt = get_map_property_count(core->map->handle);
+    int32_t prop_cnt;
 
+    if (! esz_is_map_loaded(core))
+    {
+        return NULL;
+    }
+
+    prop_cnt                   = get_map_property_count(core->map->handle);
     core->map->string_property = NULL;
     load_property(name_hash, core->map->handle->properties, prop_cnt, core);
     return core->map->string_property;

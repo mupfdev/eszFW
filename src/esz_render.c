@@ -218,7 +218,7 @@ esz_status render_actors(int32_t level, esz_window_t* window, esz_core_t* core)
                         dst.w  = object->width;
                         dst.h  = object->height;
 
-                        if (0 > SDL_RenderCopyEx(window->renderer, core->map->sprite[(*actor)->sprite_sheet_id].texture, &src, &dst, 0, NULL, flip))
+                        if (0 > SDL_RenderCopyEx(window->renderer, core->map->sprite[(*actor)->sprite_sheet_id - 1].texture, &src, &dst, 0, NULL, flip))
                         {
                             plog_error("%s: %s.", __func__, SDL_GetError());
                             return ESZ_ERROR_CRITICAL;

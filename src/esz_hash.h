@@ -10,6 +10,10 @@
 #include <stdint.h>
 
 #define H_acceleration                 0xce26e518186a848f
+#define H_anim_id_idle                 0xce63c6afa347d913
+#define H_anim_id_jump                 0xce63c6afa348adf1
+#define H_anim_id_run                  0xc06fa12c1c38a36a
+#define H_anim_id_walk                 0xce63c6afa34f79a4
 #define H_animated_tile_fps            0xf16ba347de2debdd
 #define H_background_constant_velocity 0x1cb19bb15ad8b7fc
 #define H_background_is_top_aligned    0xe10d87b900773f85
@@ -32,6 +36,15 @@
 #define H_max_velocity_x               0xa1d4b1b096163590
 #define H_meter_in_pixel               0xfbbc8a6d4a407cf9
 #define H_opengl                       0x0000065312ef9eea
+#define H_scancode_down                0x339db31fc86859fc
+#define H_scancode_jump                0x339db31fc86bbc80
+#define H_scancode_left                0x339db31fc86c904f
+#define H_scancode_right               0xa7541718d66d61e2
+#define H_scancode_up                  0xc0cfb7feda9252a9
+#define H_scancode_quit                0x339db31fc86f92a7
+#define H_scancode_run                 0xdac6b7da2cdc9c19
+#define H_scancode_toggle_fullscreen   0xebb406be8e806258
+#define H_scancode_unlock_camera       0x657e367e0c361b38
 #define H_solid_above                  0xc0d1c0679690db0c
 #define H_solid_below                  0xc0d1c06796a48b18
 #define H_solid_left                   0x7272f650b702b58a
